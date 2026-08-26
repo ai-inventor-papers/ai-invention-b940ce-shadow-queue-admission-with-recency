@@ -1,8 +1,0 @@
-[project]
-name = "gen-art-dataset-1"
-version = "0.1.0"
-requires-python = "==3.12.*"
-dependencies = [
-    "numpy==2.5.2",
-    "loguru==0.7.3",
-]
