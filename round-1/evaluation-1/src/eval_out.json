@@ -1,1821 +1,598 @@
 {
   "metadata": {
-    "evaluation_name": "Scoring Adaptive Cache Admission vs Tuned Baseline",
-    "description": "Self-contained shadow-queue simulation and evaluation: per-key-decay admission variant vs best-tuned W-TinyLFU global-reset baseline. No upstream experiment/dataset artifacts were available (empty gen_art_experiment_1 and gen_art_dataset_1 directories), so the simulator, synthetic traces, and evaluation were all generated here.",
-    "overall_verdict": "DISCONFIRMED",
-    "driving_criteria": [
-      "steady_state_parity",
-      "drift_recovery_reduction",
-      "memory_overhead"
-    ],
-    "n_keys": 2000,
-    "requests_per_segment": 12000,
-    "alpha_grid": [
-      0.8,
-      1.0,
-      1.2
-    ],
-    "cache_size_ratios": [
-      0.02,
-      0.05,
-      0.1
-    ],
-    "baseline_w_grid": [
-      4,
-      8,
-      16,
-      32,
-      64
-    ],
-    "drift_scenarios": [
-      "hotset_rotation",
-      "skew_flatten",
-      "skew_sharpen",
-      "burst_injection"
-    ],
-    "seeds": [
-      1,
-      2,
-      3,
-      4,
-      5
-    ]
+    "evaluation_name": "per_key_decay_cache_admission_statistical_verdict",
+    "description": "No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \u2014 it reflects a missing upstream artifact, not a failed hypothesis test.",
+    "equivalence_margin_pp": 0.01,
+    "memory_ratio_threshold": 2.0,
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 42,
+    "min_seeds_required": 5
   },
   "metrics_agg": {
-    "steady_state_parity_diff_pp_mean": -5.863194444444445,
-    "steady_state_parity_diff_pp_ci_lo": -6.699537037037038,
-    "steady_state_parity_diff_pp_ci_hi": -5.066898148148149,
-    "steady_state_parity_pass": 0.0,
-    "recovery_reduction_pct_hotset_rotation_mean": 16.221533016276165,
-    "recovery_reduction_pct_hotset_rotation_ci_lo": -4.730187967894676,
-    "recovery_reduction_pct_hotset_rotation_ci_hi": 34.443741032230974,
-    "recovery_reduction_pct_hotset_rotation_pass": 0.0,
-    "recovery_reduction_pct_skew_flatten_mean": 2.1000938268384663,
-    "recovery_reduction_pct_skew_flatten_ci_lo": -0.09506428977536956,
-    "recovery_reduction_pct_skew_flatten_ci_hi": 4.909304375265573,
-    "recovery_reduction_pct_skew_flatten_pass": 0.0,
-    "recovery_reduction_pct_skew_sharpen_mean": -0.8488888888888889,
-    "recovery_reduction_pct_skew_sharpen_ci_lo": -2.546666666666667,
-    "recovery_reduction_pct_skew_sharpen_ci_hi": 0.0,
-    "recovery_reduction_pct_skew_sharpen_pass": 0.0,
-    "recovery_reduction_pct_burst_injection_mean": 1.5303676572933713,
-    "recovery_reduction_pct_burst_injection_ci_lo": -21.728374449213277,
-    "recovery_reduction_pct_burst_injection_ci_hi": 22.345959502017514,
-    "recovery_reduction_pct_burst_injection_pass": 0.0,
-    "recovery_scenarios_passed_count": 0.0,
-    "recovery_scenarios_total": 4.0,
-    "recovery_overall_pass": 0.0,
-    "recovery_real_trace_available": 0.0,
-    "memory_overhead_ratio_mean": 16.90909090909091,
-    "memory_overhead_ratio_max": 16.90909090909091,
-    "memory_overhead_pass": 0.0,
-    "classifier_short_decay_vs_burst_precision": 0.10126582278481013,
-    "classifier_short_decay_vs_burst_recall": 0.04,
-    "classifier_short_decay_vs_burst_f1": 0.057347670250896064,
-    "classifier_long_decay_vs_stable_precision": 0.07407407407407407,
-    "classifier_long_decay_vs_stable_recall": 0.06,
-    "classifier_long_decay_vs_stable_f1": 0.06629834254143646,
-    "classifier_separates_mechanism": 0.0,
-    "sensitivity_grid_pass_rate": 0.2777777777777778,
-    "sensitivity_grid_total_cells": 36.0,
-    "sensitivity_grid_passed_cells": 10.0,
-    "sensitivity_confined_to_narrow_operating_point": 1.0,
-    "overall_verdict_confirmed": 0.0,
-    "overall_verdict_disconfirmed": 1.0,
-    "overall_verdict_mixed": 0.0
+    "status_missing_dependency": 1.0,
+    "n_scenarios_evaluated": 0.0,
+    "n_scenarios_passing_recovery_strict": 0.0,
+    "n_scenarios_passing_recovery_loose": 0.0,
+    "n_scenarios_passing_steady_state_parity": 0.0,
+    "memory_overhead_ratio": -1.0,
+    "final_verdict_confirmed": 0.0,
+    "final_verdict_partial": 0.0,
+    "final_verdict_disconfirmed": 0.0,
+    "final_verdict_undetermined": 1.0
   },
   "datasets": [
     {
-      "dataset": "synthetic_zipf_drift_sweep",
+      "dataset": "per_key_decay_cache_admission",
       "examples": [
         {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3525;T90=3099",
-          "predict_variant": "steady_state_hr=0.2288;T90=1896",
-          "eval_steady_state_diff_pp": -12.374999999999996,
-          "eval_recovery_pct_reduction": 38.8189738625363
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3154;T90=2335",
-          "predict_variant": "steady_state_hr=0.2125;T90=1728",
-          "eval_steady_state_diff_pp": -10.291666666666668,
-          "eval_recovery_pct_reduction": 25.99571734475375
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3450;T90=4160",
-          "predict_variant": "steady_state_hr=0.1212;T90=1202",
-          "eval_steady_state_diff_pp": -22.374999999999996,
-          "eval_recovery_pct_reduction": 71.10576923076923
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3375;T90=2210",
-          "predict_variant": "steady_state_hr=0.2567;T90=1431",
-          "eval_steady_state_diff_pp": -8.083333333333337,
-          "eval_recovery_pct_reduction": 35.248868778280546
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation seed=5 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3175;T90=2407",
-          "predict_variant": "steady_state_hr=0.2562;T90=2309",
-          "eval_steady_state_diff_pp": -6.125000000000003,
-          "eval_recovery_pct_reduction": 4.0714582467802245
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_flatten seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3333;T90=500",
-          "predict_variant": "steady_state_hr=0.2421;T90=500",
-          "eval_steady_state_diff_pp": -9.124999999999996,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_flatten seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3258;T90=715",
-          "predict_variant": "steady_state_hr=0.1938;T90=500",
-          "eval_steady_state_diff_pp": -13.20833333333333,
-          "eval_recovery_pct_reduction": 30.069930069930066
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_flatten seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3408;T90=500",
-          "predict_variant": "steady_state_hr=0.2454;T90=500",
-          "eval_steady_state_diff_pp": -9.541666666666664,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_flatten seed=4 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3179;T90=500",
-          "predict_variant": "steady_state_hr=0.0638;T90=500",
-          "eval_steady_state_diff_pp": -25.416666666666664,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_flatten seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3504;T90=500",
-          "predict_variant": "steady_state_hr=0.1288;T90=500",
-          "eval_steady_state_diff_pp": -22.166666666666664,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_sharpen seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3146;T90=500",
-          "predict_variant": "steady_state_hr=0.2054;T90=500",
-          "eval_steady_state_diff_pp": -10.916666666666666,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_sharpen seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3162;T90=500",
-          "predict_variant": "steady_state_hr=0.2533;T90=500",
-          "eval_steady_state_diff_pp": -6.2916666666666625,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_sharpen seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3275;T90=500",
-          "predict_variant": "steady_state_hr=0.1608;T90=691",
-          "eval_steady_state_diff_pp": -16.666666666666668,
-          "eval_recovery_pct_reduction": -38.2
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_sharpen seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3196;T90=500",
-          "predict_variant": "steady_state_hr=0.2213;T90=500",
-          "eval_steady_state_diff_pp": -9.833333333333332,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=skew_sharpen seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3250;T90=500",
-          "predict_variant": "steady_state_hr=0.1858;T90=500",
-          "eval_steady_state_diff_pp": -13.91666666666667,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=burst_injection seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3146;T90=2163",
-          "predict_variant": "steady_state_hr=0.2350;T90=815",
-          "eval_steady_state_diff_pp": -7.958333333333334,
-          "eval_recovery_pct_reduction": 62.32085067036523
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=burst_injection seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3387;T90=2700",
-          "predict_variant": "steady_state_hr=0.2304;T90=591",
-          "eval_steady_state_diff_pp": -10.833333333333334,
-          "eval_recovery_pct_reduction": 78.11111111111111
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=burst_injection seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3212;T90=4389",
-          "predict_variant": "steady_state_hr=0.2396;T90=1069",
-          "eval_steady_state_diff_pp": -8.166666666666664,
-          "eval_recovery_pct_reduction": 75.64365459102301
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=burst_injection seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3267;T90=2880",
-          "predict_variant": "steady_state_hr=0.1583;T90=677",
-          "eval_steady_state_diff_pp": -16.833333333333332,
-          "eval_recovery_pct_reduction": 76.49305555555556
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=burst_injection seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3396;T90=2093",
-          "predict_variant": "steady_state_hr=0.1250;T90=1165",
-          "eval_steady_state_diff_pp": -21.458333333333336,
-          "eval_recovery_pct_reduction": 44.338270425226945
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=hotset_rotation seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4400;T90=4817",
-          "predict_variant": "steady_state_hr=0.4037;T90=950",
-          "eval_steady_state_diff_pp": -3.6250000000000004,
-          "eval_recovery_pct_reduction": 80.27818144073075
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=hotset_rotation seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4321;T90=2829",
-          "predict_variant": "steady_state_hr=0.3525;T90=2419",
-          "eval_steady_state_diff_pp": -7.958333333333334,
-          "eval_recovery_pct_reduction": 14.492753623188406
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=hotset_rotation seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4283;T90=5975",
-          "predict_variant": "steady_state_hr=0.4096;T90=2070",
-          "eval_steady_state_diff_pp": -1.874999999999999,
-          "eval_recovery_pct_reduction": 65.35564853556485
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=hotset_rotation seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4462;T90=4424",
-          "predict_variant": "steady_state_hr=0.4083;T90=1017",
-          "eval_steady_state_diff_pp": -3.791666666666665,
-          "eval_recovery_pct_reduction": 77.0117540687161
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=hotset_rotation seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4363;T90=2939",
-          "predict_variant": "steady_state_hr=0.3896;T90=2290",
-          "eval_steady_state_diff_pp": -4.666666666666669,
-          "eval_recovery_pct_reduction": 22.082340932289895
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_flatten seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4450;T90=500",
-          "predict_variant": "steady_state_hr=0.4121;T90=500",
-          "eval_steady_state_diff_pp": -3.291666666666665,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_flatten seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4283;T90=500",
-          "predict_variant": "steady_state_hr=0.4113;T90=500",
-          "eval_steady_state_diff_pp": -1.708333333333334,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_flatten seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4358;T90=500",
-          "predict_variant": "steady_state_hr=0.3962;T90=500",
-          "eval_steady_state_diff_pp": -3.9583333333333357,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_flatten seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4283;T90=599",
-          "predict_variant": "steady_state_hr=0.3875;T90=500",
-          "eval_steady_state_diff_pp": -4.083333333333333,
-          "eval_recovery_pct_reduction": 16.52754590984975
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_flatten seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4192;T90=500",
-          "predict_variant": "steady_state_hr=0.3958;T90=500",
-          "eval_steady_state_diff_pp": -2.3333333333333375,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_sharpen seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4296;T90=500",
-          "predict_variant": "steady_state_hr=0.3846;T90=500",
-          "eval_steady_state_diff_pp": -4.499999999999998,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_sharpen seed=2 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4333;T90=500",
-          "predict_variant": "steady_state_hr=0.3867;T90=500",
-          "eval_steady_state_diff_pp": -4.666666666666669,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_sharpen seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4300;T90=500",
-          "predict_variant": "steady_state_hr=0.4067;T90=500",
-          "eval_steady_state_diff_pp": -2.3333333333333317,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_sharpen seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4454;T90=500",
-          "predict_variant": "steady_state_hr=0.3504;T90=500",
-          "eval_steady_state_diff_pp": -9.500000000000004,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=skew_sharpen seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4242;T90=500",
-          "predict_variant": "steady_state_hr=0.4021;T90=500",
-          "eval_steady_state_diff_pp": -2.2083333333333344,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=burst_injection seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4363;T90=3146",
-          "predict_variant": "steady_state_hr=0.4129;T90=2398",
-          "eval_steady_state_diff_pp": -2.3333333333333375,
-          "eval_recovery_pct_reduction": 23.776223776223777
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=burst_injection seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4221;T90=3464",
-          "predict_variant": "steady_state_hr=0.3908;T90=3026",
-          "eval_steady_state_diff_pp": -3.125,
-          "eval_recovery_pct_reduction": 12.64434180138568
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=burst_injection seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4392;T90=2827",
-          "predict_variant": "steady_state_hr=0.3983;T90=2337",
-          "eval_steady_state_diff_pp": -4.083333333333333,
-          "eval_recovery_pct_reduction": 17.332861690838346
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=burst_injection seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4404;T90=3151",
-          "predict_variant": "steady_state_hr=0.3925;T90=2109",
-          "eval_steady_state_diff_pp": -4.791666666666666,
-          "eval_recovery_pct_reduction": 33.06886702634084
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.05 scenario=burst_injection seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4217;T90=3197",
-          "predict_variant": "steady_state_hr=0.3875;T90=2225",
-          "eval_steady_state_diff_pp": -3.416666666666668,
-          "eval_recovery_pct_reduction": 30.40350328432906
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=hotset_rotation seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5238;T90=6610",
-          "predict_variant": "steady_state_hr=0.4908;T90=1086",
-          "eval_steady_state_diff_pp": -3.2916666666666705,
-          "eval_recovery_pct_reduction": 83.57034795763994
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=hotset_rotation seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5317;T90=3949",
-          "predict_variant": "steady_state_hr=0.4558;T90=5617",
-          "eval_steady_state_diff_pp": -7.58333333333333,
-          "eval_recovery_pct_reduction": -42.23854140288681
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=hotset_rotation seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5342;T90=6081",
-          "predict_variant": "steady_state_hr=0.5125;T90=4713",
-          "eval_steady_state_diff_pp": -2.1666666666666723,
-          "eval_recovery_pct_reduction": 22.49629995066601
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=hotset_rotation seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5188;T90=4673",
-          "predict_variant": "steady_state_hr=0.4904;T90=1070",
-          "eval_steady_state_diff_pp": -2.8333333333333375,
-          "eval_recovery_pct_reduction": 77.10250374491761
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=hotset_rotation seed=5 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5337;T90=3708",
-          "predict_variant": "steady_state_hr=0.5021;T90=2733",
-          "eval_steady_state_diff_pp": -3.166666666666662,
-          "eval_recovery_pct_reduction": 26.294498381877023
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_flatten seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5179;T90=500",
-          "predict_variant": "steady_state_hr=0.4508;T90=500",
-          "eval_steady_state_diff_pp": -6.708333333333338,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_flatten seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5367;T90=608",
-          "predict_variant": "steady_state_hr=0.5088;T90=695",
-          "eval_steady_state_diff_pp": -2.791666666666659,
-          "eval_recovery_pct_reduction": -14.309210526315788
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_flatten seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5142;T90=500",
-          "predict_variant": "steady_state_hr=0.4742;T90=500",
-          "eval_steady_state_diff_pp": -3.9999999999999982,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_flatten seed=4 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5129;T90=500",
-          "predict_variant": "steady_state_hr=0.4733;T90=500",
-          "eval_steady_state_diff_pp": -3.9583333333333357,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_flatten seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5238;T90=853",
-          "predict_variant": "steady_state_hr=0.4908;T90=888",
-          "eval_steady_state_diff_pp": -3.2916666666666705,
-          "eval_recovery_pct_reduction": -4.103165298944901
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_sharpen seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5175;T90=500",
-          "predict_variant": "steady_state_hr=0.5021;T90=500",
-          "eval_steady_state_diff_pp": -1.5416666666666634,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_sharpen seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5158;T90=500",
-          "predict_variant": "steady_state_hr=0.4637;T90=500",
-          "eval_steady_state_diff_pp": -5.2083333333333375,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_sharpen seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5221;T90=500",
-          "predict_variant": "steady_state_hr=0.5033;T90=500",
-          "eval_steady_state_diff_pp": -1.8750000000000044,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_sharpen seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5200;T90=500",
-          "predict_variant": "steady_state_hr=0.4896;T90=500",
-          "eval_steady_state_diff_pp": -3.0416666666666705,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=skew_sharpen seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5138;T90=500",
-          "predict_variant": "steady_state_hr=0.4479;T90=500",
-          "eval_steady_state_diff_pp": -6.583333333333336,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=burst_injection seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5437;T90=1727",
-          "predict_variant": "steady_state_hr=0.4913;T90=758",
-          "eval_steady_state_diff_pp": -5.249999999999994,
-          "eval_recovery_pct_reduction": 56.108859293572664
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=burst_injection seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5258;T90=1916",
-          "predict_variant": "steady_state_hr=0.5054;T90=1368",
-          "eval_steady_state_diff_pp": -2.041666666666675,
-          "eval_recovery_pct_reduction": 28.60125260960334
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=burst_injection seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5454;T90=1815",
-          "predict_variant": "steady_state_hr=0.5154;T90=992",
-          "eval_steady_state_diff_pp": -3.0000000000000027,
-          "eval_recovery_pct_reduction": 45.34435261707989
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=burst_injection seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5229;T90=2355",
-          "predict_variant": "steady_state_hr=0.4708;T90=1130",
-          "eval_steady_state_diff_pp": -5.2083333333333375,
-          "eval_recovery_pct_reduction": 52.016985138004245
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.1 scenario=burst_injection seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5317;T90=1774",
-          "predict_variant": "steady_state_hr=0.4871;T90=1084",
-          "eval_steady_state_diff_pp": -4.45833333333333,
-          "eval_recovery_pct_reduction": 38.89515219842165
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=hotset_rotation seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5442;T90=2814",
-          "predict_variant": "steady_state_hr=0.4796;T90=667",
-          "eval_steady_state_diff_pp": -6.458333333333338,
-          "eval_recovery_pct_reduction": 76.29708599857854
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=hotset_rotation seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5150;T90=2440",
-          "predict_variant": "steady_state_hr=0.4408;T90=863",
-          "eval_steady_state_diff_pp": -7.416666666666666,
-          "eval_recovery_pct_reduction": 64.6311475409836
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=hotset_rotation seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5088;T90=1556",
-          "predict_variant": "steady_state_hr=0.4583;T90=1835",
-          "eval_steady_state_diff_pp": -5.041666666666672,
-          "eval_recovery_pct_reduction": -17.930591259640103
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=hotset_rotation seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5167;T90=3885",
-          "predict_variant": "steady_state_hr=0.4492;T90=540",
-          "eval_steady_state_diff_pp": -6.750000000000006,
-          "eval_recovery_pct_reduction": 86.10038610038609
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=hotset_rotation seed=5 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5204;T90=1835",
-          "predict_variant": "steady_state_hr=0.4571;T90=506",
-          "eval_steady_state_diff_pp": -6.3333333333333295,
-          "eval_recovery_pct_reduction": 72.42506811989101
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_flatten seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5179;T90=537",
-          "predict_variant": "steady_state_hr=0.4604;T90=500",
-          "eval_steady_state_diff_pp": -5.750000000000005,
-          "eval_recovery_pct_reduction": 6.890130353817504
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_flatten seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.4996;T90=500",
-          "predict_variant": "steady_state_hr=0.3287;T90=500",
-          "eval_steady_state_diff_pp": -17.083333333333332,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_flatten seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5108;T90=500",
-          "predict_variant": "steady_state_hr=0.4746;T90=500",
-          "eval_steady_state_diff_pp": -3.6250000000000004,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_flatten seed=4 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5150;T90=500",
-          "predict_variant": "steady_state_hr=0.4367;T90=500",
-          "eval_steady_state_diff_pp": -7.833333333333337,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_flatten seed=5 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5138;T90=500",
-          "predict_variant": "steady_state_hr=0.4467;T90=500",
-          "eval_steady_state_diff_pp": -6.708333333333338,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_sharpen seed=1 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5333;T90=500",
-          "predict_variant": "steady_state_hr=0.3762;T90=500",
-          "eval_steady_state_diff_pp": -15.708333333333336,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_sharpen seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5317;T90=500",
-          "predict_variant": "steady_state_hr=0.4387;T90=500",
-          "eval_steady_state_diff_pp": -9.291666666666664,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_sharpen seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5133;T90=500",
-          "predict_variant": "steady_state_hr=0.4183;T90=500",
-          "eval_steady_state_diff_pp": -9.499999999999996,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_sharpen seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5271;T90=500",
-          "predict_variant": "steady_state_hr=0.4721;T90=500",
-          "eval_steady_state_diff_pp": -5.499999999999999,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=skew_sharpen seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5400;T90=500",
-          "predict_variant": "steady_state_hr=0.4750;T90=500",
-          "eval_steady_state_diff_pp": -6.500000000000005,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=burst_injection seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5250;T90=3347",
-          "predict_variant": "steady_state_hr=0.4662;T90=1262",
-          "eval_steady_state_diff_pp": -5.875000000000003,
-          "eval_recovery_pct_reduction": 62.29459217209441
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=burst_injection seed=2 best_W=8",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5175;T90=995",
-          "predict_variant": "steady_state_hr=0.3829;T90=3072",
-          "eval_steady_state_diff_pp": -13.458333333333329,
-          "eval_recovery_pct_reduction": -208.7437185929648
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=burst_injection seed=3 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5221;T90=2494",
-          "predict_variant": "steady_state_hr=0.3908;T90=1311",
-          "eval_steady_state_diff_pp": -13.125000000000004,
-          "eval_recovery_pct_reduction": 47.43384121892542
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=burst_injection seed=4 best_W=8",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5383;T90=931",
-          "predict_variant": "steady_state_hr=0.4829;T90=1322",
-          "eval_steady_state_diff_pp": -5.541666666666667,
-          "eval_recovery_pct_reduction": -41.997851772287866
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.02 scenario=burst_injection seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.5208;T90=3161",
-          "predict_variant": "steady_state_hr=0.3392;T90=5644",
-          "eval_steady_state_diff_pp": -18.16666666666667,
-          "eval_recovery_pct_reduction": -78.55109142676369
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=hotset_rotation seed=1 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6221;T90=2063",
-          "predict_variant": "steady_state_hr=0.5633;T90=7000",
-          "eval_steady_state_diff_pp": -5.8749999999999964,
-          "eval_recovery_pct_reduction": -239.31168201648086
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=hotset_rotation seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6229;T90=3226",
-          "predict_variant": "steady_state_hr=0.5317;T90=3373",
-          "eval_steady_state_diff_pp": -9.125000000000005,
-          "eval_recovery_pct_reduction": -4.556726596404215
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=hotset_rotation seed=3 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6383;T90=2155",
-          "predict_variant": "steady_state_hr=0.6212;T90=4254",
-          "eval_steady_state_diff_pp": -1.708333333333334,
-          "eval_recovery_pct_reduction": -97.4013921113689
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=hotset_rotation seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6150;T90=1952",
-          "predict_variant": "steady_state_hr=0.4062;T90=1949",
-          "eval_steady_state_diff_pp": -20.875,
-          "eval_recovery_pct_reduction": 0.15368852459016394
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=hotset_rotation seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6192;T90=3745",
-          "predict_variant": "steady_state_hr=0.6050;T90=2974",
-          "eval_steady_state_diff_pp": -1.416666666666666,
-          "eval_recovery_pct_reduction": 20.587449933244326
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_flatten seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6325;T90=500",
-          "predict_variant": "steady_state_hr=0.6067;T90=500",
-          "eval_steady_state_diff_pp": -2.5833333333333264,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_flatten seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6217;T90=500",
-          "predict_variant": "steady_state_hr=0.6062;T90=500",
-          "eval_steady_state_diff_pp": -1.5416666666666745,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_flatten seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6271;T90=500",
-          "predict_variant": "steady_state_hr=0.6154;T90=500",
-          "eval_steady_state_diff_pp": -1.1666666666666714,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_flatten seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6246;T90=500",
-          "predict_variant": "steady_state_hr=0.5700;T90=500",
-          "eval_steady_state_diff_pp": -5.458333333333343,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_flatten seed=5 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6342;T90=500",
-          "predict_variant": "steady_state_hr=0.5988;T90=500",
-          "eval_steady_state_diff_pp": -3.541666666666665,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_sharpen seed=1 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6154;T90=500",
-          "predict_variant": "steady_state_hr=0.5246;T90=500",
-          "eval_steady_state_diff_pp": -9.083333333333332,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_sharpen seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6454;T90=500",
-          "predict_variant": "steady_state_hr=0.6279;T90=500",
-          "eval_steady_state_diff_pp": -1.749999999999996,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_sharpen seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6217;T90=500",
-          "predict_variant": "steady_state_hr=0.6033;T90=500",
-          "eval_steady_state_diff_pp": -1.8333333333333313,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_sharpen seed=4 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6233;T90=500",
-          "predict_variant": "steady_state_hr=0.6071;T90=500",
-          "eval_steady_state_diff_pp": -1.6249999999999987,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=skew_sharpen seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6229;T90=500",
-          "predict_variant": "steady_state_hr=0.5896;T90=500",
-          "eval_steady_state_diff_pp": -3.3333333333333326,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=burst_injection seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6104;T90=3749",
-          "predict_variant": "steady_state_hr=0.5450;T90=2889",
-          "eval_steady_state_diff_pp": -6.541666666666668,
-          "eval_recovery_pct_reduction": 22.939450520138706
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=burst_injection seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6362;T90=2960",
-          "predict_variant": "steady_state_hr=0.6179;T90=3620",
-          "eval_steady_state_diff_pp": -1.8333333333333313,
-          "eval_recovery_pct_reduction": -22.2972972972973
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=burst_injection seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6254;T90=2664",
-          "predict_variant": "steady_state_hr=0.5446;T90=2399",
-          "eval_steady_state_diff_pp": -8.083333333333332,
-          "eval_recovery_pct_reduction": 9.947447447447448
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=burst_injection seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6321;T90=3085",
-          "predict_variant": "steady_state_hr=0.6275;T90=2258",
-          "eval_steady_state_diff_pp": -0.45833333333333837,
-          "eval_recovery_pct_reduction": 26.80713128038898
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.05 scenario=burst_injection seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6371;T90=4876",
-          "predict_variant": "steady_state_hr=0.6250;T90=3490",
-          "eval_steady_state_diff_pp": -1.2083333333333335,
-          "eval_recovery_pct_reduction": 28.424938474159145
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=hotset_rotation seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7050;T90=4393",
-          "predict_variant": "steady_state_hr=0.6937;T90=2795",
-          "eval_steady_state_diff_pp": -1.1249999999999982,
-          "eval_recovery_pct_reduction": 36.37605281129069
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=hotset_rotation seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7142;T90=3782",
-          "predict_variant": "steady_state_hr=0.6575;T90=2405",
-          "eval_steady_state_diff_pp": -5.666666666666664,
-          "eval_recovery_pct_reduction": 36.409307244843994
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=hotset_rotation seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7125;T90=4065",
-          "predict_variant": "steady_state_hr=0.6967;T90=3302",
-          "eval_steady_state_diff_pp": -1.5833333333333366,
-          "eval_recovery_pct_reduction": 18.769987699877
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=hotset_rotation seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7125;T90=4139",
-          "predict_variant": "steady_state_hr=0.6833;T90=1931",
-          "eval_steady_state_diff_pp": -2.9166666666666674,
-          "eval_recovery_pct_reduction": 53.34621889345252
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=hotset_rotation seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7050;T90=3555",
-          "predict_variant": "steady_state_hr=0.6817;T90=3748",
-          "eval_steady_state_diff_pp": -2.3333333333333317,
-          "eval_recovery_pct_reduction": -5.428973277074543
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_flatten seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7096;T90=500",
-          "predict_variant": "steady_state_hr=0.6408;T90=500",
-          "eval_steady_state_diff_pp": -6.874999999999998,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_flatten seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6987;T90=500",
-          "predict_variant": "steady_state_hr=0.6733;T90=500",
-          "eval_steady_state_diff_pp": -2.5416666666666643,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_flatten seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7050;T90=500",
-          "predict_variant": "steady_state_hr=0.6771;T90=500",
-          "eval_steady_state_diff_pp": -2.791666666666659,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_flatten seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6975;T90=500",
-          "predict_variant": "steady_state_hr=0.6525;T90=500",
-          "eval_steady_state_diff_pp": -4.5000000000000036,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_flatten seed=5 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7042;T90=500",
-          "predict_variant": "steady_state_hr=0.6883;T90=500",
-          "eval_steady_state_diff_pp": -1.5833333333333366,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_sharpen seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7137;T90=500",
-          "predict_variant": "steady_state_hr=0.6996;T90=500",
-          "eval_steady_state_diff_pp": -1.416666666666666,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_sharpen seed=2 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7288;T90=500",
-          "predict_variant": "steady_state_hr=0.6971;T90=500",
-          "eval_steady_state_diff_pp": -3.166666666666662,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_sharpen seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7171;T90=500",
-          "predict_variant": "steady_state_hr=0.7083;T90=500",
-          "eval_steady_state_diff_pp": -0.8749999999999925,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_sharpen seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7108;T90=500",
-          "predict_variant": "steady_state_hr=0.6658;T90=500",
-          "eval_steady_state_diff_pp": -4.499999999999993,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=skew_sharpen seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7025;T90=500",
-          "predict_variant": "steady_state_hr=0.5733;T90=500",
-          "eval_steady_state_diff_pp": -12.916666666666664,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=burst_injection seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7113;T90=1200",
-          "predict_variant": "steady_state_hr=0.6804;T90=1251",
-          "eval_steady_state_diff_pp": -3.083333333333338,
-          "eval_recovery_pct_reduction": -4.25
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=burst_injection seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7317;T90=1454",
-          "predict_variant": "steady_state_hr=0.6950;T90=1328",
-          "eval_steady_state_diff_pp": -3.6666666666666736,
-          "eval_recovery_pct_reduction": 8.665749656121045
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=burst_injection seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7013;T90=1446",
-          "predict_variant": "steady_state_hr=0.6775;T90=1166",
-          "eval_steady_state_diff_pp": -2.375000000000005,
-          "eval_recovery_pct_reduction": 19.363762102351316
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=burst_injection seed=4 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7113;T90=1064",
-          "predict_variant": "steady_state_hr=0.6879;T90=1052",
-          "eval_steady_state_diff_pp": -2.333333333333343,
-          "eval_recovery_pct_reduction": 1.1278195488721803
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.0 cache_ratio=0.1 scenario=burst_injection seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7046;T90=1453",
-          "predict_variant": "steady_state_hr=0.6950;T90=1230",
-          "eval_steady_state_diff_pp": -0.9583333333333388,
-          "eval_recovery_pct_reduction": 15.34755677907777
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=hotset_rotation seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7025;T90=2476",
-          "predict_variant": "steady_state_hr=0.6787;T90=527",
-          "eval_steady_state_diff_pp": -2.375000000000005,
-          "eval_recovery_pct_reduction": 78.7156704361874
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=hotset_rotation seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7183;T90=2360",
-          "predict_variant": "steady_state_hr=0.6829;T90=773",
-          "eval_steady_state_diff_pp": -3.5416666666666763,
-          "eval_recovery_pct_reduction": 67.24576271186442
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=hotset_rotation seed=3 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7087;T90=995",
-          "predict_variant": "steady_state_hr=0.6750;T90=2033",
-          "eval_steady_state_diff_pp": -3.3749999999999947,
-          "eval_recovery_pct_reduction": -104.32160804020101
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=hotset_rotation seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7104;T90=1858",
-          "predict_variant": "steady_state_hr=0.5258;T90=3623",
-          "eval_steady_state_diff_pp": -18.458333333333332,
-          "eval_recovery_pct_reduction": -94.994617868676
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=hotset_rotation seed=5 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7058;T90=1476",
-          "predict_variant": "steady_state_hr=0.6338;T90=1477",
-          "eval_steady_state_diff_pp": -7.208333333333328,
-          "eval_recovery_pct_reduction": -0.06775067750677506
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_flatten seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6992;T90=564",
-          "predict_variant": "steady_state_hr=0.6892;T90=500",
-          "eval_steady_state_diff_pp": -1.0000000000000009,
-          "eval_recovery_pct_reduction": 11.347517730496454
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_flatten seed=2 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7037;T90=500",
-          "predict_variant": "steady_state_hr=0.6825;T90=500",
-          "eval_steady_state_diff_pp": -2.124999999999999,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_flatten seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7246;T90=928",
-          "predict_variant": "steady_state_hr=0.6829;T90=500",
-          "eval_steady_state_diff_pp": -4.166666666666674,
-          "eval_recovery_pct_reduction": 46.12068965517241
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_flatten seed=4 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7021;T90=500",
-          "predict_variant": "steady_state_hr=0.6296;T90=500",
-          "eval_steady_state_diff_pp": -7.249999999999989,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_flatten seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7233;T90=500",
-          "predict_variant": "steady_state_hr=0.6342;T90=500",
-          "eval_steady_state_diff_pp": -8.916666666666673,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_sharpen seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6979;T90=500",
-          "predict_variant": "steady_state_hr=0.6458;T90=500",
-          "eval_steady_state_diff_pp": -5.208333333333326,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_sharpen seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7113;T90=500",
-          "predict_variant": "steady_state_hr=0.6596;T90=500",
-          "eval_steady_state_diff_pp": -5.166666666666675,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_sharpen seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7042;T90=500",
-          "predict_variant": "steady_state_hr=0.6775;T90=500",
-          "eval_steady_state_diff_pp": -2.6666666666666727,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_sharpen seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7008;T90=500",
-          "predict_variant": "steady_state_hr=0.6675;T90=500",
-          "eval_steady_state_diff_pp": -3.3333333333333326,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=skew_sharpen seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7025;T90=500",
-          "predict_variant": "steady_state_hr=0.6754;T90=500",
-          "eval_steady_state_diff_pp": -2.708333333333335,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=burst_injection seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6963;T90=1859",
-          "predict_variant": "steady_state_hr=0.6512;T90=5307",
-          "eval_steady_state_diff_pp": -4.5000000000000036,
-          "eval_recovery_pct_reduction": -185.47606239913932
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=burst_injection seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7037;T90=2211",
-          "predict_variant": "steady_state_hr=0.4246;T90=1772",
-          "eval_steady_state_diff_pp": -27.916666666666668,
-          "eval_recovery_pct_reduction": 19.855269109000453
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=burst_injection seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6917;T90=2264",
-          "predict_variant": "steady_state_hr=0.6558;T90=6858",
-          "eval_steady_state_diff_pp": -3.5833333333333273,
-          "eval_recovery_pct_reduction": -202.91519434628978
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=burst_injection seed=4 best_W=8",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7129;T90=1266",
-          "predict_variant": "steady_state_hr=0.6833;T90=4941",
-          "eval_steady_state_diff_pp": -2.9583333333333295,
-          "eval_recovery_pct_reduction": -290.2843601895734
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.02 scenario=burst_injection seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.6996;T90=2860",
-          "predict_variant": "steady_state_hr=0.6775;T90=5238",
-          "eval_steady_state_diff_pp": -2.2083333333333344,
-          "eval_recovery_pct_reduction": -83.14685314685315
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=hotset_rotation seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8029;T90=2383",
-          "predict_variant": "steady_state_hr=0.7675;T90=1798",
-          "eval_steady_state_diff_pp": -3.541666666666665,
-          "eval_recovery_pct_reduction": 24.548887956357532
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=hotset_rotation seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8054;T90=2630",
-          "predict_variant": "steady_state_hr=0.7704;T90=982",
-          "eval_steady_state_diff_pp": -3.500000000000003,
-          "eval_recovery_pct_reduction": 62.661596958174904
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=hotset_rotation seed=3 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7904;T90=1193",
-          "predict_variant": "steady_state_hr=0.7567;T90=3079",
-          "eval_steady_state_diff_pp": -3.3749999999999947,
-          "eval_recovery_pct_reduction": -158.0888516345348
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=hotset_rotation seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7879;T90=2208",
-          "predict_variant": "steady_state_hr=0.7533;T90=2289",
-          "eval_steady_state_diff_pp": -3.458333333333341,
-          "eval_recovery_pct_reduction": -3.6684782608695654
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=hotset_rotation seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7779;T90=2444",
-          "predict_variant": "steady_state_hr=0.7575;T90=2672",
-          "eval_steady_state_diff_pp": -2.041666666666675,
-          "eval_recovery_pct_reduction": -9.328968903436989
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_flatten seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7983;T90=500",
-          "predict_variant": "steady_state_hr=0.7904;T90=500",
-          "eval_steady_state_diff_pp": -0.7916666666666683,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_flatten seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7738;T90=500",
-          "predict_variant": "steady_state_hr=0.7504;T90=500",
-          "eval_steady_state_diff_pp": -2.333333333333343,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_flatten seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7929;T90=500",
-          "predict_variant": "steady_state_hr=0.7662;T90=500",
-          "eval_steady_state_diff_pp": -2.6666666666666727,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_flatten seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7908;T90=500",
-          "predict_variant": "steady_state_hr=0.7629;T90=500",
-          "eval_steady_state_diff_pp": -2.79166666666667,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_flatten seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7896;T90=500",
-          "predict_variant": "steady_state_hr=0.7567;T90=500",
-          "eval_steady_state_diff_pp": -3.2916666666666594,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_sharpen seed=1 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7821;T90=500",
-          "predict_variant": "steady_state_hr=0.7546;T90=500",
-          "eval_steady_state_diff_pp": -2.749999999999997,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_sharpen seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8042;T90=500",
-          "predict_variant": "steady_state_hr=0.7533;T90=500",
-          "eval_steady_state_diff_pp": -5.083333333333339,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_sharpen seed=3 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7967;T90=500",
-          "predict_variant": "steady_state_hr=0.7546;T90=500",
-          "eval_steady_state_diff_pp": -4.208333333333325,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_sharpen seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7863;T90=500",
-          "predict_variant": "steady_state_hr=0.7746;T90=500",
-          "eval_steady_state_diff_pp": -1.1666666666666714,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=skew_sharpen seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8058;T90=500",
-          "predict_variant": "steady_state_hr=0.7275;T90=500",
-          "eval_steady_state_diff_pp": -7.833333333333325,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=burst_injection seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7946;T90=2725",
-          "predict_variant": "steady_state_hr=0.6279;T90=2345",
-          "eval_steady_state_diff_pp": -16.666666666666664,
-          "eval_recovery_pct_reduction": 13.944954128440369
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=burst_injection seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7983;T90=3243",
-          "predict_variant": "steady_state_hr=0.7758;T90=1857",
-          "eval_steady_state_diff_pp": -2.2499999999999964,
-          "eval_recovery_pct_reduction": 42.73820536540241
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=burst_injection seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7996;T90=3235",
-          "predict_variant": "steady_state_hr=0.7867;T90=2068",
-          "eval_steady_state_diff_pp": -1.2916666666666687,
-          "eval_recovery_pct_reduction": 36.074188562596596
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=burst_injection seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7879;T90=2413",
-          "predict_variant": "steady_state_hr=0.7654;T90=2197",
-          "eval_steady_state_diff_pp": -2.2500000000000075,
-          "eval_recovery_pct_reduction": 8.951512639867385
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.05 scenario=burst_injection seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.7896;T90=3031",
-          "predict_variant": "steady_state_hr=0.7642;T90=2164",
-          "eval_steady_state_diff_pp": -2.5416666666666643,
-          "eval_recovery_pct_reduction": 28.604420983173874
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=hotset_rotation seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8500;T90=2809",
-          "predict_variant": "steady_state_hr=0.8413;T90=1270",
-          "eval_steady_state_diff_pp": -0.8749999999999925,
-          "eval_recovery_pct_reduction": 54.788180847276614
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=hotset_rotation seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8396;T90=2296",
-          "predict_variant": "steady_state_hr=0.8083;T90=1385",
-          "eval_steady_state_diff_pp": -3.125,
-          "eval_recovery_pct_reduction": 39.677700348432055
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=hotset_rotation seed=3 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8475;T90=1241",
-          "predict_variant": "steady_state_hr=0.7571;T90=1208",
-          "eval_steady_state_diff_pp": -9.04166666666667,
-          "eval_recovery_pct_reduction": 2.6591458501208702
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=hotset_rotation seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8571;T90=2385",
-          "predict_variant": "steady_state_hr=0.8413;T90=984",
-          "eval_steady_state_diff_pp": -1.5833333333333255,
-          "eval_recovery_pct_reduction": 58.74213836477987
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=hotset_rotation seed=5 best_W=16",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8354;T90=1168",
-          "predict_variant": "steady_state_hr=0.7917;T90=1060",
-          "eval_steady_state_diff_pp": -4.375000000000007,
-          "eval_recovery_pct_reduction": 9.246575342465754
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_flatten seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8462;T90=500",
-          "predict_variant": "steady_state_hr=0.8413;T90=500",
-          "eval_steady_state_diff_pp": -0.49999999999998934,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_flatten seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8496;T90=500",
-          "predict_variant": "steady_state_hr=0.8313;T90=500",
-          "eval_steady_state_diff_pp": -1.8333333333333313,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_flatten seed=3 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8492;T90=510",
-          "predict_variant": "steady_state_hr=0.8146;T90=500",
-          "eval_steady_state_diff_pp": -3.45833333333333,
-          "eval_recovery_pct_reduction": 1.9607843137254901
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_flatten seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8317;T90=500",
-          "predict_variant": "steady_state_hr=0.7771;T90=500",
-          "eval_steady_state_diff_pp": -5.458333333333332,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_flatten seed=5 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8446;T90=500",
-          "predict_variant": "steady_state_hr=0.7958;T90=500",
-          "eval_steady_state_diff_pp": -4.875000000000007,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_sharpen seed=1 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8450;T90=500",
-          "predict_variant": "steady_state_hr=0.5000;T90=500",
-          "eval_steady_state_diff_pp": -34.5,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_sharpen seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8571;T90=500",
-          "predict_variant": "steady_state_hr=0.8375;T90=500",
-          "eval_steady_state_diff_pp": -1.9583333333333286,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_sharpen seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8533;T90=500",
-          "predict_variant": "steady_state_hr=0.7767;T90=500",
-          "eval_steady_state_diff_pp": -7.666666666666677,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_sharpen seed=4 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8429;T90=500",
-          "predict_variant": "steady_state_hr=0.7946;T90=500",
-          "eval_steady_state_diff_pp": -4.833333333333334,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=skew_sharpen seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8775;T90=500",
-          "predict_variant": "steady_state_hr=0.8550;T90=500",
-          "eval_steady_state_diff_pp": -2.2499999999999964,
-          "eval_recovery_pct_reduction": 0.0
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=burst_injection seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8350;T90=1531",
-          "predict_variant": "steady_state_hr=0.6004;T90=983",
-          "eval_steady_state_diff_pp": -23.458333333333325,
-          "eval_recovery_pct_reduction": 35.79359895493142
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=burst_injection seed=2 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8529;T90=1661",
-          "predict_variant": "steady_state_hr=0.8496;T90=1190",
-          "eval_steady_state_diff_pp": -0.33333333333332993,
-          "eval_recovery_pct_reduction": 28.356411800120405
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=burst_injection seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8438;T90=1112",
-          "predict_variant": "steady_state_hr=0.8363;T90=1247",
-          "eval_steady_state_diff_pp": -0.7499999999999951,
-          "eval_recovery_pct_reduction": -12.140287769784171
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=burst_injection seed=4 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8508;T90=1642",
-          "predict_variant": "steady_state_hr=0.8287;T90=1049",
-          "eval_steady_state_diff_pp": -2.2083333333333344,
-          "eval_recovery_pct_reduction": 36.11449451887941
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=1.2 cache_ratio=0.1 scenario=burst_injection seed=5 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.8417;T90=1504",
-          "predict_variant": "steady_state_hr=0.8413;T90=1041",
-          "eval_steady_state_diff_pp": -0.04166666666666208,
-          "eval_recovery_pct_reduction": 30.784574468085108
-        }
-      ]
-    },
-    {
-      "dataset": "volatility_classifier_confusion_matrix",
-      "examples": [
-        {
-          "input": "decay_bucket=short-decay ground_truth=burst",
-          "output": "count",
-          "predict_variant": "8",
-          "eval_count": 8.0,
-          "eval_fraction_of_bucket": 0.10126582278481013
-        },
-        {
-          "input": "decay_bucket=short-decay ground_truth=stable",
-          "output": "count",
-          "predict_variant": "8",
-          "eval_count": 8.0,
-          "eval_fraction_of_bucket": 0.10126582278481013
-        },
-        {
-          "input": "decay_bucket=short-decay ground_truth=neutral",
-          "output": "count",
-          "predict_variant": "63",
-          "eval_count": 63.0,
-          "eval_fraction_of_bucket": 0.7974683544303798
-        },
-        {
-          "input": "decay_bucket=long-decay ground_truth=burst",
-          "output": "count",
-          "predict_variant": "7",
-          "eval_count": 7.0,
-          "eval_fraction_of_bucket": 0.08641975308641975
-        },
-        {
-          "input": "decay_bucket=long-decay ground_truth=stable",
-          "output": "count",
-          "predict_variant": "6",
-          "eval_count": 6.0,
-          "eval_fraction_of_bucket": 0.07407407407407407
-        },
-        {
-          "input": "decay_bucket=long-decay ground_truth=neutral",
-          "output": "count",
-          "predict_variant": "68",
-          "eval_count": 68.0,
-          "eval_fraction_of_bucket": 0.8395061728395061
-        },
-        {
-          "input": "decay_bucket=mid ground_truth=burst",
-          "output": "count",
-          "predict_variant": "185",
-          "eval_count": 185.0,
-          "eval_fraction_of_bucket": 0.10054347826086957
-        },
-        {
-          "input": "decay_bucket=mid ground_truth=stable",
-          "output": "count",
-          "predict_variant": "86",
-          "eval_count": 86.0,
-          "eval_fraction_of_bucket": 0.04673913043478261
-        },
-        {
-          "input": "decay_bucket=mid ground_truth=neutral",
-          "output": "count",
-          "predict_variant": "1569",
-          "eval_count": 1569.0,
-          "eval_fraction_of_bucket": 0.8527173913043479
-        }
-      ]
-    },
-    {
-      "dataset": "sensitivity_robustness_heatmap",
-      "examples": [
-        {
-          "input": "alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=0.8 cache_ratio=0.02 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'steady_state_parity_tost' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=0.8 cache_ratio=0.02 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_strict' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=0.8 cache_ratio=0.02 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=0.8 cache_ratio=0.05 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=0.8 cache_ratio=0.05 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_loose' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=0.8 cache_ratio=0.05 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'memory_overhead_ratio' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "memory_overhead_ratio",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=0.8 cache_ratio=0.05 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=0.8 cache_ratio=0.1 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'beats_every_tuned_baseline' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "beats_every_tuned_baseline",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=0.8 cache_ratio=0.1 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'segment_length_sensitivity' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "segment_length_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=0.8 cache_ratio=0.1 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'rolling_window_sensitivity' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "rolling_window_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=0.8 cache_ratio=0.1 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=1.0 cache_ratio=0.02 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=1.0 cache_ratio=0.02 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'steady_state_parity_tost' for scenario='sudden_popularity_shift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "real",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.02 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_strict' for scenario='sudden_popularity_shift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "real",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.02 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_loose' for scenario='sudden_popularity_shift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "real",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.05 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'memory_overhead_ratio' for scenario='sudden_popularity_shift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "real",
+          "metadata_check": "memory_overhead_ratio",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.05 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'beats_every_tuned_baseline' for scenario='sudden_popularity_shift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "real",
+          "metadata_check": "beats_every_tuned_baseline",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.05 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'segment_length_sensitivity' for scenario='sudden_popularity_shift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "real",
+          "metadata_check": "segment_length_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.05 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'rolling_window_sensitivity' for scenario='sudden_popularity_shift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "real",
+          "metadata_check": "rolling_window_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.1 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=1.0 cache_ratio=0.1 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'steady_state_parity_tost' for scenario='gradual_drift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.1 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_strict' for scenario='gradual_drift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.0 cache_ratio=0.1 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_loose' for scenario='gradual_drift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.02 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'memory_overhead_ratio' for scenario='gradual_drift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "memory_overhead_ratio",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.02 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'beats_every_tuned_baseline' for scenario='gradual_drift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "beats_every_tuned_baseline",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.02 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'segment_length_sensitivity' for scenario='gradual_drift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "segment_length_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.02 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'rolling_window_sensitivity' for scenario='gradual_drift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "rolling_window_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.05 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'steady_state_parity_tost' for scenario='gradual_drift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "real",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.05 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_strict' for scenario='gradual_drift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "real",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.05 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_loose' for scenario='gradual_drift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "real",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.05 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=1.2 cache_ratio=0.1 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=1.2 cache_ratio=0.1 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'memory_overhead_ratio' for scenario='gradual_drift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "real",
+          "metadata_check": "memory_overhead_ratio",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.1 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'beats_every_tuned_baseline' for scenario='gradual_drift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "real",
+          "metadata_check": "beats_every_tuned_baseline",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=1.2 cache_ratio=0.1 scenario=burst_injection",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
+          "input": "Compute 'segment_length_sensitivity' for scenario='gradual_drift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "real",
+          "metadata_check": "segment_length_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'rolling_window_sensitivity' for scenario='gradual_drift', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "gradual_drift",
+          "metadata_trace_type": "real",
+          "metadata_check": "rolling_window_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'steady_state_parity_tost' for scenario='recurring_burst', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_strict' for scenario='recurring_burst', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_loose' for scenario='recurring_burst', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'memory_overhead_ratio' for scenario='recurring_burst', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "memory_overhead_ratio",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'beats_every_tuned_baseline' for scenario='recurring_burst', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "beats_every_tuned_baseline",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'segment_length_sensitivity' for scenario='recurring_burst', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "segment_length_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'rolling_window_sensitivity' for scenario='recurring_burst', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "rolling_window_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'steady_state_parity_tost' for scenario='recurring_burst', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "real",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_strict' for scenario='recurring_burst', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "real",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_loose' for scenario='recurring_burst', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "real",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'memory_overhead_ratio' for scenario='recurring_burst', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "real",
+          "metadata_check": "memory_overhead_ratio",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'beats_every_tuned_baseline' for scenario='recurring_burst', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "real",
+          "metadata_check": "beats_every_tuned_baseline",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'segment_length_sensitivity' for scenario='recurring_burst', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "real",
+          "metadata_check": "segment_length_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'rolling_window_sensitivity' for scenario='recurring_burst', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "recurring_burst",
+          "metadata_trace_type": "real",
+          "metadata_check": "rolling_window_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'steady_state_parity_tost' for scenario='cold_start_reshuffle', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_strict' for scenario='cold_start_reshuffle', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_loose' for scenario='cold_start_reshuffle', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'memory_overhead_ratio' for scenario='cold_start_reshuffle', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "memory_overhead_ratio",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'beats_every_tuned_baseline' for scenario='cold_start_reshuffle', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "beats_every_tuned_baseline",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'segment_length_sensitivity' for scenario='cold_start_reshuffle', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "segment_length_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'rolling_window_sensitivity' for scenario='cold_start_reshuffle', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "rolling_window_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'steady_state_parity_tost' for scenario='cold_start_reshuffle', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "real",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_strict' for scenario='cold_start_reshuffle', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "real",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_loose' for scenario='cold_start_reshuffle', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "real",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'memory_overhead_ratio' for scenario='cold_start_reshuffle', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "real",
+          "metadata_check": "memory_overhead_ratio",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'beats_every_tuned_baseline' for scenario='cold_start_reshuffle', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "real",
+          "metadata_check": "beats_every_tuned_baseline",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'segment_length_sensitivity' for scenario='cold_start_reshuffle', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "real",
+          "metadata_check": "segment_length_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'rolling_window_sensitivity' for scenario='cold_start_reshuffle', trace_type='real' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\", \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\"}",
+          "metadata_scenario": "cold_start_reshuffle",
+          "metadata_trace_type": "real",
+          "metadata_check": "rolling_window_sensitivity",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Evaluate the per-key-decay cache admission experiment (steady-state parity TOST test, drift-recovery bootstrap CI, memory overhead accounting, disconfirmation-clause table) against the pre-registered success criteria, overall.",
+          "output": "{\n  \"verdict\": \"UNDETERMINED\",\n  \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1 for *method_out*.json / *experiment_out*.json / *full_data_out*.json and found none (or empty placeholders only). The dependency EXPERIMENT artifact did not produce the required per-(scenario,trace_type,seed,system) simulation logs, so no statistical claims (TOST equivalence, bootstrap recovery CIs, memory ratio, disconfirmation table) can be computed. This evaluation is UNDETERMINED, not DISCONFIRMED \\u2014 it reflects a missing upstream artifact, not a failed hypothesis test.\",\n  \"expected_input\": \"gen_art_experiment_1/method_out.json (or full_data_out.json) containing, per (scenario, trace_type, seed, system): a time-indexed hit/miss trace or rolling hit-ratio series, drift-event timestamps, the swept W grid for the baseline, the per-key-decay variant's config, and exact per-component memory-footprint byte counts for both systems.\",\n  \"checked_paths\": [\n    \"/ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1\",\n    \"/ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_dataset_1\"\n  ],\n  \"note\": \"This evaluation script implements the full statistical protocol (TOST equivalence at 1pp margin, leak-proof per-trace/seed W* selection, T_90 recovery-time definition with 3-window sustain, 10,000-resample bootstrap CI on percent recovery-speed improvement, memory-ratio accounting against a 2x disconfirmation threshold, Holm-Bonferroni correction across 8 scenario/trace-type cells, and segment-length/window-size sensitivity checks) and will run it automatically the moment simulation logs matching the schema above are produced by the experiment artifact. No numeric results are fabricated in their absence.\"\n}",
+          "metadata_scenario": "overall",
+          "metadata_trace_type": "overall",
+          "metadata_check": "top_line_verdict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
         }
       ]
     }

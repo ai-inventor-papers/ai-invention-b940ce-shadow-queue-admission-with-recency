@@ -1,159 +1,57 @@
 {
   "metadata": {
-    "evaluation_name": "Scoring Adaptive Cache Admission vs Tuned Baseline",
-    "description": "Self-contained shadow-queue simulation and evaluation: per-key-decay admission variant vs best-tuned W-TinyLFU global-reset baseline. No upstream experiment/dataset artifacts were available (empty gen...",
-    "overall_verdict": "DISCONFIRMED",
-    "driving_criteria": [
-      "steady_state_parity",
-      "drift_recovery_reduction",
-      "memory_overhead"
-    ],
-    "n_keys": 2000,
-    "requests_per_segment": 12000,
-    "alpha_grid": [
-      0.8,
-      1.0,
-      1.2
-    ],
-    "cache_size_ratios": [
-      0.02,
-      0.05,
-      0.1
-    ],
-    "baseline_w_grid": [
-      4,
-      8,
-      16
-    ],
-    "drift_scenarios": [
-      "hotset_rotation",
-      "skew_flatten",
-      "skew_sharpen"
-    ],
-    "seeds": [
-      1,
-      2,
-      3
-    ]
+    "evaluation_name": "per_key_decay_cache_admission_statistical_verdict",
+    "description": "No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3...",
+    "equivalence_margin_pp": 0.01,
+    "memory_ratio_threshold": 2.0,
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 42,
+    "min_seeds_required": 5
   },
   "metrics_agg": {
-    "steady_state_parity_diff_pp_mean": -5.863194444444445,
-    "steady_state_parity_diff_pp_ci_lo": -6.699537037037038,
-    "steady_state_parity_diff_pp_ci_hi": -5.066898148148149,
-    "steady_state_parity_pass": 0.0,
-    "recovery_reduction_pct_hotset_rotation_mean": 16.221533016276165,
-    "recovery_reduction_pct_hotset_rotation_ci_lo": -4.730187967894676,
-    "recovery_reduction_pct_hotset_rotation_ci_hi": 34.443741032230974,
-    "recovery_reduction_pct_hotset_rotation_pass": 0.0,
-    "recovery_reduction_pct_skew_flatten_mean": 2.1000938268384663,
-    "recovery_reduction_pct_skew_flatten_ci_lo": -0.09506428977536956,
-    "recovery_reduction_pct_skew_flatten_ci_hi": 4.909304375265573,
-    "recovery_reduction_pct_skew_flatten_pass": 0.0,
-    "recovery_reduction_pct_skew_sharpen_mean": -0.8488888888888889,
-    "recovery_reduction_pct_skew_sharpen_ci_lo": -2.546666666666667,
-    "recovery_reduction_pct_skew_sharpen_ci_hi": 0.0,
-    "recovery_reduction_pct_skew_sharpen_pass": 0.0,
-    "recovery_reduction_pct_burst_injection_mean": 1.5303676572933713,
-    "recovery_reduction_pct_burst_injection_ci_lo": -21.728374449213277,
-    "recovery_reduction_pct_burst_injection_ci_hi": 22.345959502017514,
-    "recovery_reduction_pct_burst_injection_pass": 0.0,
-    "recovery_scenarios_passed_count": 0.0,
-    "recovery_scenarios_total": 4.0,
-    "recovery_overall_pass": 0.0,
-    "recovery_real_trace_available": 0.0,
-    "memory_overhead_ratio_mean": 16.90909090909091,
-    "memory_overhead_ratio_max": 16.90909090909091,
-    "memory_overhead_pass": 0.0,
-    "classifier_short_decay_vs_burst_precision": 0.10126582278481013,
-    "classifier_short_decay_vs_burst_recall": 0.04,
-    "classifier_short_decay_vs_burst_f1": 0.057347670250896064,
-    "classifier_long_decay_vs_stable_precision": 0.07407407407407407,
-    "classifier_long_decay_vs_stable_recall": 0.06,
-    "classifier_long_decay_vs_stable_f1": 0.06629834254143646,
-    "classifier_separates_mechanism": 0.0,
-    "sensitivity_grid_pass_rate": 0.2777777777777778,
-    "sensitivity_grid_total_cells": 36.0,
-    "sensitivity_grid_passed_cells": 10.0,
-    "sensitivity_confined_to_narrow_operating_point": 1.0,
-    "overall_verdict_confirmed": 0.0,
-    "overall_verdict_disconfirmed": 1.0,
-    "overall_verdict_mixed": 0.0
+    "status_missing_dependency": 1.0,
+    "n_scenarios_evaluated": 0.0,
+    "n_scenarios_passing_recovery_strict": 0.0,
+    "n_scenarios_passing_recovery_loose": 0.0,
+    "n_scenarios_passing_steady_state_parity": 0.0,
+    "memory_overhead_ratio": -1.0,
+    "final_verdict_confirmed": 0.0,
+    "final_verdict_partial": 0.0,
+    "final_verdict_disconfirmed": 0.0,
+    "final_verdict_undetermined": 1.0
   },
   "datasets": [
     {
-      "dataset": "synthetic_zipf_drift_sweep",
+      "dataset": "per_key_decay_cache_admission",
       "examples": [
         {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation seed=1 best_W=64",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3525;T90=3099",
-          "predict_variant": "steady_state_hr=0.2288;T90=1896",
-          "eval_steady_state_diff_pp": -12.374999999999996,
-          "eval_recovery_pct_reduction": 38.8189738625363
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation seed=2 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3154;T90=2335",
-          "predict_variant": "steady_state_hr=0.2125;T90=1728",
-          "eval_steady_state_diff_pp": -10.291666666666668,
-          "eval_recovery_pct_reduction": 25.99571734475375
-        },
-        {
-          "input": "trace=synthetic_zipf alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation seed=3 best_W=32",
-          "output": "steady_state_parity_pp,drift_recovery_pct_reduction",
-          "predict_baseline": "steady_state_hr=0.3450;T90=4160",
-          "predict_variant": "steady_state_hr=0.1212;T90=1202",
-          "eval_steady_state_diff_pp": -22.374999999999996,
-          "eval_recovery_pct_reduction": 71.10576923076923
-        }
-      ]
-    },
-    {
-      "dataset": "volatility_classifier_confusion_matrix",
-      "examples": [
-        {
-          "input": "decay_bucket=short-decay ground_truth=burst",
-          "output": "count",
-          "predict_variant": "8",
-          "eval_count": 8.0,
-          "eval_fraction_of_bucket": 0.10126582278481013
-        },
-        {
-          "input": "decay_bucket=short-decay ground_truth=stable",
-          "output": "count",
-          "predict_variant": "8",
-          "eval_count": 8.0,
-          "eval_fraction_of_bucket": 0.10126582278481013
-        },
-        {
-          "input": "decay_bucket=short-decay ground_truth=neutral",
-          "output": "count",
-          "predict_variant": "63",
-          "eval_count": 63.0,
-          "eval_fraction_of_bucket": 0.7974683544303798
-        }
-      ]
-    },
-    {
-      "dataset": "sensitivity_robustness_heatmap",
-      "examples": [
-        {
-          "input": "alpha=0.8 cache_ratio=0.02 scenario=hotset_rotation",
-          "output": "pass_fail",
-          "predict_variant": "PASS",
-          "eval_pass": 1.0
-        },
-        {
-          "input": "alpha=0.8 cache_ratio=0.02 scenario=skew_flatten",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'steady_state_parity_tost' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inv...",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "steady_state_parity_tost",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         },
         {
-          "input": "alpha=0.8 cache_ratio=0.02 scenario=skew_sharpen",
-          "output": "pass_fail",
-          "predict_variant": "FAIL",
+          "input": "Compute 'recovery_speed_strict' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inv...",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_strict",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
+          "eval_pass": 0.0
+        },
+        {
+          "input": "Compute 'recovery_speed_loose' for scenario='sudden_popularity_shift', trace_type='synthetic' in the per-key-decay vs W-TinyLFU cache admission comparison.",
+          "output": "{\"status\": \"UNDETERMINED\", \"reason\": \"No usable experiment simulation output found. Checked /ai-inventor/aii_data/runs/run_0SmnUmg5PYNb/3_invention_loop/iter_1/gen_art/gen_art_experiment_1 and /ai-inv...",
+          "metadata_scenario": "sudden_popularity_shift",
+          "metadata_trace_type": "synthetic",
+          "metadata_check": "recovery_speed_loose",
+          "eval_status_missing": 1.0,
+          "eval_value": -1.0,
           "eval_pass": 0.0
         }
       ]
