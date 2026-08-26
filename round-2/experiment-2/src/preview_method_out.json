@@ -1,0 +1,192 @@
+{
+  "metadata": {
+    "evaluation_name": "cv_volatility_window_threshold_artifact_diagnostic",
+    "description": "Sweeps rolling-window length (4/8/16/32) and threshold placement (fixed-reconstructed / percentile-fit / oracle) for inter-arrival CV (and MAD/mean) as a burst/stable key classifier on synthetic drift...",
+    "window_lengths": [
+      4,
+      8,
+      16
+    ],
+    "statistics": [
+      "cv",
+      "mad_mean"
+    ],
+    "primary_traces": [
+      "synthetic_alpha0.8_cold_burst",
+      "synthetic_alpha1.0_cold_burst",
+      "synthetic_alpha0.8_combined"
+    ],
+    "aux_traces": [
+      "synthetic_alpha0.8_rank_shuffle",
+      "synthetic_alpha1.0_rank_shuffle",
+      "synthetic_alpha0.8_slow_drift"
+    ],
+    "percentile_pairs": [
+      [
+        25,
+        75
+      ],
+      [
+        33,
+        67
+      ],
+      [
+        40,
+        60
+      ]
+    ],
+    "n_bootstrap": 1000,
+    "verdict": {
+      "verdict": "fundamental_limit",
+      "reason": "Even oracle (in-sample, upper-bound) thresholds fail to clear macro-F1 >= 2x the matched chance baseline at any window/statistic on the primary burst-labeled traces -- CV and MAD/mean carry too little...",
+      "n_primary_combos_evaluated": 40,
+      "n_non_oracle_combos_clearing_2x_chance": 0,
+      "n_oracle_combos_clearing_2x_chance": 0,
+      "best_overall_combo": {
+        "trace": "pooled_primary",
+        "window": 4,
+        "statistic": "cv",
+        "threshold_variant": "oracle",
+        "macro_f1": 0.47765072765072764,
+        "chance_baseline_macro_f1": 0.5,
+        "burst_precision": 0.0,
+        "burst_recall": 0.0,
+        "stable_precision": 0.9945887445887446,
+        "stable_recall": 0.919,
+        "burst_precision_ci_low": 0.0,
+        "burst_precision_ci_high": 0.0
+      },
+      "cv_oracle_macro_f1_by_window_pooled_primary": {
+        "4": 0.47765072765072764,
+        "8": 0.47765072765072764,
+        "16": 0.47765072765072764,
+        "32": 0.4776035834266518
+      },
+      "cv_macro_f1_monotonically_improves_with_window": false
+    },
+    "caveats": [
+      "Ground-truth burst/stable labels are DERIVED, not an authoritative pre-existing field: burst = keys named as burst_key_id in a cold_burst drift event; stable = top-200 keys by total request frequency ...",
+      "The 'fixed_reconstructed' threshold variant (CV<0.5=stable, CV>1.5=burst) is a RECONSTRUCTED approximation -- the prior experiment's exact original thresholds and window-alignment convention could not...",
+      "The decision-point CV/MAD-mean statistic uses the LAST `window` inter-arrival gaps per key (mimicking a live shadow-queue classifier with only past data available at decision time)."
+    ],
+    "full_results_table": [
+      {
+        "threshold_kind": "fixed",
+        "threshold_low": 0.5,
+        "threshold_high": 1.5,
+        "n_keys_evaluated": 200,
+        "accuracy": 0.12,
+        "macro_f1": 0.21428571428571425,
+        "chance_baseline_macro_f1": 0.5,
+        "clears_2x_chance": false,
+        "burst_precision": 0.0,
+        "burst_recall": 0.0,
+        "burst_f1": 0.0,
+        "burst_precision_ci_low": 0.0,
+        "burst_precision_ci_high": 0.0,
+        "stable_precision": 1.0,
+        "stable_recall": 0.12,
+        "stable_f1": 0.21428571428571425,
+        "stable_precision_ci_low": 1.0,
+        "stable_precision_ci_high": 1.0,
+        "trace": "synthetic_alpha0.8_rank_shuffle",
+        "window": 4,
+        "statistic": "cv",
+        "threshold_variant": "fixed_reconstructed"
+      },
+      {
+        "threshold_kind": "percentile",
+        "threshold_low": 0.6431255662695092,
+        "threshold_high": 1.0337722805028444,
+        "n_keys_evaluated": 200,
+        "accuracy": 0.25,
+        "macro_f1": 0.4,
+        "chance_baseline_macro_f1": 0.5,
+        "clears_2x_chance": false,
+        "burst_precision": 0.0,
+        "burst_recall": 0.0,
+        "burst_f1": 0.0,
+        "burst_precision_ci_low": 0.0,
+        "burst_precision_ci_high": 0.0,
+        "stable_precision": 1.0,
+        "stable_recall": 0.25,
+        "stable_f1": 0.4,
+        "stable_precision_ci_low": 1.0,
+        "stable_precision_ci_high": 1.0,
+        "trace": "synthetic_alpha0.8_rank_shuffle",
+        "window": 4,
+        "statistic": "cv",
+        "threshold_variant": "percentile_25_75"
+      },
+      {
+        "threshold_kind": "percentile",
+        "threshold_low": 0.6976431346491443,
+        "threshold_high": 0.9576312997765801,
+        "n_keys_evaluated": 200,
+        "accuracy": 0.33,
+        "macro_f1": 0.49624060150375937,
+        "chance_baseline_macro_f1": 0.5,
+        "clears_2x_chance": false,
+        "burst_precision": 0.0,
+        "burst_recall": 0.0,
+        "burst_f1": 0.0,
+        "burst_precision_ci_low": 0.0,
+        "burst_precision_ci_high": 0.0,
+        "stable_precision": 1.0,
+        "stable_recall": 0.33,
+        "stable_f1": 0.49624060150375937,
+        "stable_precision_ci_low": 1.0,
+        "stable_precision_ci_high": 1.0,
+        "trace": "synthetic_alpha0.8_rank_shuffle",
+        "window": 4,
+        "statistic": "cv",
+        "threshold_variant": "percentile_33_67"
+      }
+    ]
+  },
+  "metrics_agg": {
+    "n_combos_evaluated": 400,
+    "n_traces": 10,
+    "n_windows": 4,
+    "n_primary_non_oracle_clearing_2x_chance": 0,
+    "n_primary_oracle_clearing_2x_chance": 0,
+    "best_macro_f1": 0.47765072765072764,
+    "best_chance_baseline": 0.5,
+    "verdict_is_window_threshold_artifact": 0.0,
+    "verdict_is_fundamental_limit": 1.0
+  },
+  "datasets": [
+    {
+      "dataset": "cv_window_threshold_sweep",
+      "examples": [
+        {
+          "input": "{\"trace\": \"synthetic_alpha0.8_rank_shuffle\", \"key\": 10216}",
+          "output": "stable",
+          "metadata_window": 8,
+          "metadata_statistic": "cv",
+          "metadata_n_gaps": 60,
+          "predict_true_label": "stable",
+          "eval_cv_decision_stat": 0.8231954558579937
+        },
+        {
+          "input": "{\"trace\": \"synthetic_alpha0.8_rank_shuffle\", \"key\": 5834}",
+          "output": "neutral",
+          "metadata_window": 8,
+          "metadata_statistic": "cv",
+          "metadata_n_gaps": 8,
+          "predict_true_label": "neutral",
+          "eval_cv_decision_stat": 0.8424000517395798
+        },
+        {
+          "input": "{\"trace\": \"synthetic_alpha0.8_rank_shuffle\", \"key\": 5892}",
+          "output": "stable",
+          "metadata_window": 8,
+          "metadata_statistic": "cv",
+          "metadata_n_gaps": 1116,
+          "predict_true_label": "stable",
+          "eval_cv_decision_stat": 0.928552691954764
+        }
+      ]
+    }
+  ]
+}
