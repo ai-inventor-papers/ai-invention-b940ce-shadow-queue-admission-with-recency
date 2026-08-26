@@ -1,0 +1,1286 @@
+{
+  "metadata": {
+    "method_name": "sharper_baseline_test_plus_real_twitter_trace_replay",
+    "description": "Extends iter1's W-TinyLFU cache-admission simulator: (A) sweeps very short global-reset multipliers (1x/2x/4x cache capacity) at the win-corner cell (ratio=0.01, alpha=1.2) across all 4 drift scenarios, the sharpest possible disconfirmation test of the per-key-decay mechanism's necessity; (B) replays both estimators end-to-end over the real Twitter production trace (twitter/cache-trace cluster026, 80,000 requests) with an unsupervised JS-divergence changepoint detector, validated on synthetic ground truth first.",
+    "part_a_config": {
+      "ratio": 0.01,
+      "alpha": 1.2,
+      "cache_capacity": 1500,
+      "key_space": 150000,
+      "n_requests_main": 600000,
+      "short_multipliers_swept": [
+        1,
+        2,
+        4
+      ],
+      "iter1_multipliers_swept": [
+        4,
+        8,
+        16,
+        32
+      ],
+      "iter1_chosen_multiplier_at_cell": 32,
+      "seeds": [
+        1,
+        2,
+        3
+      ],
+      "drift_scenarios": [
+        {
+          "name": "low_mag_low_freq",
+          "drift_magnitude": 0.05,
+          "n_drift_events": 2
+        },
+        {
+          "name": "low_mag_high_freq",
+          "drift_magnitude": 0.05,
+          "n_drift_events": 8
+        },
+        {
+          "name": "high_mag_low_freq",
+          "drift_magnitude": 0.2,
+          "n_drift_events": 2
+        },
+        {
+          "name": "high_mag_high_freq",
+          "drift_magnitude": 0.2,
+          "n_drift_events": 8
+        }
+      ]
+    },
+    "part_b_config": {
+      "real_trace_path": "real_twitter_cache_trace",
+      "trace_id": "twitter_cluster026",
+      "n_requests": 80000,
+      "n_distinct_keys": 67681,
+      "ratio": 0.01,
+      "matched_cache_capacity": 677,
+      "request_type_breakdown": {
+        "get": 61874,
+        "set": 18126
+      }
+    },
+    "deviations_from_plan": [
+      "Real trace was available pre-decoded as JSON via this iteration's dataset dependency (unlike iter1, which could not source a lightweight decoder for twitter/cache-trace's binary format and skipped the real-trace arm entirely); no fallback needed for Part B's data access.",
+      "String keys in the real trace are mapped to dense sequential int ids on first occurrence (the shared sketch/SLRU implementation is keyed on ints); this preserves per-key identity and access order exactly, only the key encoding changes.",
+      "Real-trace baseline multiplier is tuned directly on the real trace itself via a single-pass sweep over iter1's {4,8,16,32} candidates (cheap at 80k requests x4), rather than reusing iter1's synthetic-trace-derived multiplier, since real traffic statistics may differ from the synthetic generator.",
+      "Real trace has no wall-clock inter-arrival gaps needed for per-key CoV (the PerKeyDecayFrequencyEstimator uses request-sequence-position gaps internally, which iter1's implementation already does regardless of trace source, so no fallback to a seq-position proxy was required)."
+    ],
+    "total_runtime_seconds": 79.706307888031
+  },
+  "datasets": [
+    {
+      "dataset": "partA_short_reset_sweep",
+      "examples": [
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 1, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.8251866666666666, \"steady_state_hit_ratio\": 0.8443771777777778, \"memory_bytes\": 88542, \"mean_recovery_time\": 49824.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 39649,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8443771777777778",
+          "predict_mean_recovery_time": "49824.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 1, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.8155233333333334, \"steady_state_hit_ratio\": 0.8439591481481481, \"memory_bytes\": 88542, \"mean_recovery_time\": 35975.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 11951,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8439591481481481",
+          "predict_mean_recovery_time": "35975.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 1, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.8243616666666667, \"steady_state_hit_ratio\": 0.8457782777777779, \"memory_bytes\": 88542, \"mean_recovery_time\": 53915.0, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 47830,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8457782777777779",
+          "predict_mean_recovery_time": "53915.0"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 2, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.8196716666666667, \"steady_state_hit_ratio\": 0.8447790296296297, \"memory_bytes\": 88542, \"mean_recovery_time\": 41339.0, \"n_drift_events\": 2, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 38945,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 43733,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8447790296296297",
+          "predict_mean_recovery_time": "41339.0"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 2, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.8110183333333333, \"steady_state_hit_ratio\": 0.844822425925926, \"memory_bytes\": 88542, \"mean_recovery_time\": 35988.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 11977,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.844822425925926",
+          "predict_mean_recovery_time": "35988.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 2, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.8180783333333334, \"steady_state_hit_ratio\": 0.845483362962963, \"memory_bytes\": 88542, \"mean_recovery_time\": 39484.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 18969,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.845483362962963",
+          "predict_mean_recovery_time": "39484.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 4, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.813555, \"steady_state_hit_ratio\": 0.8371501148148148, \"memory_bytes\": 88542, \"mean_recovery_time\": 48984.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 37969,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8371501148148148",
+          "predict_mean_recovery_time": "48984.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 4, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.8084816666666667, \"steady_state_hit_ratio\": 0.820260048148148, \"memory_bytes\": 88542, \"mean_recovery_time\": 39692.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 24136,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 55249,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.820260048148148",
+          "predict_mean_recovery_time": "39692.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_low_freq\", \"multiplier\": 4, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.8149283333333334, \"steady_state_hit_ratio\": 0.8407522185185183, \"memory_bytes\": 88542, \"mean_recovery_time\": 42582.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 25165,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8407522185185183",
+          "predict_mean_recovery_time": "42582.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 1, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.7982733333333333, \"steady_state_hit_ratio\": 0.8058011407407408, \"memory_bytes\": 88542, \"mean_recovery_time\": 30163.25, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 25017,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 36247,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 31768,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 39211,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 27133,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 28632,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 30406,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 22892,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8058011407407408",
+          "predict_mean_recovery_time": "30163.25"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 1, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.7927233333333333, \"steady_state_hit_ratio\": 0.7999382814814815, \"memory_bytes\": 88542, \"mean_recovery_time\": 27605.375, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 19604,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 27043,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 40446,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 16586,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 27481,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 39856,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 18576,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 31251,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.7999382814814815",
+          "predict_mean_recovery_time": "27605.375"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 1, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.7980633333333333, \"steady_state_hit_ratio\": 0.8041886074074075, \"memory_bytes\": 88542, \"mean_recovery_time\": 24401.625, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 15927,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 19800,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 26113,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 29270,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 21752,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 38339,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 20521,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 23491,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8041886074074075",
+          "predict_mean_recovery_time": "24401.625"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 2, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.7952, \"steady_state_hit_ratio\": 0.8041293037037037, \"memory_bytes\": 88542, \"mean_recovery_time\": 27952.875, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 24877,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 21765,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 31403,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 39096,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 27201,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 28663,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 27688,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 22930,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8041293037037037",
+          "predict_mean_recovery_time": "27952.875"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 2, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.7891783333333333, \"steady_state_hit_ratio\": 0.8024463629629629, \"memory_bytes\": 88542, \"mean_recovery_time\": 23130.125, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 17760,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 20141,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 23665,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 16586,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 24930,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 34264,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 18871,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 28824,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8024463629629629",
+          "predict_mean_recovery_time": "23130.125"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 2, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.795485, \"steady_state_hit_ratio\": 0.8052719111111112, \"memory_bytes\": 88542, \"mean_recovery_time\": 24864.875, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 15978,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 19570,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 26042,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 27987,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 21735,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 38339,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 27878,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 21390,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8052719111111112",
+          "predict_mean_recovery_time": "24864.875"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 4, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.78909, \"steady_state_hit_ratio\": 0.8022605962962963, \"memory_bytes\": 88542, \"mean_recovery_time\": 26165.25, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 14532,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 34213,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 20222,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 38689,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 26536,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 26523,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 26592,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 22015,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8022605962962963",
+          "predict_mean_recovery_time": "26165.25"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 4, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.7880616666666667, \"steady_state_hit_ratio\": 0.7992031037037036, \"memory_bytes\": 88542, \"mean_recovery_time\": 19608.5, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 22157,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 20613,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 16578,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 18738,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 22951,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 20372,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 15159,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 20300,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.7992031037037036",
+          "predict_mean_recovery_time": "19608.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"low_mag_high_freq\", \"multiplier\": 4, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.7923533333333334, \"steady_state_hit_ratio\": 0.803513851851852, \"memory_bytes\": 88542, \"mean_recovery_time\": 22632.75, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 22332,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 19388,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 25790,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 28297,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 20149,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 20991,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 20529,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 23586,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.803513851851852",
+          "predict_mean_recovery_time": "22632.75"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 1, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.82499, \"steady_state_hit_ratio\": 0.8447277962962962, \"memory_bytes\": 88542, \"mean_recovery_time\": 48632.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 37265,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8447277962962962",
+          "predict_mean_recovery_time": "48632.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 1, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.8149666666666666, \"steady_state_hit_ratio\": 0.8442478740740741, \"memory_bytes\": 88542, \"mean_recovery_time\": 36421.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 12843,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8442478740740741",
+          "predict_mean_recovery_time": "36421.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 1, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.82483, \"steady_state_hit_ratio\": 0.8460183592592593, \"memory_bytes\": 88542, \"mean_recovery_time\": 48290.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 36581,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8460183592592593",
+          "predict_mean_recovery_time": "48290.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 2, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.8196766666666667, \"steady_state_hit_ratio\": 0.8442095074074074, \"memory_bytes\": 88542, \"mean_recovery_time\": 48199.0, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 36398,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8442095074074074",
+          "predict_mean_recovery_time": "48199.0"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 2, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.8110233333333333, \"steady_state_hit_ratio\": 0.8439160703703703, \"memory_bytes\": 88542, \"mean_recovery_time\": 36549.0, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 13098,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8439160703703703",
+          "predict_mean_recovery_time": "36549.0"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 2, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.8179066666666667, \"steady_state_hit_ratio\": 0.8459413185185185, \"memory_bytes\": 88542, \"mean_recovery_time\": 41063.0, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 22126,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8459413185185185",
+          "predict_mean_recovery_time": "41063.0"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 4, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.8117333333333333, \"steady_state_hit_ratio\": 0.841222111111111, \"memory_bytes\": 88542, \"mean_recovery_time\": 47956.0, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 35912,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.841222111111111",
+          "predict_mean_recovery_time": "47956.0"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 4, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.7918166666666666, \"steady_state_hit_ratio\": 0.8136679148148148, \"memory_bytes\": 88542, \"mean_recovery_time\": 18741.0, \"n_drift_events\": 2, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 24801,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 12681,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8136679148148148",
+          "predict_mean_recovery_time": "18741.0"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_low_freq\", \"multiplier\": 4, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.816655, \"steady_state_hit_ratio\": 0.8450719592592592, \"memory_bytes\": 88542, \"mean_recovery_time\": 42548.5, \"n_drift_events\": 2, \"n_censored_recovery_events\": 1}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 25097,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8450719592592592",
+          "predict_mean_recovery_time": "42548.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 1, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.7980283333333333, \"steady_state_hit_ratio\": 0.8037985296296295, \"memory_bytes\": 88542, \"mean_recovery_time\": 27865.75, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 23127,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 23705,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 29380,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 29308,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 30503,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 30849,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 22131,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 33923,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8037985296296295",
+          "predict_mean_recovery_time": "27865.75"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 1, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.7949633333333334, \"steady_state_hit_ratio\": 0.8018309518518518, \"memory_bytes\": 88542, \"mean_recovery_time\": 26668.75, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 13087,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 26613,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 32314,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 31915,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 18659,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 25585,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 26238,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 38939,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8018309518518518",
+          "predict_mean_recovery_time": "26668.75"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 1, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 1500, \"final_hit_ratio\": 0.7968183333333333, \"steady_state_hit_ratio\": 0.8034013185185185, \"memory_bytes\": 88542, \"mean_recovery_time\": 29108.25, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 18393,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 38695,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 30211,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 33694,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 23131,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 23451,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 25673,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 39618,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8034013185185185",
+          "predict_mean_recovery_time": "29108.25"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 2, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.7955316666666666, \"steady_state_hit_ratio\": 0.8034159740740741, \"memory_bytes\": 88542, \"mean_recovery_time\": 26279.5, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 18426,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 23210,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 29659,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 30418,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 26842,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 25362,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 22141,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 34178,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8034159740740741",
+          "predict_mean_recovery_time": "26279.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 2, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.7919566666666666, \"steady_state_hit_ratio\": 0.8017597407407407, \"memory_bytes\": 88542, \"mean_recovery_time\": 25463.5, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 17622,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 26364,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 28312,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 22006,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 18464,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 26675,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 26317,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 37948,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8017597407407407",
+          "predict_mean_recovery_time": "25463.5"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 2, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 3000, \"final_hit_ratio\": 0.7944616666666666, \"steady_state_hit_ratio\": 0.8033594148148149, \"memory_bytes\": 88542, \"mean_recovery_time\": 29739.625, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 18102,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 33179,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 30233,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 35224,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 29390,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 23251,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 29734,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 38804,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8033594148148149",
+          "predict_mean_recovery_time": "29739.625"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 4, \"seed\": 1, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.791075, \"steady_state_hit_ratio\": 0.8012730703703703, \"memory_bytes\": 88542, \"mean_recovery_time\": 22728.125, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 16374,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 23114,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 29458,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 20644,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 30486,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 23398,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 15810,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 22541,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.8012730703703703",
+          "predict_mean_recovery_time": "22728.125"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 4, \"seed\": 2, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.7893416666666667, \"steady_state_hit_ratio\": 0.7984229555555554, \"memory_bytes\": 88542, \"mean_recovery_time\": 21667.0, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 20044,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 20973,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 23878,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 15433,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 16214,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 21480,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 26323,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 28991,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.7984229555555554",
+          "predict_mean_recovery_time": "21667.0"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"scenario\": \"high_mag_high_freq\", \"multiplier\": 4, \"seed\": 3, \"cache_capacity\": 1500}",
+          "output": "{\"sample_size_W\": 6000, \"final_hit_ratio\": 0.7907366666666666, \"steady_state_hit_ratio\": 0.7978220962962963, \"memory_bytes\": 88542, \"mean_recovery_time\": 26665.0, \"n_drift_events\": 8, \"n_censored_recovery_events\": 0}",
+          "metadata_recovery_events": [
+            {
+              "drift_index": 66666,
+              "recovery_time": 20218,
+              "censored": false
+            },
+            {
+              "drift_index": 133332,
+              "recovery_time": 18881,
+              "censored": false
+            },
+            {
+              "drift_index": 199998,
+              "recovery_time": 25947,
+              "censored": false
+            },
+            {
+              "drift_index": 266664,
+              "recovery_time": 33325,
+              "censored": false
+            },
+            {
+              "drift_index": 333330,
+              "recovery_time": 23043,
+              "censored": false
+            },
+            {
+              "drift_index": 399996,
+              "recovery_time": 23255,
+              "censored": false
+            },
+            {
+              "drift_index": 466662,
+              "recovery_time": 29548,
+              "censored": false
+            },
+            {
+              "drift_index": 533328,
+              "recovery_time": 39103,
+              "censored": false
+            }
+          ],
+          "predict_steady_state_hit_ratio": "0.7978220962962963",
+          "predict_mean_recovery_time": "26665.0"
+        }
+      ]
+    },
+    {
+      "dataset": "partB_real_trace_replay",
+      "examples": [
+        {
+          "input": "{\"phase\": \"real_trace_replay\", \"trace_id\": \"twitter_cluster026\"}",
+          "output": "{\"config\": {\"real_trace_path\": \"real_twitter_cache_trace\", \"trace_id\": \"twitter_cluster026\", \"n_requests\": 80000, \"n_distinct_keys\": 67681, \"ratio\": 0.01, \"matched_cache_capacity\": 677, \"request_type_breakdown\": {\"get\": 61874, \"set\": 18126}}, \"replay_results\": {\"baseline_w_tinylfu\": {\"final_hit_ratio\": 0.0417625, \"steady_state_hit_ratio\": 0.0390609, \"memory_bytes\": 39985, \"memory_bytes_per_cache_slot\": 59.062038404726735, \"tier_assignment_fractions\": null, \"runtime_seconds\": 0.5251984596252441}, \"per_key_decay\": {\"final_hit_ratio\": 0.02765, \"steady_state_hit_ratio\": 0.022245683333333332, \"memory_bytes\": 185167, \"memory_bytes_per_cache_slot\": 273.51107828655836, \"tier_assignment_fractions\": {\"volatile\": 0.0032, \"default\": 0.9944, \"stable\": 0.0024}, \"runtime_seconds\": 0.7828161716461182}, \"_meta\": {\"chosen_baseline_multiplier\": 4, \"tuning_sweep\": {\"4\": 0.03295, \"8\": 0.0292875, \"16\": 0.0271875, \"32\": 0.0273875}, \"n_requests\": 80000}}, \"changepoint_detector\": {\"method\": \"rolling-window Jensen-Shannon divergence over top-K key-identity frequency distributions\", \"window\": 2000, \"stride\": 500, \"top_k\": 50, \"percentile_threshold_used\": 95.0, \"percentile_relaxation_log\": [], \"synthetic_validation\": {\"n_true_drift_events\": 8, \"n_detected_changepoints\": 60, \"tolerance_requests\": 2500, \"recall\": 1.0, \"precision\": 0.6666666666666666, \"threshold\": 0.044783066649161665, \"verdict\": \"DETECTOR_VALIDATED_ON_SYNTHETIC\"}, \"n_changepoints_detected\": 8, \"changepoints\": [19500, 23000, 36500, 37500, 38000, 56500, 64000, 69500], \"changepoint_threshold\": 0.690969516774072, \"js_scores_summary\": {\"mean\": 0.5208606331279588, \"max\": 0.744867799931614, \"n_windows\": 155}, \"recovery_time_at_changepoints\": {\"baseline_w_tinylfu\": [{\"changepoint_index\": 19500, \"recovery_time\": 5000, \"censored\": true}, {\"changepoint_index\": 23000, \"recovery_time\": 3000, \"censored\": false}, {\"changepoint_index\": 36500, \"recovery_time\": 5000, \"censored\": true}, {\"changepoint_index\": 37500, \"recovery_time\": 5000, \"censored\": true}, {\"changepoint_index\": 38000, \"recovery_time\": 5000, \"censored\": true}, {\"changepoint_index\": 56500, \"recovery_time\": 3931, \"censored\": false}, {\"changepoint_index\": 64000, \"recovery_time\": 5000, \"censored\": true}, {\"changepoint_index\": 69500, \"recovery_time\": 3000, \"censored\": false}], \"per_key_decay\": [{\"changepoint_index\": 19500, \"recovery_time\": 4820, \"censored\": false}, {\"changepoint_index\": 23000, \"recovery_time\": 3000, \"censored\": false}, {\"changepoint_index\": 36500, \"recovery_time\": 5000, \"censored\": true}, {\"changepoint_index\": 37500, \"recovery_time\": 5000, \"censored\": true}, {\"changepoint_index\": 38000, \"recovery_time\": 5000, \"censored\": true}, {\"changepoint_index\": 56500, \"recovery_time\": 3046, \"censored\": false}, {\"changepoint_index\": 64000, \"recovery_time\": 4991, \"censored\": false}, {\"changepoint_index\": 69500, \"recovery_time\": 3000, \"censored\": false}]}, \"caveat\": \"UNSUPERVISED, coarse, unlabeled -- these are candidate drift points from a JS-divergence heuristic, NOT ground-truth drift events. Recovery-time numbers around them are suggestive, not confirmatory. Validated separately (see synthetic_validation) against KNOWN drift events on a synthetic trace of the same key-space/alpha before being applied here.\"}}",
+          "predict_baseline_final_hit_ratio": "0.0417625",
+          "predict_per_key_decay_final_hit_ratio": "0.02765"
+        }
+      ]
+    },
+    {
+      "dataset": "aggregate_summary",
+      "examples": [
+        {
+          "input": "{\"phase\": \"aggregate_summary\"}",
+          "output": "{\"part_a_head_to_head\": [{\"scenario\": \"low_mag_low_freq\", \"best_short_reset_multiplier\": 2, \"best_short_reset_mean_recovery_time\": 38937.333333333336, \"best_short_reset_steady_state_hit_ratio\": 0.8450282728395062, \"proposed_estimator_mean_recovery_time_iter1\": 35231.166666666664, \"proposed_still_faster_pct\": 9.518285792555572, \"interpretation\": \"proposed per-key-decay estimator STILL recovers faster than the best short-reset global baseline -- short reset does not substitute for the mechanism\"}, {\"scenario\": \"low_mag_high_freq\", \"best_short_reset_multiplier\": 4, \"best_short_reset_mean_recovery_time\": 22802.166666666668, \"best_short_reset_steady_state_hit_ratio\": 0.8016591839506173, \"proposed_estimator_mean_recovery_time_iter1\": 26469.583333333332, \"proposed_still_faster_pct\": -16.08363240335347, \"interpretation\": \"short-reset global baseline matches or beats the proposed estimator at this cell -- this DISCONFIRMS the necessity of per-key decay for this scenario\"}, {\"scenario\": \"high_mag_low_freq\", \"best_short_reset_multiplier\": 4, \"best_short_reset_mean_recovery_time\": 36415.166666666664, \"best_short_reset_steady_state_hit_ratio\": 0.8333206617283949, \"proposed_estimator_mean_recovery_time_iter1\": 39099.0, \"proposed_still_faster_pct\": -7.37009762415844, \"interpretation\": \"short-reset global baseline matches or beats the proposed estimator at this cell -- this DISCONFIRMS the necessity of per-key decay for this scenario\"}, {\"scenario\": \"high_mag_high_freq\", \"best_short_reset_multiplier\": 4, \"best_short_reset_mean_recovery_time\": 23686.708333333332, \"best_short_reset_steady_state_hit_ratio\": 0.7991727074074073, \"proposed_estimator_mean_recovery_time_iter1\": 25134.125, \"proposed_still_faster_pct\": -6.110670365412394, \"interpretation\": \"short-reset global baseline matches or beats the proposed estimator at this cell -- this DISCONFIRMS the necessity of per-key decay for this scenario\"}], \"part_a_aggregated\": [{\"scenario\": \"low_mag_low_freq\", \"multiplier\": 1, \"sample_size_W\": 1500, \"n_seeds\": 3, \"mean_recovery_time\": 46571.666666666664, \"mean_steady_state_hit_ratio\": 0.8447048679012346, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"low_mag_low_freq\", \"multiplier\": 2, \"sample_size_W\": 3000, \"n_seeds\": 3, \"mean_recovery_time\": 38937.333333333336, \"mean_steady_state_hit_ratio\": 0.8450282728395062, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"low_mag_low_freq\", \"multiplier\": 4, \"sample_size_W\": 6000, \"n_seeds\": 3, \"mean_recovery_time\": 43753.166666666664, \"mean_steady_state_hit_ratio\": 0.8327207938271602, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"low_mag_high_freq\", \"multiplier\": 1, \"sample_size_W\": 1500, \"n_seeds\": 3, \"mean_recovery_time\": 27390.083333333332, \"mean_steady_state_hit_ratio\": 0.8033093432098766, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"low_mag_high_freq\", \"multiplier\": 2, \"sample_size_W\": 3000, \"n_seeds\": 3, \"mean_recovery_time\": 25315.958333333332, \"mean_steady_state_hit_ratio\": 0.8039491925925927, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"low_mag_high_freq\", \"multiplier\": 4, \"sample_size_W\": 6000, \"n_seeds\": 3, \"mean_recovery_time\": 22802.166666666668, \"mean_steady_state_hit_ratio\": 0.8016591839506173, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"high_mag_low_freq\", \"multiplier\": 1, \"sample_size_W\": 1500, \"n_seeds\": 3, \"mean_recovery_time\": 44448.166666666664, \"mean_steady_state_hit_ratio\": 0.8449980098765432, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"high_mag_low_freq\", \"multiplier\": 2, \"sample_size_W\": 3000, \"n_seeds\": 3, \"mean_recovery_time\": 41937.0, \"mean_steady_state_hit_ratio\": 0.8446889654320987, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"high_mag_low_freq\", \"multiplier\": 4, \"sample_size_W\": 6000, \"n_seeds\": 3, \"mean_recovery_time\": 36415.166666666664, \"mean_steady_state_hit_ratio\": 0.8333206617283949, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"high_mag_high_freq\", \"multiplier\": 1, \"sample_size_W\": 1500, \"n_seeds\": 3, \"mean_recovery_time\": 27880.916666666668, \"mean_steady_state_hit_ratio\": 0.8030102666666666, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"high_mag_high_freq\", \"multiplier\": 2, \"sample_size_W\": 3000, \"n_seeds\": 3, \"mean_recovery_time\": 27160.875, \"mean_steady_state_hit_ratio\": 0.8028450432098766, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}, {\"scenario\": \"high_mag_high_freq\", \"multiplier\": 4, \"sample_size_W\": 6000, \"n_seeds\": 3, \"mean_recovery_time\": 23686.708333333332, \"mean_steady_state_hit_ratio\": 0.7991727074074073, \"fully_censored_seeds\": 0, \"degenerate_admission_suspected\": false}], \"part_a_summary\": {\"n_scenarios_with_head_to_head\": 4, \"n_scenarios_proposed_still_wins\": 1, \"fraction_scenarios_proposed_still_wins\": 0.25, \"any_degenerate_admission_observed\": false}, \"part_b_config\": {\"real_trace_path\": \"real_twitter_cache_trace\", \"trace_id\": \"twitter_cluster026\", \"n_requests\": 80000, \"n_distinct_keys\": 67681, \"ratio\": 0.01, \"matched_cache_capacity\": 677, \"request_type_breakdown\": {\"get\": 61874, \"set\": 18126}}, \"part_b_replay_summary\": {\"baseline_w_tinylfu\": {\"final_hit_ratio\": 0.0417625, \"steady_state_hit_ratio\": 0.0390609, \"memory_bytes\": 39985, \"memory_bytes_per_cache_slot\": 59.062038404726735, \"runtime_seconds\": 0.5251984596252441}, \"per_key_decay\": {\"final_hit_ratio\": 0.02765, \"steady_state_hit_ratio\": 0.022245683333333332, \"memory_bytes\": 185167, \"memory_bytes_per_cache_slot\": 273.51107828655836, \"runtime_seconds\": 0.7828161716461182}}, \"part_b_changepoint_summary\": {\"method\": \"rolling-window Jensen-Shannon divergence over top-K key-identity frequency distributions\", \"window\": 2000, \"stride\": 500, \"top_k\": 50, \"percentile_threshold_used\": 95.0, \"percentile_relaxation_log\": [], \"synthetic_validation\": {\"n_true_drift_events\": 8, \"n_detected_changepoints\": 60, \"tolerance_requests\": 2500, \"recall\": 1.0, \"precision\": 0.6666666666666666, \"threshold\": 0.044783066649161665, \"verdict\": \"DETECTOR_VALIDATED_ON_SYNTHETIC\"}, \"n_changepoints_detected\": 8, \"changepoints\": [19500, 23000, 36500, 37500, 38000, 56500, 64000, 69500], \"changepoint_threshold\": 0.690969516774072, \"js_scores_summary\": {\"mean\": 0.5208606331279588, \"max\": 0.744867799931614, \"n_windows\": 155}, \"caveat\": \"UNSUPERVISED, coarse, unlabeled -- these are candidate drift points from a JS-divergence heuristic, NOT ground-truth drift events. Recovery-time numbers around them are suggestive, not confirmatory. Validated separately (see synthetic_validation) against KNOWN drift events on a synthetic trace of the same key-space/alpha before being applied here.\"}}"
+        }
+      ]
+    }
+  ]
+}
