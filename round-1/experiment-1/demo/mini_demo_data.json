@@ -1,0 +1,200 @@
+{
+  "metadata": {
+    "method_name": "per_key_decay_vs_global_tinylfu_reset",
+    "description": "W-TinyLFU cache-admission simulator comparing a global-reset Count-Min frequency sketch (Caffeine-style baseline) against a per-key inter-arrival-CoV-decayed tiered variant, sharing an identical doorkeeper/SLRU/admission-window scaffold.",
+    "key_space": 150000,
+    "cache_ratios": [
+      0.01,
+      0.05,
+      0.1
+    ],
+    "skew_levels_alpha": [
+      0.8,
+      1.0,
+      1.2
+    ],
+    "sample_multipliers_swept": [
+      4,
+      8,
+      16,
+      32
+    ],
+    "drift_scenarios": [
+      {
+        "name": "low_mag_low_freq",
+        "drift_magnitude": 0.05,
+        "n_drift_events": 2
+      },
+      {
+        "name": "low_mag_high_freq",
+        "drift_magnitude": 0.05,
+        "n_drift_events": 8
+      },
+      {
+        "name": "high_mag_low_freq",
+        "drift_magnitude": 0.2,
+        "n_drift_events": 2
+      },
+      {
+        "name": "high_mag_high_freq",
+        "drift_magnitude": 0.2,
+        "n_drift_events": 8
+      }
+    ],
+    "seeds": [
+      1,
+      2,
+      3
+    ],
+    "n_requests_tuning": 80000,
+    "n_requests_main": 600000,
+    "proposed_tiers": [
+      [
+        2,
+        "volatile"
+      ],
+      [
+        8,
+        "default"
+      ],
+      [
+        32,
+        "stable"
+      ]
+    ],
+    "cov_thresholds": {
+      "high": 1.5,
+      "low": 0.5
+    },
+    "deviations_from_plan": [
+      "key_space set to 150,000 (plan suggested 200,000) as a runtime-margin trim for the full 3x3x4x3-seed grid, preserving the complete ratio/skew/drift-scenario/seed factorial design",
+      "doorkeeper contribution to frequency() corrected to +1 (Caffeine's actual semantics) instead of the plan pseudocode's +15, which would have saturated comparisons for nearly every warmed-up key",
+      "admission-window / SLRU interaction reimplemented as a full W-TinyLFU loop (window LRU eviction competes against the SLRU probationary victim) rather than the plan pseudocode's ad hoc hit-counting, which double-counted window admissions as hits",
+      "real-trace arm (Phase C) explicitly skipped per fallback_plan: twitter/cache-trace requires multi-GB downloads in a bespoke binary format with no feasible lightweight alternative found"
+    ],
+    "total_runtime_seconds": 167.21054458618164
+  },
+  "datasets": [
+    {
+      "dataset": "phaseA_baseline_multiplier_tuning",
+      "examples": [
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 0.8, \"n_requests\": 80000}",
+          "output": "{\"chosen_multiplier\": 4, \"sweep_hit_ratios\": {\"4\": 0.241525, \"8\": 0.2408625, \"16\": 0.233425, \"32\": 0.2326875}}"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.0, \"n_requests\": 80000}",
+          "output": "{\"chosen_multiplier\": 8, \"sweep_hit_ratios\": {\"4\": 0.5348625, \"8\": 0.546525, \"16\": 0.5355125, \"32\": 0.536925}}"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 1.2, \"n_requests\": 80000}",
+          "output": "{\"chosen_multiplier\": 32, \"sweep_hit_ratios\": {\"4\": 0.7939625, \"8\": 0.8027, \"16\": 0.8048625, \"32\": 0.8073}}"
+        }
+      ]
+    },
+    {
+      "dataset": "phaseB_drift_scenario_grid",
+      "examples": [
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_low_freq\", \"seed\": 1, \"cache_capacity\": 1500, \"key_space\": 150000, \"n_requests\": 600000}",
+          "output": "{\"baseline\": {\"final_hit_ratio\": 0.24472666666666668, \"steady_state_hit_ratio\": 0.26303515185185183, \"memory_bytes\": 88542, \"mean_recovery_time\": 42416.0}, \"proposed\": {\"final_hit_ratio\": 0.27030666666666664, \"steady_state_hit_ratio\": 0.30622516666666666, \"memory_bytes\": 454808, \"mean_recovery_time\": 49765.5, \"tier_assignment_fractions\": {\"volatile\": 0.0064, \"default\": 0.9816, \"stable\": 0.012}}}",
+          "metadata_baseline_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 24832,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "metadata_proposed_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 39531,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_baseline_final_hit_ratio": "0.24472666666666668",
+          "predict_proposed_final_hit_ratio": "0.27030666666666664"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_low_freq\", \"seed\": 2, \"cache_capacity\": 1500, \"key_space\": 150000, \"n_requests\": 600000}",
+          "output": "{\"baseline\": {\"final_hit_ratio\": 0.24649833333333335, \"steady_state_hit_ratio\": 0.26221675555555557, \"memory_bytes\": 88542, \"mean_recovery_time\": 33769.0}, \"proposed\": {\"final_hit_ratio\": 0.26341333333333333, \"steady_state_hit_ratio\": 0.3090751851851852, \"memory_bytes\": 454808, \"mean_recovery_time\": 60000.0, \"tier_assignment_fractions\": {\"volatile\": 0.0066, \"default\": 0.9818, \"stable\": 0.0116}}}",
+          "metadata_baseline_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 31540,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 35998,
+              "censored": false
+            }
+          ],
+          "metadata_proposed_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 60000,
+              "censored": true
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_baseline_final_hit_ratio": "0.24649833333333335",
+          "predict_proposed_final_hit_ratio": "0.26341333333333333"
+        },
+        {
+          "input": "{\"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_low_freq\", \"seed\": 3, \"cache_capacity\": 1500, \"key_space\": 150000, \"n_requests\": 600000}",
+          "output": "{\"baseline\": {\"final_hit_ratio\": 0.26539666666666667, \"steady_state_hit_ratio\": 0.3045167370370371, \"memory_bytes\": 88542, \"mean_recovery_time\": 41897.5}, \"proposed\": {\"final_hit_ratio\": 0.27091666666666664, \"steady_state_hit_ratio\": 0.30909651851851855, \"memory_bytes\": 454808, \"mean_recovery_time\": 60000.0, \"tier_assignment_fractions\": {\"volatile\": 0.0062, \"default\": 0.9819, \"stable\": 0.0119}}}",
+          "metadata_baseline_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 23795,
+              "censored": false
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "metadata_proposed_recovery_events": [
+            {
+              "drift_index": 200000,
+              "recovery_time": 60000,
+              "censored": true
+            },
+            {
+              "drift_index": 400000,
+              "recovery_time": 60000,
+              "censored": true
+            }
+          ],
+          "predict_baseline_final_hit_ratio": "0.26539666666666667",
+          "predict_proposed_final_hit_ratio": "0.27091666666666664"
+        }
+      ]
+    },
+    {
+      "dataset": "phaseC_aggregate_summary_and_real_trace_status",
+      "examples": [
+        {
+          "input": "{\"phase\": \"aggregate_summary\"}",
+          "output": "{\"summary_stats\": {\"n_groups\": 36, \"fraction_groups_proposed_20pct_faster_recovery_ci_significant\": 0.08333333333333333, \"bootstrap_resamples\": 1000, \"recovery_definition\": \"first index within 60000 requests after a drift event where the 3000-request rolling hit ratio climbs back to trough + 0.9*(pre-drift plateau - trough); censored at 60000 (logged) if never reached\", \"steady_state_definition\": \"mean rolling hit ratio over the trailing 15% of the trace\"}, \"memory_footprint_table\": {\"ratio=0.01_alpha=0.8\": {\"baseline_bytes\": [88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542], \"proposed_bytes\": [454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808], \"baseline_bytes_mean\": 88542.0, \"proposed_bytes_mean\": 454808.0, \"proposed_over_baseline_ratio\": 5.1366357209008155}, \"ratio=0.01_alpha=1.0\": {\"baseline_bytes\": [88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542], \"proposed_bytes\": [454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808], \"baseline_bytes_mean\": 88542.0, \"proposed_bytes_mean\": 454808.0, \"proposed_over_baseline_ratio\": 5.1366357209008155}, \"ratio=0.01_alpha=1.2\": {\"baseline_bytes\": [88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542, 88542], \"proposed_bytes\": [454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808, 454808], \"baseline_bytes_mean\": 88542.0, \"proposed_bytes_mean\": 454808.0, \"proposed_over_baseline_ratio\": 5.1366357209008155}, \"ratio=0.05_alpha=0.8\": {\"baseline_bytes\": [442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542], \"proposed_bytes\": [2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808], \"baseline_bytes_mean\": 442542.0, \"proposed_bytes_mean\": 2272808.0, \"proposed_over_baseline_ratio\": 5.135801799603201}, \"ratio=0.05_alpha=1.0\": {\"baseline_bytes\": [442542, 428822, 442542, 442542, 442542, 442542, 442542, 417902, 442542, 442542, 442542, 442542], \"proposed_bytes\": [2272808, 2248224, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808], \"baseline_bytes_mean\": 439345.3333333333, \"proposed_bytes_mean\": 2270759.3333333335, \"proposed_over_baseline_ratio\": 5.168506778267059}, \"ratio=0.05_alpha=1.2\": {\"baseline_bytes\": [442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542, 442542], \"proposed_bytes\": [2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808, 2272808], \"baseline_bytes_mean\": 442542.0, \"proposed_bytes_mean\": 2272808.0, \"proposed_over_baseline_ratio\": 5.135801799603201}, \"ratio=0.1_alpha=0.8\": {\"baseline_bytes\": [885042, 885042, 885042, 885042, 885042, 885042, 885042, 796058, 885042, 885042, 885042, 885042], \"proposed_bytes\": [4545308, 4545308, 4545308, 4545308, 4545308, 4545308, 4545308, 4545308, 4545308, 4545308, 4545308, 4545308], \"baseline_bytes_mean\": 877626.6666666666, \"proposed_bytes_mean\": 4545308.0, \"proposed_over_baseline_ratio\": 5.1790905776184255}, \"ratio=0.1_alpha=1.0\": {\"baseline_bytes\": [885042, 738882, 885042, 885042, 875578, 885042, 885042, 749018, 885042, 885042, 859114, 885042], \"proposed_bytes\": [4533604, 4545308, 4545308, 4545308, 4545308, 4428044, 4545308, 4480516, 4545308, 4502300, 4545308, 4545308], \"baseline_bytes_mean\": 858577.3333333334, \"proposed_bytes_mean\": 4525577.333333333, \"proposed_over_baseline_ratio\": 5.271018879293342}, \"ratio=0.1_alpha=1.2\": {\"baseline_bytes\": [807202, 599218, 767666, 885042, 745434, 755738, 842762, 647210, 756242, 885042, 696714, 825962], \"proposed_bytes\": [4381172, 4322204, 4308596, 4417124, 4419756, 4334692, 4375964, 4280036, 4283564, 4420932, 4412924, 4344156], \"baseline_bytes_mean\": 767852.6666666666, \"proposed_bytes_mean\": 4358426.666666667, \"proposed_over_baseline_ratio\": 5.676123631356363}}, \"real_trace_results\": null, \"group_summaries\": [{\"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.03154274197530863, \"ci_low\": 0.004579781481481471, \"ci_high\": 0.046858429629629605, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.4607052495952901, \"ci_low\": 1.1732718785364014, \"ci_high\": 1.7767775178418075, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.009085951851851857, \"ci_low\": -0.015808944444444445, \"ci_high\": -0.005044622037037062, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0511694106026603, \"ci_low\": 1.006790379636766, \"ci_high\": 1.12331851689971, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.008280335802469138, \"ci_low\": -0.0006584296296295866, \"ci_high\": 0.01644518148148144, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.838978449864604, \"ci_low\": 1.4998500149985, \"ci_high\": 2.51098563079492, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.01113564074074074, \"ci_low\": -0.013620581481481486, \"ci_high\": -0.008559407407407432, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.206318620925794, \"ci_low\": 1.0801906973901352, \"ci_high\": 1.4316849963875733, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 1.0, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.009807592592592599, \"ci_low\": 0.0005469148148148362, \"ci_high\": 0.021876637037037017, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.2042339639893411, \"ci_low\": 1.036977947954336, \"ci_high\": 1.3562624032199457, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 1.0, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.0019647518518518536, \"ci_low\": -0.008318970370370438, \"ci_high\": 0.0029905666666667496, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0180862112918236, \"ci_low\": 0.9054067668541684, \"ci_high\": 1.1187805565056435, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 1.0, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.0247231851851852, \"ci_low\": 0.007071488888888866, \"ci_high\": 0.036629203703703817, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9143782557791864, \"ci_low\": 0.8955038409399005, \"ci_high\": 0.9336907370285767, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 1.0, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.005201844444444455, \"ci_low\": -0.0015805629629629392, \"ci_high\": 0.015160622222222142, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.1093732763544215, \"ci_low\": 1.025048453695121, \"ci_high\": 1.1718033260113574, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 1.2, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.005252185185185221, \"ci_low\": -0.0004955925925925753, \"ci_high\": 0.011407440740740848, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.7352895900590632, \"ci_low\": 0.6251486687706614, \"ci_high\": 0.8156386008605917, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": true}, {\"ratio\": 0.01, \"alpha\": 1.2, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.07168029259259268, \"ci_low\": 0.015332277777777792, \"ci_high\": 0.1779784148148149, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9430098843904183, \"ci_low\": 0.7642617643658226, \"ci_high\": 1.0808404741136026, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.01, \"alpha\": 1.2, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.00430805555555569, \"ci_low\": 6.815185185193862e-05, \"ci_high\": 0.00853795555555592, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.7374247063037904, \"ci_low\": 0.7041228526808953, \"ci_high\": 0.7959356477561389, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": true}, {\"ratio\": 0.01, \"alpha\": 1.2, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.02427039753086424, \"ci_low\": 0.015431237037037193, \"ci_high\": 0.029140855555555456, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.7801754130861441, \"ci_low\": 0.7321436158912258, \"ci_high\": 0.857152360640983, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": true}, {\"ratio\": 0.05, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.008200992592592549, \"ci_low\": 0.0038429185185185344, \"ci_high\": 0.014008155555555513, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0, \"ci_low\": 1.0, \"ci_high\": 1.0, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.061223270370370377, \"ci_low\": -0.030658151851851834, \"ci_high\": 0.12580365555555556, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0742074956086423, \"ci_low\": 1.0541080475078604, \"ci_high\": 1.0993151675352393, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.0029064259259259004, \"ci_low\": -0.004992600000000014, \"ci_high\": 0.013024485185185175, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0, \"ci_low\": 1.0, \"ci_high\": 1.0, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.04790214567901233, \"ci_low\": 0.025286566666666677, \"ci_high\": 0.09067393333333329, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0086598024150522, \"ci_low\": 0.9315623502612823, \"ci_high\": 1.09569976160856, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 1.0, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.004712203703703732, \"ci_low\": -0.02842111111111123, \"ci_high\": 0.009488796296296398, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0141603683433238, \"ci_low\": 1.0, \"ci_high\": 1.0424811050299714, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 1.0, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.018417319753086397, \"ci_low\": 0.00018964814814814712, \"ci_high\": 0.04542929259259243, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9769089437802444, \"ci_low\": 0.9117079371057338, \"ci_high\": 1.0958254514465011, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 1.0, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.010241834567901287, \"ci_low\": -0.00697045925925921, \"ci_high\": 0.03459434814814821, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9449305555555556, \"ci_low\": 0.8347916666666667, \"ci_high\": 1.0, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 1.0, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.06644829506172839, \"ci_low\": 0.003542040740740715, \"ci_high\": 0.1920379592592593, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9878737698429926, \"ci_low\": 0.9694332009491061, \"ci_high\": 1.013784893717921, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 1.2, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.012750445679012326, \"ci_low\": -0.017363225925925985, \"ci_high\": -0.007425977777777648, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9963110516662051, \"ci_low\": 0.9860750092833271, \"ci_high\": 1.0028581457152885, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 1.2, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.061052932098765424, \"ci_low\": -0.1036447629629631, \"ci_high\": -0.03896266296296291, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.22948848602007, \"ci_low\": 1.0924508699278597, \"ci_high\": 1.406136432074779, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 1.2, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.013369865432098801, \"ci_low\": -0.01741455185185181, \"ci_high\": -0.011200788888888868, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9349638888888889, \"ci_low\": 0.8048916666666667, \"ci_high\": 1.0, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.05, \"alpha\": 1.2, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.04704672469135799, \"ci_low\": -0.11427629259259253, \"ci_high\": -0.012162455555555396, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.177406152659041, \"ci_low\": 1.1519841534972743, \"ci_high\": 1.224955335577417, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.012474787654321048, \"ci_low\": -0.024542600000000137, \"ci_high\": 0.007406144444444429, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0, \"ci_low\": 1.0, \"ci_high\": 1.0, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.01271881481481483, \"ci_low\": -0.04355693333333338, \"ci_high\": 0.03219357407407408, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9968485360003655, \"ci_low\": 0.8978311002130951, \"ci_high\": 1.0942344327817415, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.005122281481481509, \"ci_low\": -0.055140514814814856, \"ci_high\": 0.055634229629629606, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0, \"ci_low\": 1.0, \"ci_high\": 1.0, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.03853010123456791, \"ci_low\": -0.011458218518518526, \"ci_high\": 0.08109142962962965, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 0.9294825494281894, \"ci_low\": 0.8883198541008941, \"ci_high\": 0.9603607974245328, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 1.0, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": 0.0009104345679011491, \"ci_low\": -0.03801857777777795, \"ci_high\": 0.03516049629629625, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0, \"ci_low\": 1.0, \"ci_high\": 1.0, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 1.0, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.03997560740740739, \"ci_low\": -0.06449295925925924, \"ci_high\": -0.019090928055555918, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0902420771175418, \"ci_low\": 1.0398201278477885, \"ci_high\": 1.1280228783751345, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 1.0, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.03459952962962972, \"ci_low\": -0.05665547407407423, \"ci_high\": -0.010044870370370385, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0, \"ci_low\": 1.0, \"ci_high\": 1.0, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 1.0, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.031117386419753108, \"ci_low\": -0.06055080740740748, \"ci_high\": 0.0025045777777777944, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.1185154808405497, \"ci_low\": 1.0688989878918793, \"ci_high\": 1.1972034578529773, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 1.2, \"drift_scenario\": \"low_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.008230229629629679, \"ci_low\": -0.019584981481481467, \"ci_high\": 0.011118677777777752, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0881749850647178, \"ci_low\": 1.0, \"ci_high\": 1.1652513918072915, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 1.2, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.018992835802469094, \"ci_low\": -0.025323196296296202, \"ci_high\": -0.011527651851851894, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.1823508551331372, \"ci_low\": 1.1004909770546174, \"ci_high\": 1.231805591519346, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 1.2, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.015274034567901143, \"ci_low\": -0.020943274074073925, \"ci_high\": -0.00965923703703686, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0863267731857913, \"ci_low\": 1.0, \"ci_high\": 1.258980319557374, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}, {\"ratio\": 0.1, \"alpha\": 1.2, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"steady_state_hit_ratio_delta\": {\"mean\": -0.0172572135802469, \"ci_low\": -0.030803488888888952, \"ci_high\": -4.454814814813801e-05, \"n\": 3}, \"recovery_time_ratio_proposed_over_baseline\": {\"mean\": 1.0553961988298413, \"ci_low\": 0.9874968391845438, \"ci_high\": 1.106321932110656, \"n\": 3}, \"proposed_wins_20pct_faster_recovery_ci_excl_1\": false}]}"
+        }
+      ]
+    }
+  ]
+}
