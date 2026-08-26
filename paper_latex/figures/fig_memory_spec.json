@@ -1,0 +1,32 @@
+{
+  "figure_id": "fig_memory",
+  "title": "Memory and Compute Overhead",
+  "caption": "Left: memory-footprint overhead of the per-key-decay estimator relative to the global-reset baseline, at three cache-to-key-space ratios (Zipf alpha=1.0). Right: per-request compute cost, both an analytical elementary-operation count and a wall-clock microbenchmark over 100,000 calls (log-scaled y-axis so both cost measures are legible on one panel). Both cost measures exceed the hypothesis's own pre-registered disconfirmation bound of roughly 2x memory.",
+  "renderer": "custom matplotlib script (gen_fig_memory.py) using the aii-data-fig-gen house style, because the bar renderer has no reference-line/annotation-box support needed here",
+  "left_panel": {
+    "type": "bar",
+    "xlabel": "Cache-to-key-space ratio",
+    "categories": ["0.01", "0.05", "0.10"],
+    "series": [
+      {"label": "Memory overhead ratio", "values": [5.137, 5.169, 5.271]}
+    ],
+    "ylabel": "Memory overhead (proposed / baseline)",
+    "ylim": [0, 6],
+    "reference_lines": [
+      {"y": 2.0, "label": "pre-registered disconfirmation bound (~2x)", "style": "dashed"},
+      {"y": 1.0, "label": "parity", "style": "dotted"}
+    ],
+    "annotation_box": "full range across 9 cells: 5.14x - 5.68x, mean 5.22x"
+  },
+  "right_panel": {
+    "type": "bar",
+    "categories": ["Analytical op count", "Wall-clock (100k calls)"],
+    "series": [
+      {"label": "Baseline", "values": [25, 0.178]},
+      {"label": "Proposed per-key decay", "values": [43, 0.380]}
+    ],
+    "ylabel": "Baseline (elementary ops or seconds)",
+    "yscale": "log",
+    "ratio_labels": ["1.72x", "2.13x"]
+  }
+}

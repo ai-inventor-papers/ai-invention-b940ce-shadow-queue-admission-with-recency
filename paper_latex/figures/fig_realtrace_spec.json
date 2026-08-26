@@ -1,0 +1,18 @@
+{
+  "figure_id": "fig_realtrace",
+  "title": "Real Twitter Trace Replay",
+  "caption": "Steady-state and final hit ratio for both estimators replayed on 80,000 requests of Twitter's production Twemcache cluster026 trace (67,681 distinct keys, cache capacity 677 slots, ratio 0.01). Both estimators show low hit ratios typical of a short, high-cardinality trace, and the steady-state difference (-0.42 percentage points) falls well within the pre-registered 1-percentage-point parity margin -- but the trace carries no labeled drift events, so it cannot independently confirm or refute the recovery-time claim.",
+  "footnote": "Twitter Twemcache cluster026, 80,000 requests, 67,681 distinct keys, cache capacity 677 slots (ratio 0.01)",
+  "xlabel": "Metric",
+  "ylabel": "Hit ratio",
+  "ylim": [0, 0.06],
+  "categories": ["Steady-state hit ratio", "Final hit ratio"],
+  "series": [
+    {"label": "Baseline (global-reset)", "values": [0.0463, 0.0337]},
+    {"label": "Proposed (per-key decay)", "values": [0.0421, 0.0285]}
+  ],
+  "bracket": {
+    "category_index": 0,
+    "label": "-0.42 percentage points (within ±1pp pre-registered parity margin)"
+  }
+}

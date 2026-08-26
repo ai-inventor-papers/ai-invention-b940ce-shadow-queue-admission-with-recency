@@ -1,0 +1,60 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{Einziger2017}
+\citation{Einziger2017}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The shared W-TinyLFU simulator pipeline used for both estimators: a doorkeeper pre-filter, a shadow-queue admission test comparing candidate versus victim frequency, and a segmented LRU main region with an admission window. The baseline uses one global-reset Count-Min sketch; the proposed estimator replaces it with three CoV-routed sketch tiers (volatile / default / stable) fed by a shadow-metadata LRU that tracks each key's inter-arrival-gap statistics.}}{2}{figure.1}\protected@file@percent }
+\newlabel{fig:architecture}{{1}{2}{The shared W-TinyLFU simulator pipeline used for both estimators: a doorkeeper pre-filter, a shadow-queue admission test comparing candidate versus victim frequency, and a segmented LRU main region with an admission window. The baseline uses one global-reset Count-Min sketch; the proposed estimator replaces it with three CoV-routed sketch tiers (volatile / default / stable) fed by a shadow-metadata LRU that tracks each key's inter-arrival-gap statistics}{figure.1}{}}
+\citation{Einziger2017}
+\citation{Megiddo2003}
+\citation{ONeil1993}
+\citation{Johnson1994}
+\citation{Yang2023}
+\citation{Yang2021}
+\citation{Berg2020}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Summary of Contributions}{3}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{section.2}\protected@file@percent }
+\citation{Rodriguez2021}
+\citation{Jacobson1988}
+\citation{Benjamini1995}
+\citation{Benjamini2001}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Preliminaries}{4}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Method}{5}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experiments}{6}{section.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Mean recovery time (requests to reach 90\% of pre-drift hit ratio) at the win-corner cell (cache ratio 0.01, Zipf alpha 1.2), comparing the proposed per-key-decay estimator against the best short-reset global baseline (multiplier swept down to 1x-4x cache capacity) for each of the four drift scenarios. The cheaper short-reset baseline matches or beats per-key decay in 3 of 4 scenarios.}}{7}{figure.2}\protected@file@percent }
+\newlabel{fig:ablation}{{2}{7}{Mean recovery time (requests to reach 90\% of pre-drift hit ratio) at the win-corner cell (cache ratio 0.01, Zipf alpha 1.2), comparing the proposed per-key-decay estimator against the best short-reset global baseline (multiplier swept down to 1x-4x cache capacity) for each of the four drift scenarios. The cheaper short-reset baseline matches or beats per-key decay in 3 of 4 scenarios}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Number of drift scenarios (out of 4) where the per-key-decay recovery-time advantage over baseline holds (95\% confidence interval excludes a null effect), across a 3x3 grid of CoV classification thresholds at the win-corner cell. The original 0.5 / 1.5 threshold pair used throughout the paper (row 2, column 2) is one of the more favorable cells, not a robust interior optimum: only 12 of the 36 threshold-scenario combinations tested show the advantage holding.}}{9}{figure.3}\protected@file@percent }
+\newlabel{fig:threshold}{{3}{9}{Number of drift scenarios (out of 4) where the per-key-decay recovery-time advantage over baseline holds (95\% confidence interval excludes a null effect), across a 3x3 grid of CoV classification thresholds at the win-corner cell. The original 0.5 / 1.5 threshold pair used throughout the paper (row 2, column 2) is one of the more favorable cells, not a robust interior optimum: only 12 of the 36 threshold-scenario combinations tested show the advantage holding}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Steady-state and final hit ratio for both estimators replayed on 80,000 requests of Twitter's production Twemcache cluster026 trace (67,681 distinct keys, cache capacity 677 slots, ratio 0.01). Both estimators show low hit ratios typical of a short, high-cardinality trace, and the steady-state difference (-0.42 percentage points) falls well within the pre-registered 1-percentage-point parity margin -- but the trace carries no labeled drift events, so it cannot independently confirm or refute the recovery-time claim.}}{10}{figure.4}\protected@file@percent }
+\newlabel{fig:realtrace}{{4}{10}{Steady-state and final hit ratio for both estimators replayed on 80,000 requests of Twitter's production Twemcache cluster026 trace (67,681 distinct keys, cache capacity 677 slots, ratio 0.01). Both estimators show low hit ratios typical of a short, high-cardinality trace, and the steady-state difference (-0.42 percentage points) falls well within the pre-registered 1-percentage-point parity margin -- but the trace carries no labeled drift events, so it cannot independently confirm or refute the recovery-time claim}{figure.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Left: memory-footprint overhead of the per-key-decay estimator relative to the global-reset baseline, at three cache-to-key-space ratios (Zipf alpha=1.0). Right: per-request compute cost, both an analytical elementary-operation count and a wall-clock microbenchmark over 100,000 calls. Both cost measures exceed the hypothesis's own pre-registered disconfirmation bound of roughly 2x memory.}}{11}{figure.5}\protected@file@percent }
+\newlabel{fig:memory}{{5}{11}{Left: memory-footprint overhead of the per-key-decay estimator relative to the global-reset baseline, at three cache-to-key-space ratios (Zipf alpha=1.0). Right: per-request compute cost, both an analytical elementary-operation count and a wall-clock microbenchmark over 100,000 calls. Both cost measures exceed the hypothesis's own pre-registered disconfirmation bound of roughly 2x memory}{figure.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{12}{section.6}\protected@file@percent }
+\bibstyle{plainnat}
+\bibdata{references}
+\bibcite{Benjamini1995}{{1}{1995}{{Benjamini and Hochberg}}{{}}}
+\bibcite{Benjamini2001}{{2}{2001}{{Benjamini and Yekutieli}}{{}}}
+\bibcite{Berg2020}{{3}{2020}{{Berg et~al.}}{{Berg, Berger, McAllister, Grosof, Gunasekar, Lu, Uhlar, Carrig, Beckmann, Harchol-Balter, and Ganger}}}
+\bibcite{Einziger2017}{{4}{2017}{{Einziger et~al.}}{{Einziger, Friedman, and Manes}}}
+\bibcite{Jacobson1988}{{5}{1988}{{Jacobson}}{{}}}
+\bibcite{Johnson1994}{{6}{1994}{{Johnson and Shasha}}{{}}}
+\bibcite{Megiddo2003}{{7}{2003}{{Megiddo and Modha}}{{}}}
+\bibcite{ONeil1993}{{8}{1993}{{O'Neil et~al.}}{{O'Neil, O'Neil, and Weikum}}}
+\bibcite{Rodriguez2021}{{9}{2021}{{Rodriguez et~al.}}{{Rodriguez, Yusuf, Lyons, Paz, Rangaswami, Liu, Zhao, and Narasimhan}}}
+\bibcite{Yang2021}{{10}{2021}{{Yang et~al.}}{{Yang, Yue, and Vinayak}}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{13}{section.7}\protected@file@percent }
+\bibcite{Yang2023}{{11}{2023}{{Yang et~al.}}{{Yang, Zhang, Qiu, Yue, and Vinayak}}}
+\gdef \@abspage@last{14}

@@ -1,0 +1,25 @@
+{
+  "type": "bar",
+  "title": "Short Reset vs Per-Key Decay",
+  "xlabel": "Drift scenario",
+  "ylabel": "Recovery time (requests)",
+  "aspect": "16:9",
+  "ylim": [0, 55000],
+  "categories": [
+    "Low-mag / Low-freq",
+    "Low-mag / High-freq",
+    "High-mag / Low-freq",
+    "High-mag / High-freq"
+  ],
+  "series": [
+    {
+      "label": "Best short-reset baseline (multiplier <=4x)",
+      "values": [38937.3, 22802.2, 36415.2, 23686.7]
+    },
+    {
+      "label": "Proposed per-key decay estimator",
+      "values": [35231.2, 26469.6, 39099.0, 25134.1]
+    }
+  ],
+  "annotate": true
+}

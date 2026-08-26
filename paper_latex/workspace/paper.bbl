@@ -1,0 +1,81 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Benjamini and Hochberg(1995)]{Benjamini1995}
+Y.~Benjamini and Y.~Hochberg.
+\newblock Controlling the false discovery rate: a practical and powerful
+  approach to multiple testing.
+\newblock \emph{Journal of the royal statistical society series
+  b-methodological}, 57:\penalty0 289--300, 1995.
+\newblock \doi{10.1111/J.2517-6161.1995.TB02031.X}.
+
+\bibitem[Benjamini and Yekutieli(2001)]{Benjamini2001}
+Y.~Benjamini and D.~Yekutieli.
+\newblock The control of the false discovery rate in multiple testing under
+  dependency.
+\newblock \emph{Annals of Statistics}, 29:\penalty0 1165--1188, 2001.
+\newblock \doi{10.1214/AOS/1013699998}.
+
+\bibitem[Berg et~al.(2020)Berg, Berger, McAllister, Grosof, Gunasekar, Lu,
+  Uhlar, Carrig, Beckmann, Harchol-Balter, and Ganger]{Berg2020}
+Benjamin Berg, Daniel~S. Berger, Sara McAllister, Isaac Grosof, S.~Gunasekar,
+  Jimmy Lu, Michael Uhlar, Jim Carrig, N.~Beckmann, Mor Harchol-Balter, and
+  G.~Ganger.
+\newblock The cachelib caching engine: Design and experiences at scale.
+\newblock In \emph{USENIX Symposium on Operating Systems Design and
+  Implementation}, pages 753--768, 2020.
+
+\bibitem[Einziger et~al.(2017)Einziger, Friedman, and Manes]{Einziger2017}
+Gil Einziger, Roy Friedman, and Ben Manes.
+\newblock Tinylfu: A highly efficient cache admission policy.
+\newblock volume~13, pages 1--31, 2017.
+\newblock \doi{10.1145/3149371}.
+
+\bibitem[Jacobson(1988)]{Jacobson1988}
+Van Jacobson.
+\newblock Congestion avoidance and control.
+\newblock \emph{ACM SIGCOMM Computer Communication Review}, 18\penalty0
+  (4):\penalty0 314--329, 1988.
+\newblock \doi{10.1145/52325.52356}.
+
+\bibitem[Johnson and Shasha(1994)]{Johnson1994}
+T.~Johnson and D.~Shasha.
+\newblock 2q: A low overhead high performance buffer management replacement
+  algorithm.
+\newblock In \emph{Very Large Data Bases Conference}, pages 439--450, 1994.
+
+\bibitem[Megiddo and Modha(2003)]{Megiddo2003}
+N.~Megiddo and D.~Modha.
+\newblock Arc: A self-tuning, low overhead replacement cache, 2003.
+
+\bibitem[O'Neil et~al.(1993)O'Neil, O'Neil, and Weikum]{ONeil1993}
+E.~O'Neil, P.~O'Neil, and G.~Weikum.
+\newblock The lru-k page replacement algorithm for database disk buffering.
+\newblock In \emph{SIGMOD Conference}, 1993.
+\newblock \doi{10.1145/170035.170081}.
+
+\bibitem[Rodriguez et~al.(2021)Rodriguez, Yusuf, Lyons, Paz, Rangaswami, Liu,
+  Zhao, and Narasimhan]{Rodriguez2021}
+Liana~V. Rodriguez, Farzana Yusuf, Steven Lyons, Eysler Paz, Raju Rangaswami,
+  Jason Liu, Ming Zhao, and Giri Narasimhan.
+\newblock Learning cache replacement with cacheus.
+\newblock In \emph{USENIX Conference on File and Storage Technologies}, 2021.
+
+\bibitem[Yang et~al.(2021)Yang, Yue, and Vinayak]{Yang2021}
+Juncheng Yang, Yao Yue, and R.~Vinayak.
+\newblock Segcache: a memory-efficient and scalable in-memory key-value cache
+  for small objects.
+\newblock In \emph{Symposium on Networked Systems Design and Implementation},
+  pages 503--518, 2021.
+
+\bibitem[Yang et~al.(2023)Yang, Zhang, Qiu, Yue, and Vinayak]{Yang2023}
+Juncheng Yang, Yazhuo Zhang, Ziyue Qiu, Yao Yue, and Rashmi Vinayak.
+\newblock Fifo queues are all you need for cache eviction.
+\newblock In \emph{Symposium on Operating Systems Principles}, 2023.
+\newblock \doi{10.1145/3600006.3613147}.
+
+\end{thebibliography}
