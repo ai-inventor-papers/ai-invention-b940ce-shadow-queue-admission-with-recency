@@ -1,0 +1,158 @@
+{
+  "metadata": {
+    "method_name": "cache_admission_global_reset_vs_per_key_decay",
+    "description": "W-TinyLFU-style Count-Min-Sketch global-reset admission (W/C=8 fixed and best-tuned) vs two per-key exponential-decay frequency estimators (full 6-slot gap-ring-buffer, and a compressed O(1) EWMA vari...",
+    "parameters": {
+      "cache_ratios": [
+        0.01,
+        0.05,
+        0.1
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "wc_candidates": [
+        4,
+        8,
+        16
+      ],
+      "prob_frac": 0.2,
+      "shadow_mult": 4,
+      "drift_window": 500,
+      "drift_horizon": 3000
+    },
+    "methodology_notes": {
+      "row_cap_used": null,
+      "traces_used": [
+        "real_twitter_cache_trace_cluster026",
+        "real_derived_wikipedia_pageviews_by_second",
+        "synthetic_zipf_alpha0.8_control"
+      ],
+      "cache_ratios_used": [
+        0.01,
+        0.05,
+        0.1
+      ],
+      "seeds_used": [
+        0,
+        1,
+        2
+      ],
+      "systems_used": [
+        "global_reset_baseline_W8",
+        "global_reset_baseline_best_tuned",
+        "per_key_decay_full"
+      ],
+      "expected_grid_size": 600,
+      "actual_grid_size": 600,
+      "missing_configs": 0,
+      "best_wc_per_trace_ratio": {
+        "real_twitter_cache_trace_cluster026|0.01": 32,
+        "real_twitter_cache_trace_cluster026|0.05": 4,
+        "real_twitter_cache_trace_cluster026|0.1": 4,
+        "real_derived_wikipedia_pageviews_by_second|0.01": 4,
+        "real_derived_wikipedia_pageviews_by_second|0.05": 4,
+        "real_derived_wikipedia_pageviews_by_second|0.1": 4,
+        "synthetic_zipf_alpha0.8_control|0.01": 32,
+        "synthetic_zipf_alpha0.8_control|0.05": 16,
+        "synthetic_zipf_alpha0.8_control|0.1": 8,
+        "synthetic_zipf_alpha1.0_control|0.01": 32,
+        "synthetic_zipf_alpha1.0_control|0.05": 16,
+        "synthetic_zipf_alpha1.0_control|0.1": 16,
+        "synthetic_zipf_alpha1.2_control|0.01": 32,
+        "synthetic_zipf_alpha1.2_control|0.05": 8,
+        "synthetic_zipf_alpha1.2_control|0.1": 4,
+        "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare|0.01": 32,
+        "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare|0.05": 32,
+        "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare|0.1": 8,
+        "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare|0.01": 32,
+        "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare|0.05": 16,
+        "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare|0.1": 16,
+        "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare|0.01": 32,
+        "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare|0.05": 16,
+        "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare|0.1": 8,
+        "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent|0.01": 32,
+        "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent|0.05": 8,
+        "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent|0.1": 4,
+        "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent|0.01": 32,
+        "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent|0.05": 8,
+        "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent|0.1": 4
+      },
+      "data_sources_used": {
+        "real_twitter_cache_trace_cluster026": "uncapped_csv",
+        "real_derived_wikipedia_pageviews_by_second": "uncapped_csv",
+        "synthetic_zipf_alpha0.8_control": "uncapped_csv",
+        "synthetic_zipf_alpha1.0_control": "uncapped_csv",
+        "synthetic_zipf_alpha1.2_control": "uncapped_csv",
+        "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare": "uncapped_csv",
+        "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare": "uncapped_csv",
+        "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare": "uncapped_csv",
+        "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent": "uncapped_csv",
+        "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent": "uncapped_csv"
+      },
+      "recovery_time_censoring_note": "recovery_time is censored (recovery_censored=true) if the trailing-window hit ratio never reaches the recovery threshold within the DRIFT_HORIZON=3000-step post-event window, OR if the trace ends befo..."
+    }
+  },
+  "datasets": [
+    {
+      "dataset": "config_results",
+      "examples": [
+        {
+          "input": "{\"trace_id\": \"real_twitter_cache_trace_cluster026\", \"cache_ratio\": 0.01, \"seed\": 0, \"system\": \"global_reset_baseline_W8\", \"cache_capacity\": 677}",
+          "output": "{\"trace_id\": \"real_twitter_cache_trace_cluster026\", \"trace_type\": \"real_twitter\", \"drift_regime\": \"none\", \"alpha\": null, \"is_synthetic\": false, \"data_source\": \"uncapped_csv\", \"cache_ratio\": 0.01, \"cac...",
+          "metadata_trace_id": "real_twitter_cache_trace_cluster026",
+          "metadata_trace_type": "real_twitter",
+          "metadata_drift_regime": "none",
+          "metadata_system": "global_reset_baseline_W8",
+          "metadata_cache_ratio": 0.01,
+          "metadata_seed": 0,
+          "predict_global_reset_baseline_W8": "{\"overall_hit_ratio\": 0.016275, \"steady_state_hit_ratio\": 0.053, \"memory_bytes\": 11517}"
+        },
+        {
+          "input": "{\"trace_id\": \"real_twitter_cache_trace_cluster026\", \"cache_ratio\": 0.01, \"seed\": 0, \"system\": \"global_reset_baseline_best_tuned\", \"cache_capacity\": 677}",
+          "output": "{\"trace_id\": \"real_twitter_cache_trace_cluster026\", \"trace_type\": \"real_twitter\", \"drift_regime\": \"none\", \"alpha\": null, \"is_synthetic\": false, \"data_source\": \"uncapped_csv\", \"cache_ratio\": 0.01, \"cac...",
+          "metadata_trace_id": "real_twitter_cache_trace_cluster026",
+          "metadata_trace_type": "real_twitter",
+          "metadata_drift_regime": "none",
+          "metadata_system": "global_reset_baseline_best_tuned",
+          "metadata_cache_ratio": 0.01,
+          "metadata_seed": 0,
+          "predict_global_reset_baseline_best_tuned": "{\"overall_hit_ratio\": 0.0299125, \"steady_state_hit_ratio\": 0.06275, \"memory_bytes\": 46044}"
+        },
+        {
+          "input": "{\"trace_id\": \"real_twitter_cache_trace_cluster026\", \"cache_ratio\": 0.01, \"seed\": 0, \"system\": \"per_key_decay_full\", \"cache_capacity\": 677}",
+          "output": "{\"trace_id\": \"real_twitter_cache_trace_cluster026\", \"trace_type\": \"real_twitter\", \"drift_regime\": \"none\", \"alpha\": null, \"is_synthetic\": false, \"data_source\": \"uncapped_csv\", \"cache_ratio\": 0.01, \"cac...",
+          "metadata_trace_id": "real_twitter_cache_trace_cluster026",
+          "metadata_trace_type": "real_twitter",
+          "metadata_drift_regime": "none",
+          "metadata_system": "per_key_decay_full",
+          "metadata_cache_ratio": 0.01,
+          "metadata_seed": 0,
+          "predict_per_key_decay_full": "{\"overall_hit_ratio\": 0.0403, \"steady_state_hit_ratio\": 0.065375, \"memory_bytes\": 111028}"
+        }
+      ]
+    },
+    {
+      "dataset": "aggregates",
+      "examples": [
+        {
+          "input": "aggregate_summary_request",
+          "output": "{\"steady_state_hit_ratio_delta_vs_best_tuned_baseline_by_group\": {\"real_twitter|none|per_key_decay_full\": {\"mean\": 0.033416666666666664, \"ci_lo\": 0.01974833333333333, \"ci_hi\": 0.04750083333333334, \"n\"...",
+          "predict_cache_admission_aggregates": "{\"steady_state_hit_ratio_delta_vs_best_tuned_baseline_by_group\": {\"real_twitter|none|per_key_decay_full\": {\"mean\": 0.033416666666666664, \"ci_lo\": 0.01974833333333333, \"ci_hi\": 0.04750083333333334, \"n\"..."
+        }
+      ]
+    },
+    {
+      "dataset": "memory_accounting",
+      "examples": [
+        {
+          "input": "memory_accounting_request",
+          "output": "{\"baseline_sketch_bytes_formula\": \"ceil(d*w/2) + ceil(w/8) + 8, d=4, w=capacity*W/C\", \"per_key_decay_full_bytes_per_resident_key\": 41, \"per_key_decay_full_struct\": {\"last_arrival_f8\": 8, \"ring_f4x6\": ...",
+          "predict_cache_admission_memory_accounting": "{\"baseline_sketch_bytes_formula\": \"ceil(d*w/2) + ceil(w/8) + 8, d=4, w=capacity*W/C\", \"per_key_decay_full_bytes_per_resident_key\": 41, \"per_key_decay_full_struct\": {\"last_arrival_f8\": 8, \"ring_f4x6\": ..."
+        }
+      ]
+    }
+  ]
+}

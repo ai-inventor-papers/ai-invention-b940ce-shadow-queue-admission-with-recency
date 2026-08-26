@@ -1,0 +1,11 @@
+[project]
+name = "cache-decay-experiment"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy==2.5.2",
+    "loguru==0.7.3",
+    "pandas==3.0.5",
+    "python-dateutil==2.9.0.post0",
+    "six==1.17.0",
+]
