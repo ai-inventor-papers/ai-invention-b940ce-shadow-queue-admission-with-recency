@@ -1,0 +1,5538 @@
+{
+  "metadata": {
+    "description": "5-arm ablation (baseline, full, oracle_only, unhashed_only, both_oracle) attributing the prior iteration's per-key-decay drift-recovery deficit to the CV volatility classifier vs. hashed per-key storage collisions vs. the architecture itself, on synthetic drift traces (alpha=1.0, all 4 documented drift scenarios) plus the real RetailRocket trace consumed here for the first time (prior iteration had 0 real-trace rows wired in).",
+    "grid_reduction_notes": "Reduced from the plan's 375-config grid to a 60-config grid (5 arms x 4 scenarios x 2 cache_ratios for synthetic, plus 5 arms x 2 cache_ratios for real): alpha restricted to 1.0 (canonical, required), cache_ratios cut from 3 to 2 per fallback_plan item (c). Multi-seed repeats were dropped because this simulator is fully deterministic given the input trace (no RNG in the hot loop) -- the traces themselves are fixed by the upstream dataset, so re-running under a different 'seed' label would reproduce byte-identical results and waste compute; bootstrap CIs instead resample the available cache_ratio/scenario repeats, which is the honest substitute given a deterministic sim.",
+    "oracle_definition": "Synthetic-trace oracle = full-trace look-ahead inter-arrival CV per key (upper-bound proxy, NOT a true ground-truth volatility label -- the dataset carries no injected per-key burst/stable tags, only drift-EVENT metadata). Real-trace oracle = access-count tercile (fallback_plan item 3), since a full-trace CV oracle degenerates for many low-repeat RetailRocket items.",
+    "baseline_reset_W": "cache_capacity * 8 (a reasonable fixed W-TinyLFU window size; NOT re-tuned via sweep in this reduced grid, since this direction's focus is confound attribution, not baseline sizing).",
+    "headline_verdict": {
+      "both_oracle_beats_baseline_recovery_n_scenarios": 0,
+      "scenarios_evaluated": 4,
+      "threshold_required": 3,
+      "verdict": "ARCHITECTURE_DOES_NOT_WIN_EVEN_DECONFOUNDED",
+      "per_scenario": {
+        "rank_shuffle": false,
+        "cold_burst": false,
+        "combined": false,
+        "slow_drift": false
+      }
+    },
+    "memory_dual_accounting": {
+      "shared_with_sketch": {
+        "mem_bytes": 606408,
+        "baseline_sketch_bytes": 786432,
+        "overhead_ratio_vs_plain_tinylfu": 0.771087646484375
+      },
+      "per_key": {
+        "mem_bytes": 786408,
+        "baseline_sketch_bytes": 786432,
+        "overhead_ratio_vs_plain_tinylfu": 0.999969482421875
+      }
+    },
+    "hashed_table_size_vs_collision_sweep": [
+      {
+        "table_size_mult": 0.5,
+        "collision_rate": 2.324180229295278,
+        "steady_state_hit_ratio": 0.688175,
+        "memory_bytes": 483204
+      },
+      {
+        "table_size_mult": 1.0,
+        "collision_rate": 1.5407615230460923,
+        "steady_state_hit_ratio": 0.688125,
+        "memory_bytes": 786408
+      },
+      {
+        "table_size_mult": 2.0,
+        "collision_rate": 0.9084594692255189,
+        "steady_state_hit_ratio": 0.6886625,
+        "memory_bytes": 1392816
+      },
+      {
+        "table_size_mult": 4.0,
+        "collision_rate": 0.48666053357865685,
+        "steady_state_hit_ratio": 0.6874875,
+        "memory_bytes": 2605632
+      }
+    ],
+    "attribution_table": {
+      "rank_shuffle": {
+        "0.01": {
+          "full_vs_baseline_hit": {
+            "delta": -0.004025000000000056,
+            "a": 0.5679,
+            "b": 0.571925
+          },
+          "full_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "oracle_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "unhashed_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_hit": {
+            "delta": -0.009149999999999991,
+            "a": 0.562775,
+            "b": 0.571925
+          }
+        },
+        "0.05": {
+          "full_vs_baseline_hit": {
+            "delta": -0.009512499999999924,
+            "a": 0.678525,
+            "b": 0.6880375
+          },
+          "full_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "oracle_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "unhashed_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_hit": {
+            "delta": -0.011900000000000022,
+            "a": 0.6761375,
+            "b": 0.6880375
+          }
+        }
+      },
+      "cold_burst": {
+        "0.01": {
+          "full_vs_baseline_hit": {
+            "delta": -0.005025000000000057,
+            "a": 0.5952,
+            "b": 0.600225
+          },
+          "full_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "oracle_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "unhashed_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_hit": {
+            "delta": -0.008000000000000007,
+            "a": 0.592225,
+            "b": 0.600225
+          }
+        },
+        "0.05": {
+          "full_vs_baseline_hit": {
+            "delta": -0.009537499999999977,
+            "a": 0.6947875,
+            "b": 0.704325
+          },
+          "full_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "oracle_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "unhashed_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_hit": {
+            "delta": -0.010149999999999992,
+            "a": 0.694175,
+            "b": 0.704325
+          }
+        }
+      },
+      "combined": {
+        "0.01": {
+          "full_vs_baseline_hit": {
+            "delta": -0.004075000000000051,
+            "a": 0.5817625,
+            "b": 0.5858375
+          },
+          "full_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "oracle_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "unhashed_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_hit": {
+            "delta": -0.009162499999999962,
+            "a": 0.576675,
+            "b": 0.5858375
+          }
+        },
+        "0.05": {
+          "full_vs_baseline_hit": {
+            "delta": -0.009299999999999975,
+            "a": 0.688125,
+            "b": 0.697425
+          },
+          "full_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "oracle_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "unhashed_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_hit": {
+            "delta": -0.012074999999999947,
+            "a": 0.68535,
+            "b": 0.697425
+          }
+        }
+      },
+      "slow_drift": {
+        "0.01": {
+          "full_vs_baseline_hit": {
+            "delta": -0.0049000000000000155,
+            "a": 0.5682,
+            "b": 0.5731
+          },
+          "full_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "oracle_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "unhashed_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_hit": {
+            "delta": -0.007312500000000055,
+            "a": 0.5657875,
+            "b": 0.5731
+          }
+        },
+        "0.05": {
+          "full_vs_baseline_hit": {
+            "delta": -0.009375000000000022,
+            "a": 0.6757375,
+            "b": 0.6851125
+          },
+          "full_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "oracle_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "unhashed_only_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_full_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_recovery": {
+            "delta": 0.0,
+            "a": 25.0,
+            "b": 25.0
+          },
+          "both_oracle_vs_baseline_hit": {
+            "delta": -0.01122500000000004,
+            "a": 0.6738875,
+            "b": 0.6851125
+          }
+        }
+      }
+    },
+    "hit_ratio_bootstrap_ci": {
+      "rank_shuffle::baseline": {
+        "mean": 0.6299812499999999,
+        "ci_low": 0.571925,
+        "ci_high": 0.6880375,
+        "n": 2
+      },
+      "rank_shuffle::full": {
+        "mean": 0.6232125,
+        "ci_low": 0.5679,
+        "ci_high": 0.678525,
+        "n": 2
+      },
+      "rank_shuffle::oracle_only": {
+        "mean": 0.61963125,
+        "ci_low": 0.5624125,
+        "ci_high": 0.67685,
+        "n": 2
+      },
+      "rank_shuffle::unhashed_only": {
+        "mean": 0.62275,
+        "ci_low": 0.5675375,
+        "ci_high": 0.6779625,
+        "n": 2
+      },
+      "rank_shuffle::both_oracle": {
+        "mean": 0.61945625,
+        "ci_low": 0.562775,
+        "ci_high": 0.6761375,
+        "n": 2
+      },
+      "cold_burst::baseline": {
+        "mean": 0.6522749999999999,
+        "ci_low": 0.600225,
+        "ci_high": 0.704325,
+        "n": 2
+      },
+      "cold_burst::full": {
+        "mean": 0.64499375,
+        "ci_low": 0.5952,
+        "ci_high": 0.6947875,
+        "n": 2
+      },
+      "cold_burst::oracle_only": {
+        "mean": 0.6434,
+        "ci_low": 0.5914625,
+        "ci_high": 0.6953375,
+        "n": 2
+      },
+      "cold_burst::unhashed_only": {
+        "mean": 0.64510625,
+        "ci_low": 0.59555,
+        "ci_high": 0.6946625,
+        "n": 2
+      },
+      "cold_burst::both_oracle": {
+        "mean": 0.6432,
+        "ci_low": 0.592225,
+        "ci_high": 0.694175,
+        "n": 2
+      },
+      "combined::baseline": {
+        "mean": 0.64163125,
+        "ci_low": 0.5858375,
+        "ci_high": 0.697425,
+        "n": 2
+      },
+      "combined::full": {
+        "mean": 0.6349437499999999,
+        "ci_low": 0.5817625,
+        "ci_high": 0.688125,
+        "n": 2
+      },
+      "combined::oracle_only": {
+        "mean": 0.63215,
+        "ci_low": 0.5769625,
+        "ci_high": 0.6873375,
+        "n": 2
+      },
+      "combined::unhashed_only": {
+        "mean": 0.634825,
+        "ci_low": 0.582175,
+        "ci_high": 0.687475,
+        "n": 2
+      },
+      "combined::both_oracle": {
+        "mean": 0.6310125,
+        "ci_low": 0.576675,
+        "ci_high": 0.68535,
+        "n": 2
+      },
+      "slow_drift::baseline": {
+        "mean": 0.62910625,
+        "ci_low": 0.5731,
+        "ci_high": 0.6851125,
+        "n": 2
+      },
+      "slow_drift::full": {
+        "mean": 0.62196875,
+        "ci_low": 0.5682,
+        "ci_high": 0.6757375,
+        "n": 2
+      },
+      "slow_drift::oracle_only": {
+        "mean": 0.6211312499999999,
+        "ci_low": 0.56685,
+        "ci_high": 0.6754125,
+        "n": 2
+      },
+      "slow_drift::unhashed_only": {
+        "mean": 0.6216312500000001,
+        "ci_low": 0.568575,
+        "ci_high": 0.6746875,
+        "n": 2
+      },
+      "slow_drift::both_oracle": {
+        "mean": 0.6198375,
+        "ci_low": 0.5657875,
+        "ci_high": 0.6738875,
+        "n": 2
+      }
+    },
+    "recovery_time_bootstrap_ci": {
+      "rank_shuffle::baseline": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "rank_shuffle::full": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "rank_shuffle::oracle_only": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "rank_shuffle::unhashed_only": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "rank_shuffle::both_oracle": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "cold_burst::baseline": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "cold_burst::full": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "cold_burst::oracle_only": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "cold_burst::unhashed_only": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "cold_burst::both_oracle": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "combined::baseline": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "combined::full": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "combined::oracle_only": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "combined::unhashed_only": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "combined::both_oracle": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "slow_drift::baseline": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "slow_drift::full": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "slow_drift::oracle_only": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "slow_drift::unhashed_only": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      },
+      "slow_drift::both_oracle": {
+        "mean": 25.0,
+        "ci_low": 25.0,
+        "ci_high": 25.0,
+        "n": 2
+      }
+    },
+    "real_trace_summary": {
+      "baseline": {
+        "hit_ratios_by_ratio": {
+          "0.01": 0.27691182361239314,
+          "0.05": 0.5006574478831048
+        },
+        "n_real_requests_consumed": 229676
+      },
+      "full": {
+        "hit_ratios_by_ratio": {
+          "0.01": 0.2700543374144447,
+          "0.05": 0.4940263675786761
+        },
+        "n_real_requests_consumed": 229676
+      },
+      "oracle_only": {
+        "hit_ratios_by_ratio": {
+          "0.01": 0.2677598007628137,
+          "0.05": 0.5138804228565458
+        },
+        "n_real_requests_consumed": 229676
+      },
+      "unhashed_only": {
+        "hit_ratios_by_ratio": {
+          "0.01": 0.26896584754175445,
+          "0.05": 0.5168193455128094
+        },
+        "n_real_requests_consumed": 229676
+      },
+      "both_oracle": {
+        "hit_ratios_by_ratio": {
+          "0.01": 0.2773733433184138,
+          "0.05": 0.5186741322558734
+        },
+        "n_real_requests_consumed": 229676
+      }
+    },
+    "n_configs_run": 50,
+    "wall_clock_sec": 51.21776078827679
+  },
+  "datasets": [
+    {
+      "dataset": "ablation_results",
+      "examples": [
+        {
+          "input": "{\"dataset_name\": \"synthetic_alpha1.0_rank_shuffle\", \"arm\": \"baseline\", \"cache_ratio\": 0.05, \"table_size_mult\": 1.0}",
+          "output": "{\"steady_state_hit_ratio\": 0.6880375, \"mean_recovery_time_requests\": 25.0, \"memory_bytes\": 786432}",
+          "metadata_full_record": {
+            "dataset_name": "synthetic_alpha1.0_rank_shuffle",
+            "arm": "baseline",
+            "cache_ratio": 0.05,
+            "cache_capacity": 2500,
+            "table_size_mult": 1.0,
+            "n_requests": 80000,
+            "n_keys": 49994,
+            "steady_state_hit_ratio": 0.6880375,
+            "memory_bytes": 786432,
+            "n_drift_events_observed": 1,
+            "mean_recovery_time_requests": 25.0,
+            "recovery_times_per_event": [
+              25.0
+            ],
+            "elapsed_sec": 0.5415014000609517,
+            "hit_ratio_time_series": [
+              [
+                0,
+                0.0
+              ],
+              [
+                200,
+                0.208955223880597
+              ],
+              [
+                400,
+                0.2967581047381546
+              ],
+              [
+                600,
+                0.3544093178036606
+              ],
+              [
+                800,
+                0.3895131086142322
+              ],
+              [
+                1000,
+                0.40559440559440557
+              ],
+              [
+                1200,
+                0.41881765195670273
+              ],
+              [
+                1400,
+                0.44325481798715205
+              ],
+              [
+                1600,
+                0.4497189256714553
+              ],
+              [
+                1800,
+                0.4569683509161577
+              ],
+              [
+                2000,
+                0.466
+              ],
+              [
+                2200,
+                0.5025
+              ],
+              [
+                2400,
+                0.522
+              ],
+              [
+                2600,
+                0.5375
+              ],
+              [
+                2800,
+                0.544
+              ],
+              [
+                3000,
+                0.5495
+              ],
+              [
+                3200,
+                0.559
+              ],
+              [
+                3400,
+                0.5465
+              ],
+              [
+                3600,
+                0.5535
+              ],
+              [
+                3800,
+                0.56
+              ],
+              [
+                4000,
+                0.5635
+              ],
+              [
+                4200,
+                0.569
+              ],
+              [
+                4400,
+                0.5755
+              ],
+              [
+                4600,
+                0.578
+              ],
+              [
+                4800,
+                0.5845
+              ],
+              [
+                5000,
+                0.5975
+              ],
+              [
+                5200,
+                0.602
+              ],
+              [
+                5400,
+                0.6265
+              ],
+              [
+                5600,
+                0.63
+              ],
+              [
+                5800,
+                0.6305
+              ],
+              [
+                6000,
+                0.637
+              ],
+              [
+                6200,
+                0.6405
+              ],
+              [
+                6400,
+                0.639
+              ],
+              [
+                6600,
+                0.637
+              ],
+              [
+                6800,
+                0.636
+              ],
+              [
+                7000,
+                0.6355
+              ],
+              [
+                7200,
+                0.638
+              ],
+              [
+                7400,
+                0.6315
+              ],
+              [
+                7600,
+                0.638
+              ],
+              [
+                7800,
+                0.65
+              ],
+              [
+                8000,
+                0.6545
+              ],
+              [
+                8200,
+                0.6475
+              ],
+              [
+                8400,
+                0.652
+              ],
+              [
+                8600,
+                0.655
+              ],
+              [
+                8800,
+                0.6645
+              ],
+              [
+                9000,
+                0.668
+              ],
+              [
+                9200,
+                0.675
+              ],
+              [
+                9400,
+                0.6795
+              ],
+              [
+                9600,
+                0.677
+              ],
+              [
+                9800,
+                0.674
+              ],
+              [
+                10000,
+                0.674
+              ],
+              [
+                10200,
+                0.6815
+              ],
+              [
+                10400,
+                0.6795
+              ],
+              [
+                10600,
+                0.681
+              ],
+              [
+                10800,
+                0.6805
+              ],
+              [
+                11000,
+                0.678
+              ],
+              [
+                11200,
+                0.6755
+              ],
+              [
+                11400,
+                0.6775
+              ],
+              [
+                11600,
+                0.68
+              ],
+              [
+                11800,
+                0.682
+              ],
+              [
+                12000,
+                0.68
+              ],
+              [
+                12200,
+                0.685
+              ],
+              [
+                12400,
+                0.681
+              ],
+              [
+                12600,
+                0.686
+              ],
+              [
+                12800,
+                0.6845
+              ],
+              [
+                13000,
+                0.688
+              ],
+              [
+                13200,
+                0.6865
+              ],
+              [
+                13400,
+                0.677
+              ],
+              [
+                13600,
+                0.6755
+              ],
+              [
+                13800,
+                0.674
+              ],
+              [
+                14000,
+                0.6695
+              ],
+              [
+                14200,
+                0.6625
+              ],
+              [
+                14400,
+                0.673
+              ],
+              [
+                14600,
+                0.6695
+              ],
+              [
+                14800,
+                0.661
+              ],
+              [
+                15000,
+                0.657
+              ],
+              [
+                15200,
+                0.6535
+              ],
+              [
+                15400,
+                0.656
+              ],
+              [
+                15600,
+                0.655
+              ],
+              [
+                15800,
+                0.6575
+              ],
+              [
+                16000,
+                0.6605
+              ],
+              [
+                16200,
+                0.6615
+              ],
+              [
+                16400,
+                0.657
+              ],
+              [
+                16600,
+                0.653
+              ],
+              [
+                16800,
+                0.6555
+              ],
+              [
+                17000,
+                0.6665
+              ],
+              [
+                17200,
+                0.67
+              ],
+              [
+                17400,
+                0.6735
+              ],
+              [
+                17600,
+                0.677
+              ],
+              [
+                17800,
+                0.675
+              ],
+              [
+                18000,
+                0.674
+              ],
+              [
+                18200,
+                0.6745
+              ],
+              [
+                18400,
+                0.674
+              ],
+              [
+                18600,
+                0.677
+              ],
+              [
+                18800,
+                0.6855
+              ],
+              [
+                19000,
+                0.6795
+              ],
+              [
+                19200,
+                0.6785
+              ],
+              [
+                19400,
+                0.6815
+              ],
+              [
+                19600,
+                0.6765
+              ],
+              [
+                19800,
+                0.6805
+              ],
+              [
+                20000,
+                0.6835
+              ],
+              [
+                20200,
+                0.6845
+              ],
+              [
+                20400,
+                0.686
+              ],
+              [
+                20600,
+                0.684
+              ],
+              [
+                20800,
+                0.6785
+              ],
+              [
+                21000,
+                0.679
+              ],
+              [
+                21200,
+                0.6765
+              ],
+              [
+                21400,
+                0.674
+              ],
+              [
+                21600,
+                0.681
+              ],
+              [
+                21800,
+                0.6805
+              ],
+              [
+                22000,
+                0.681
+              ],
+              [
+                22200,
+                0.686
+              ],
+              [
+                22400,
+                0.684
+              ],
+              [
+                22600,
+                0.692
+              ],
+              [
+                22800,
+                0.6915
+              ],
+              [
+                23000,
+                0.693
+              ],
+              [
+                23200,
+                0.694
+              ],
+              [
+                23400,
+                0.6955
+              ],
+              [
+                23600,
+                0.696
+              ],
+              [
+                23800,
+                0.693
+              ],
+              [
+                24000,
+                0.699
+              ],
+              [
+                24200,
+                0.694
+              ],
+              [
+                24400,
+                0.6935
+              ],
+              [
+                24600,
+                0.6895
+              ],
+              [
+                24800,
+                0.689
+              ],
+              [
+                25000,
+                0.6835
+              ],
+              [
+                25200,
+                0.6865
+              ],
+              [
+                25400,
+                0.6825
+              ],
+              [
+                25600,
+                0.685
+              ],
+              [
+                25800,
+                0.684
+              ],
+              [
+                26000,
+                0.6755
+              ],
+              [
+                26200,
+                0.677
+              ],
+              [
+                26400,
+                0.6775
+              ],
+              [
+                26600,
+                0.6765
+              ],
+              [
+                26800,
+                0.675
+              ],
+              [
+                27000,
+                0.674
+              ],
+              [
+                27200,
+                0.6785
+              ],
+              [
+                27400,
+                0.678
+              ],
+              [
+                27600,
+                0.674
+              ],
+              [
+                27800,
+                0.673
+              ],
+              [
+                28000,
+                0.675
+              ],
+              [
+                28200,
+                0.671
+              ],
+              [
+                28400,
+                0.67
+              ],
+              [
+                28600,
+                0.6675
+              ],
+              [
+                28800,
+                0.6735
+              ],
+              [
+                29000,
+                0.678
+              ],
+              [
+                29200,
+                0.6745
+              ],
+              [
+                29400,
+                0.682
+              ],
+              [
+                29600,
+                0.679
+              ],
+              [
+                29800,
+                0.677
+              ],
+              [
+                30000,
+                0.6775
+              ],
+              [
+                30200,
+                0.6765
+              ],
+              [
+                30400,
+                0.6865
+              ],
+              [
+                30600,
+                0.689
+              ],
+              [
+                30800,
+                0.694
+              ],
+              [
+                31000,
+                0.694
+              ],
+              [
+                31200,
+                0.6985
+              ],
+              [
+                31400,
+                0.695
+              ],
+              [
+                31600,
+                0.7005
+              ],
+              [
+                31800,
+                0.7035
+              ],
+              [
+                32000,
+                0.7015
+              ],
+              [
+                32200,
+                0.7105
+              ],
+              [
+                32400,
+                0.703
+              ],
+              [
+                32600,
+                0.704
+              ],
+              [
+                32800,
+                0.7005
+              ],
+              [
+                33000,
+                0.704
+              ],
+              [
+                33200,
+                0.701
+              ],
+              [
+                33400,
+                0.7015
+              ],
+              [
+                33600,
+                0.706
+              ],
+              [
+                33800,
+                0.7075
+              ],
+              [
+                34000,
+                0.711
+              ],
+              [
+                34200,
+                0.7035
+              ],
+              [
+                34400,
+                0.707
+              ],
+              [
+                34600,
+                0.7045
+              ],
+              [
+                34800,
+                0.7035
+              ],
+              [
+                35000,
+                0.7005
+              ],
+              [
+                35200,
+                0.7
+              ],
+              [
+                35400,
+                0.7035
+              ],
+              [
+                35600,
+                0.701
+              ],
+              [
+                35800,
+                0.702
+              ],
+              [
+                36000,
+                0.7035
+              ],
+              [
+                36200,
+                0.708
+              ],
+              [
+                36400,
+                0.705
+              ],
+              [
+                36600,
+                0.7055
+              ],
+              [
+                36800,
+                0.7135
+              ],
+              [
+                37000,
+                0.7105
+              ],
+              [
+                37200,
+                0.7135
+              ],
+              [
+                37400,
+                0.7155
+              ],
+              [
+                37600,
+                0.714
+              ],
+              [
+                37800,
+                0.7105
+              ],
+              [
+                38000,
+                0.7045
+              ],
+              [
+                38200,
+                0.707
+              ],
+              [
+                38400,
+                0.7055
+              ],
+              [
+                38600,
+                0.7105
+              ],
+              [
+                38800,
+                0.7025
+              ],
+              [
+                39000,
+                0.699
+              ],
+              [
+                39200,
+                0.6945
+              ],
+              [
+                39400,
+                0.692
+              ],
+              [
+                39600,
+                0.6915
+              ],
+              [
+                39800,
+                0.69
+              ],
+              [
+                40000,
+                0.6915
+              ],
+              [
+                40200,
+                0.697
+              ],
+              [
+                40400,
+                0.699
+              ],
+              [
+                40600,
+                0.692
+              ],
+              [
+                40800,
+                0.6885
+              ],
+              [
+                41000,
+                0.693
+              ],
+              [
+                41200,
+                0.694
+              ],
+              [
+                41400,
+                0.696
+              ],
+              [
+                41600,
+                0.6995
+              ],
+              [
+                41800,
+                0.7015
+              ],
+              [
+                42000,
+                0.7035
+              ],
+              [
+                42200,
+                0.698
+              ],
+              [
+                42400,
+                0.6985
+              ],
+              [
+                42600,
+                0.7045
+              ],
+              [
+                42800,
+                0.7155
+              ],
+              [
+                43000,
+                0.716
+              ],
+              [
+                43200,
+                0.717
+              ],
+              [
+                43400,
+                0.7185
+              ],
+              [
+                43600,
+                0.7235
+              ],
+              [
+                43800,
+                0.7285
+              ],
+              [
+                44000,
+                0.728
+              ],
+              [
+                44200,
+                0.728
+              ],
+              [
+                44400,
+                0.731
+              ],
+              [
+                44600,
+                0.7345
+              ],
+              [
+                44800,
+                0.729
+              ],
+              [
+                45000,
+                0.73
+              ],
+              [
+                45200,
+                0.732
+              ],
+              [
+                45400,
+                0.728
+              ],
+              [
+                45600,
+                0.7135
+              ],
+              [
+                45800,
+                0.712
+              ],
+              [
+                46000,
+                0.7165
+              ],
+              [
+                46200,
+                0.713
+              ],
+              [
+                46400,
+                0.708
+              ],
+              [
+                46600,
+                0.704
+              ],
+              [
+                46800,
+                0.7055
+              ],
+              [
+                47000,
+                0.702
+              ],
+              [
+                47200,
+                0.702
+              ],
+              [
+                47400,
+                0.699
+              ],
+              [
+                47600,
+                0.7
+              ],
+              [
+                47800,
+                0.7015
+              ],
+              [
+                48000,
+                0.6995
+              ],
+              [
+                48200,
+                0.702
+              ],
+              [
+                48400,
+                0.707
+              ],
+              [
+                48600,
+                0.706
+              ],
+              [
+                48800,
+                0.705
+              ],
+              [
+                49000,
+                0.7065
+              ],
+              [
+                49200,
+                0.706
+              ],
+              [
+                49400,
+                0.7115
+              ],
+              [
+                49600,
+                0.721
+              ],
+              [
+                49800,
+                0.719
+              ],
+              [
+                50000,
+                0.7215
+              ],
+              [
+                50200,
+                0.7195
+              ],
+              [
+                50400,
+                0.7185
+              ],
+              [
+                50600,
+                0.7165
+              ],
+              [
+                50800,
+                0.7155
+              ],
+              [
+                51000,
+                0.7105
+              ],
+              [
+                51200,
+                0.7025
+              ],
+              [
+                51400,
+                0.697
+              ],
+              [
+                51600,
+                0.697
+              ],
+              [
+                51800,
+                0.694
+              ],
+              [
+                52000,
+                0.697
+              ],
+              [
+                52200,
+                0.6915
+              ],
+              [
+                52400,
+                0.686
+              ],
+              [
+                52600,
+                0.6845
+              ],
+              [
+                52800,
+                0.6805
+              ],
+              [
+                53000,
+                0.687
+              ],
+              [
+                53200,
+                0.696
+              ],
+              [
+                53400,
+                0.699
+              ],
+              [
+                53600,
+                0.7025
+              ],
+              [
+                53800,
+                0.7055
+              ],
+              [
+                54000,
+                0.7005
+              ],
+              [
+                54200,
+                0.7115
+              ],
+              [
+                54400,
+                0.7125
+              ],
+              [
+                54600,
+                0.715
+              ],
+              [
+                54800,
+                0.7275
+              ],
+              [
+                55000,
+                0.7235
+              ],
+              [
+                55200,
+                0.713
+              ],
+              [
+                55400,
+                0.7145
+              ],
+              [
+                55600,
+                0.7055
+              ],
+              [
+                55800,
+                0.7045
+              ],
+              [
+                56000,
+                0.7045
+              ],
+              [
+                56200,
+                0.7
+              ],
+              [
+                56400,
+                0.702
+              ],
+              [
+                56600,
+                0.7005
+              ],
+              [
+                56800,
+                0.6975
+              ],
+              [
+                57000,
+                0.6995
+              ],
+              [
+                57200,
+                0.7095
+              ],
+              [
+                57400,
+                0.706
+              ],
+              [
+                57600,
+                0.708
+              ],
+              [
+                57800,
+                0.7045
+              ],
+              [
+                58000,
+                0.705
+              ],
+              [
+                58200,
+                0.7095
+              ],
+              [
+                58400,
+                0.7125
+              ],
+              [
+                58600,
+                0.7135
+              ],
+              [
+                58800,
+                0.701
+              ],
+              [
+                59000,
+                0.708
+              ],
+              [
+                59200,
+                0.706
+              ],
+              [
+                59400,
+                0.7095
+              ],
+              [
+                59600,
+                0.704
+              ],
+              [
+                59800,
+                0.712
+              ],
+              [
+                60000,
+                0.709
+              ],
+              [
+                60200,
+                0.7065
+              ],
+              [
+                60400,
+                0.701
+              ],
+              [
+                60600,
+                0.703
+              ],
+              [
+                60800,
+                0.708
+              ],
+              [
+                61000,
+                0.708
+              ],
+              [
+                61200,
+                0.716
+              ],
+              [
+                61400,
+                0.7105
+              ],
+              [
+                61600,
+                0.711
+              ],
+              [
+                61800,
+                0.7005
+              ],
+              [
+                62000,
+                0.7045
+              ],
+              [
+                62200,
+                0.702
+              ],
+              [
+                62400,
+                0.7005
+              ],
+              [
+                62600,
+                0.7015
+              ],
+              [
+                62800,
+                0.705
+              ],
+              [
+                63000,
+                0.6995
+              ],
+              [
+                63200,
+                0.6975
+              ],
+              [
+                63400,
+                0.699
+              ],
+              [
+                63600,
+                0.707
+              ],
+              [
+                63800,
+                0.7145
+              ],
+              [
+                64000,
+                0.713
+              ],
+              [
+                64200,
+                0.7165
+              ],
+              [
+                64400,
+                0.7225
+              ],
+              [
+                64600,
+                0.7195
+              ],
+              [
+                64800,
+                0.7145
+              ],
+              [
+                65000,
+                0.713
+              ],
+              [
+                65200,
+                0.7075
+              ],
+              [
+                65400,
+                0.713
+              ],
+              [
+                65600,
+                0.7125
+              ],
+              [
+                65800,
+                0.7105
+              ],
+              [
+                66000,
+                0.711
+              ],
+              [
+                66200,
+                0.711
+              ],
+              [
+                66400,
+                0.712
+              ],
+              [
+                66600,
+                0.713
+              ],
+              [
+                66800,
+                0.716
+              ],
+              [
+                67000,
+                0.7235
+              ],
+              [
+                67200,
+                0.7175
+              ],
+              [
+                67400,
+                0.7115
+              ],
+              [
+                67600,
+                0.7115
+              ],
+              [
+                67800,
+                0.71
+              ],
+              [
+                68000,
+                0.712
+              ],
+              [
+                68200,
+                0.708
+              ],
+              [
+                68400,
+                0.712
+              ],
+              [
+                68600,
+                0.716
+              ],
+              [
+                68800,
+                0.721
+              ],
+              [
+                69000,
+                0.7205
+              ],
+              [
+                69200,
+                0.722
+              ],
+              [
+                69400,
+                0.7275
+              ],
+              [
+                69600,
+                0.7235
+              ],
+              [
+                69800,
+                0.73
+              ],
+              [
+                70000,
+                0.731
+              ],
+              [
+                70200,
+                0.7295
+              ],
+              [
+                70400,
+                0.722
+              ],
+              [
+                70600,
+                0.721
+              ],
+              [
+                70800,
+                0.7155
+              ],
+              [
+                71000,
+                0.7145
+              ],
+              [
+                71200,
+                0.7235
+              ],
+              [
+                71400,
+                0.723
+              ],
+              [
+                71600,
+                0.721
+              ],
+              [
+                71800,
+                0.7195
+              ],
+              [
+                72000,
+                0.7175
+              ],
+              [
+                72200,
+                0.719
+              ],
+              [
+                72400,
+                0.723
+              ],
+              [
+                72600,
+                0.719
+              ],
+              [
+                72800,
+                0.7205
+              ],
+              [
+                73000,
+                0.716
+              ],
+              [
+                73200,
+                0.7135
+              ],
+              [
+                73400,
+                0.7075
+              ],
+              [
+                73600,
+                0.711
+              ],
+              [
+                73800,
+                0.705
+              ],
+              [
+                74000,
+                0.7095
+              ],
+              [
+                74200,
+                0.708
+              ],
+              [
+                74400,
+                0.705
+              ],
+              [
+                74600,
+                0.707
+              ],
+              [
+                74800,
+                0.7045
+              ],
+              [
+                75000,
+                0.71
+              ],
+              [
+                75200,
+                0.7055
+              ],
+              [
+                75400,
+                0.715
+              ],
+              [
+                75600,
+                0.7135
+              ],
+              [
+                75800,
+                0.724
+              ],
+              [
+                76000,
+                0.7225
+              ],
+              [
+                76200,
+                0.73
+              ],
+              [
+                76400,
+                0.726
+              ],
+              [
+                76600,
+                0.721
+              ],
+              [
+                76800,
+                0.719
+              ],
+              [
+                77000,
+                0.713
+              ],
+              [
+                77200,
+                0.7225
+              ],
+              [
+                77400,
+                0.7265
+              ],
+              [
+                77600,
+                0.731
+              ],
+              [
+                77800,
+                0.72
+              ],
+              [
+                78000,
+                0.712
+              ],
+              [
+                78200,
+                0.7125
+              ],
+              [
+                78400,
+                0.7195
+              ],
+              [
+                78600,
+                0.7245
+              ],
+              [
+                78800,
+                0.7295
+              ],
+              [
+                79000,
+                0.7325
+              ],
+              [
+                79200,
+                0.727
+              ],
+              [
+                79400,
+                0.7145
+              ],
+              [
+                79600,
+                0.7085
+              ],
+              [
+                79800,
+                0.715
+              ]
+            ]
+          },
+          "predict_baseline": "{\"steady_state_hit_ratio\": 0.6880375, \"mean_recovery_time_requests\": 25.0, \"memory_bytes\": 786432, \"decay_slot_collision_rate\": null}"
+        },
+        {
+          "input": "{\"dataset_name\": \"synthetic_alpha1.0_rank_shuffle\", \"arm\": \"full\", \"cache_ratio\": 0.05, \"table_size_mult\": 1.0}",
+          "output": "{\"steady_state_hit_ratio\": 0.678525, \"mean_recovery_time_requests\": 25.0, \"memory_bytes\": 786408}",
+          "metadata_full_record": {
+            "dataset_name": "synthetic_alpha1.0_rank_shuffle",
+            "arm": "full",
+            "cache_ratio": 0.05,
+            "cache_capacity": 2500,
+            "table_size_mult": 1.0,
+            "n_requests": 80000,
+            "n_keys": 49994,
+            "steady_state_hit_ratio": 0.678525,
+            "memory_bytes": 786408,
+            "n_drift_events_observed": 1,
+            "mean_recovery_time_requests": 25.0,
+            "recovery_times_per_event": [
+              25.0
+            ],
+            "elapsed_sec": 0.8473545480519533,
+            "hit_ratio_time_series": [
+              [
+                0,
+                0.0
+              ],
+              [
+                200,
+                0.208955223880597
+              ],
+              [
+                400,
+                0.2967581047381546
+              ],
+              [
+                600,
+                0.3544093178036606
+              ],
+              [
+                800,
+                0.3895131086142322
+              ],
+              [
+                1000,
+                0.40559440559440557
+              ],
+              [
+                1200,
+                0.41881765195670273
+              ],
+              [
+                1400,
+                0.44325481798715205
+              ],
+              [
+                1600,
+                0.4497189256714553
+              ],
+              [
+                1800,
+                0.4569683509161577
+              ],
+              [
+                2000,
+                0.466
+              ],
+              [
+                2200,
+                0.5025
+              ],
+              [
+                2400,
+                0.522
+              ],
+              [
+                2600,
+                0.5375
+              ],
+              [
+                2800,
+                0.544
+              ],
+              [
+                3000,
+                0.5495
+              ],
+              [
+                3200,
+                0.559
+              ],
+              [
+                3400,
+                0.5465
+              ],
+              [
+                3600,
+                0.5535
+              ],
+              [
+                3800,
+                0.56
+              ],
+              [
+                4000,
+                0.5635
+              ],
+              [
+                4200,
+                0.569
+              ],
+              [
+                4400,
+                0.5755
+              ],
+              [
+                4600,
+                0.578
+              ],
+              [
+                4800,
+                0.5845
+              ],
+              [
+                5000,
+                0.5975
+              ],
+              [
+                5200,
+                0.602
+              ],
+              [
+                5400,
+                0.6265
+              ],
+              [
+                5600,
+                0.63
+              ],
+              [
+                5800,
+                0.6305
+              ],
+              [
+                6000,
+                0.6385
+              ],
+              [
+                6200,
+                0.6405
+              ],
+              [
+                6400,
+                0.64
+              ],
+              [
+                6600,
+                0.639
+              ],
+              [
+                6800,
+                0.639
+              ],
+              [
+                7000,
+                0.639
+              ],
+              [
+                7200,
+                0.64
+              ],
+              [
+                7400,
+                0.6345
+              ],
+              [
+                7600,
+                0.6415
+              ],
+              [
+                7800,
+                0.655
+              ],
+              [
+                8000,
+                0.656
+              ],
+              [
+                8200,
+                0.65
+              ],
+              [
+                8400,
+                0.652
+              ],
+              [
+                8600,
+                0.656
+              ],
+              [
+                8800,
+                0.666
+              ],
+              [
+                9000,
+                0.67
+              ],
+              [
+                9200,
+                0.6785
+              ],
+              [
+                9400,
+                0.6805
+              ],
+              [
+                9600,
+                0.6755
+              ],
+              [
+                9800,
+                0.669
+              ],
+              [
+                10000,
+                0.6695
+              ],
+              [
+                10200,
+                0.6795
+              ],
+              [
+                10400,
+                0.676
+              ],
+              [
+                10600,
+                0.6785
+              ],
+              [
+                10800,
+                0.676
+              ],
+              [
+                11000,
+                0.6725
+              ],
+              [
+                11200,
+                0.669
+              ],
+              [
+                11400,
+                0.669
+              ],
+              [
+                11600,
+                0.673
+              ],
+              [
+                11800,
+                0.678
+              ],
+              [
+                12000,
+                0.681
+              ],
+              [
+                12200,
+                0.6855
+              ],
+              [
+                12400,
+                0.6865
+              ],
+              [
+                12600,
+                0.688
+              ],
+              [
+                12800,
+                0.689
+              ],
+              [
+                13000,
+                0.6915
+              ],
+              [
+                13200,
+                0.6915
+              ],
+              [
+                13400,
+                0.6875
+              ],
+              [
+                13600,
+                0.684
+              ],
+              [
+                13800,
+                0.6795
+              ],
+              [
+                14000,
+                0.669
+              ],
+              [
+                14200,
+                0.6605
+              ],
+              [
+                14400,
+                0.668
+              ],
+              [
+                14600,
+                0.6655
+              ],
+              [
+                14800,
+                0.655
+              ],
+              [
+                15000,
+                0.654
+              ],
+              [
+                15200,
+                0.649
+              ],
+              [
+                15400,
+                0.649
+              ],
+              [
+                15600,
+                0.649
+              ],
+              [
+                15800,
+                0.6525
+              ],
+              [
+                16000,
+                0.6575
+              ],
+              [
+                16200,
+                0.6555
+              ],
+              [
+                16400,
+                0.65
+              ],
+              [
+                16600,
+                0.6455
+              ],
+              [
+                16800,
+                0.649
+              ],
+              [
+                17000,
+                0.655
+              ],
+              [
+                17200,
+                0.66
+              ],
+              [
+                17400,
+                0.662
+              ],
+              [
+                17600,
+                0.6665
+              ],
+              [
+                17800,
+                0.666
+              ],
+              [
+                18000,
+                0.6675
+              ],
+              [
+                18200,
+                0.672
+              ],
+              [
+                18400,
+                0.672
+              ],
+              [
+                18600,
+                0.6755
+              ],
+              [
+                18800,
+                0.68
+              ],
+              [
+                19000,
+                0.673
+              ],
+              [
+                19200,
+                0.6715
+              ],
+              [
+                19400,
+                0.6735
+              ],
+              [
+                19600,
+                0.6685
+              ],
+              [
+                19800,
+                0.6695
+              ],
+              [
+                20000,
+                0.6705
+              ],
+              [
+                20200,
+                0.668
+              ],
+              [
+                20400,
+                0.6705
+              ],
+              [
+                20600,
+                0.6665
+              ],
+              [
+                20800,
+                0.663
+              ],
+              [
+                21000,
+                0.6655
+              ],
+              [
+                21200,
+                0.6605
+              ],
+              [
+                21400,
+                0.6585
+              ],
+              [
+                21600,
+                0.6655
+              ],
+              [
+                21800,
+                0.6675
+              ],
+              [
+                22000,
+                0.667
+              ],
+              [
+                22200,
+                0.6725
+              ],
+              [
+                22400,
+                0.673
+              ],
+              [
+                22600,
+                0.6805
+              ],
+              [
+                22800,
+                0.6825
+              ],
+              [
+                23000,
+                0.686
+              ],
+              [
+                23200,
+                0.6885
+              ],
+              [
+                23400,
+                0.6915
+              ],
+              [
+                23600,
+                0.693
+              ],
+              [
+                23800,
+                0.69
+              ],
+              [
+                24000,
+                0.696
+              ],
+              [
+                24200,
+                0.6925
+              ],
+              [
+                24400,
+                0.692
+              ],
+              [
+                24600,
+                0.688
+              ],
+              [
+                24800,
+                0.688
+              ],
+              [
+                25000,
+                0.681
+              ],
+              [
+                25200,
+                0.6855
+              ],
+              [
+                25400,
+                0.683
+              ],
+              [
+                25600,
+                0.686
+              ],
+              [
+                25800,
+                0.6845
+              ],
+              [
+                26000,
+                0.676
+              ],
+              [
+                26200,
+                0.678
+              ],
+              [
+                26400,
+                0.6765
+              ],
+              [
+                26600,
+                0.678
+              ],
+              [
+                26800,
+                0.6735
+              ],
+              [
+                27000,
+                0.673
+              ],
+              [
+                27200,
+                0.6755
+              ],
+              [
+                27400,
+                0.6735
+              ],
+              [
+                27600,
+                0.668
+              ],
+              [
+                27800,
+                0.6685
+              ],
+              [
+                28000,
+                0.671
+              ],
+              [
+                28200,
+                0.665
+              ],
+              [
+                28400,
+                0.663
+              ],
+              [
+                28600,
+                0.661
+              ],
+              [
+                28800,
+                0.6665
+              ],
+              [
+                29000,
+                0.672
+              ],
+              [
+                29200,
+                0.6715
+              ],
+              [
+                29400,
+                0.68
+              ],
+              [
+                29600,
+                0.6775
+              ],
+              [
+                29800,
+                0.6755
+              ],
+              [
+                30000,
+                0.6745
+              ],
+              [
+                30200,
+                0.6735
+              ],
+              [
+                30400,
+                0.684
+              ],
+              [
+                30600,
+                0.6855
+              ],
+              [
+                30800,
+                0.69
+              ],
+              [
+                31000,
+                0.69
+              ],
+              [
+                31200,
+                0.692
+              ],
+              [
+                31400,
+                0.6875
+              ],
+              [
+                31600,
+                0.6895
+              ],
+              [
+                31800,
+                0.691
+              ],
+              [
+                32000,
+                0.6885
+              ],
+              [
+                32200,
+                0.6965
+              ],
+              [
+                32400,
+                0.6875
+              ],
+              [
+                32600,
+                0.6875
+              ],
+              [
+                32800,
+                0.685
+              ],
+              [
+                33000,
+                0.687
+              ],
+              [
+                33200,
+                0.684
+              ],
+              [
+                33400,
+                0.6865
+              ],
+              [
+                33600,
+                0.6925
+              ],
+              [
+                33800,
+                0.693
+              ],
+              [
+                34000,
+                0.6995
+              ],
+              [
+                34200,
+                0.694
+              ],
+              [
+                34400,
+                0.699
+              ],
+              [
+                34600,
+                0.695
+              ],
+              [
+                34800,
+                0.693
+              ],
+              [
+                35000,
+                0.6915
+              ],
+              [
+                35200,
+                0.6905
+              ],
+              [
+                35400,
+                0.693
+              ],
+              [
+                35600,
+                0.691
+              ],
+              [
+                35800,
+                0.692
+              ],
+              [
+                36000,
+                0.691
+              ],
+              [
+                36200,
+                0.695
+              ],
+              [
+                36400,
+                0.6925
+              ],
+              [
+                36600,
+                0.6925
+              ],
+              [
+                36800,
+                0.7
+              ],
+              [
+                37000,
+                0.6975
+              ],
+              [
+                37200,
+                0.6985
+              ],
+              [
+                37400,
+                0.6965
+              ],
+              [
+                37600,
+                0.695
+              ],
+              [
+                37800,
+                0.6915
+              ],
+              [
+                38000,
+                0.6865
+              ],
+              [
+                38200,
+                0.6895
+              ],
+              [
+                38400,
+                0.6865
+              ],
+              [
+                38600,
+                0.694
+              ],
+              [
+                38800,
+                0.687
+              ],
+              [
+                39000,
+                0.682
+              ],
+              [
+                39200,
+                0.6795
+              ],
+              [
+                39400,
+                0.68
+              ],
+              [
+                39600,
+                0.677
+              ],
+              [
+                39800,
+                0.674
+              ],
+              [
+                40000,
+                0.676
+              ],
+              [
+                40200,
+                0.6795
+              ],
+              [
+                40400,
+                0.681
+              ],
+              [
+                40600,
+                0.6735
+              ],
+              [
+                40800,
+                0.67
+              ],
+              [
+                41000,
+                0.6735
+              ],
+              [
+                41200,
+                0.6755
+              ],
+              [
+                41400,
+                0.6795
+              ],
+              [
+                41600,
+                0.682
+              ],
+              [
+                41800,
+                0.684
+              ],
+              [
+                42000,
+                0.6845
+              ],
+              [
+                42200,
+                0.6805
+              ],
+              [
+                42400,
+                0.683
+              ],
+              [
+                42600,
+                0.6875
+              ],
+              [
+                42800,
+                0.692
+              ],
+              [
+                43000,
+                0.6955
+              ],
+              [
+                43200,
+                0.697
+              ],
+              [
+                43400,
+                0.694
+              ],
+              [
+                43600,
+                0.7005
+              ],
+              [
+                43800,
+                0.7095
+              ],
+              [
+                44000,
+                0.709
+              ],
+              [
+                44200,
+                0.707
+              ],
+              [
+                44400,
+                0.7095
+              ],
+              [
+                44600,
+                0.7155
+              ],
+              [
+                44800,
+                0.719
+              ],
+              [
+                45000,
+                0.7185
+              ],
+              [
+                45200,
+                0.7185
+              ],
+              [
+                45400,
+                0.7165
+              ],
+              [
+                45600,
+                0.7055
+              ],
+              [
+                45800,
+                0.7025
+              ],
+              [
+                46000,
+                0.707
+              ],
+              [
+                46200,
+                0.7055
+              ],
+              [
+                46400,
+                0.701
+              ],
+              [
+                46600,
+                0.694
+              ],
+              [
+                46800,
+                0.6925
+              ],
+              [
+                47000,
+                0.687
+              ],
+              [
+                47200,
+                0.6875
+              ],
+              [
+                47400,
+                0.685
+              ],
+              [
+                47600,
+                0.6825
+              ],
+              [
+                47800,
+                0.684
+              ],
+              [
+                48000,
+                0.6825
+              ],
+              [
+                48200,
+                0.6815
+              ],
+              [
+                48400,
+                0.6845
+              ],
+              [
+                48600,
+                0.686
+              ],
+              [
+                48800,
+                0.686
+              ],
+              [
+                49000,
+                0.69
+              ],
+              [
+                49200,
+                0.6925
+              ],
+              [
+                49400,
+                0.695
+              ],
+              [
+                49600,
+                0.708
+              ],
+              [
+                49800,
+                0.706
+              ],
+              [
+                50000,
+                0.709
+              ],
+              [
+                50200,
+                0.71
+              ],
+              [
+                50400,
+                0.7105
+              ],
+              [
+                50600,
+                0.709
+              ],
+              [
+                50800,
+                0.7095
+              ],
+              [
+                51000,
+                0.703
+              ],
+              [
+                51200,
+                0.693
+              ],
+              [
+                51400,
+                0.6905
+              ],
+              [
+                51600,
+                0.69
+              ],
+              [
+                51800,
+                0.6885
+              ],
+              [
+                52000,
+                0.689
+              ],
+              [
+                52200,
+                0.684
+              ],
+              [
+                52400,
+                0.6805
+              ],
+              [
+                52600,
+                0.679
+              ],
+              [
+                52800,
+                0.6705
+              ],
+              [
+                53000,
+                0.676
+              ],
+              [
+                53200,
+                0.6845
+              ],
+              [
+                53400,
+                0.686
+              ],
+              [
+                53600,
+                0.6865
+              ],
+              [
+                53800,
+                0.687
+              ],
+              [
+                54000,
+                0.684
+              ],
+              [
+                54200,
+                0.6945
+              ],
+              [
+                54400,
+                0.6935
+              ],
+              [
+                54600,
+                0.696
+              ],
+              [
+                54800,
+                0.7105
+              ],
+              [
+                55000,
+                0.707
+              ],
+              [
+                55200,
+                0.695
+              ],
+              [
+                55400,
+                0.698
+              ],
+              [
+                55600,
+                0.691
+              ],
+              [
+                55800,
+                0.6895
+              ],
+              [
+                56000,
+                0.692
+              ],
+              [
+                56200,
+                0.6895
+              ],
+              [
+                56400,
+                0.6905
+              ],
+              [
+                56600,
+                0.688
+              ],
+              [
+                56800,
+                0.685
+              ],
+              [
+                57000,
+                0.686
+              ],
+              [
+                57200,
+                0.6995
+              ],
+              [
+                57400,
+                0.696
+              ],
+              [
+                57600,
+                0.698
+              ],
+              [
+                57800,
+                0.696
+              ],
+              [
+                58000,
+                0.696
+              ],
+              [
+                58200,
+                0.6995
+              ],
+              [
+                58400,
+                0.703
+              ],
+              [
+                58600,
+                0.7045
+              ],
+              [
+                58800,
+                0.692
+              ],
+              [
+                59000,
+                0.7005
+              ],
+              [
+                59200,
+                0.698
+              ],
+              [
+                59400,
+                0.7015
+              ],
+              [
+                59600,
+                0.6965
+              ],
+              [
+                59800,
+                0.703
+              ],
+              [
+                60000,
+                0.7
+              ],
+              [
+                60200,
+                0.6955
+              ],
+              [
+                60400,
+                0.6905
+              ],
+              [
+                60600,
+                0.6905
+              ],
+              [
+                60800,
+                0.6945
+              ],
+              [
+                61000,
+                0.694
+              ],
+              [
+                61200,
+                0.7005
+              ],
+              [
+                61400,
+                0.6945
+              ],
+              [
+                61600,
+                0.6965
+              ],
+              [
+                61800,
+                0.6855
+              ],
+              [
+                62000,
+                0.686
+              ],
+              [
+                62200,
+                0.6855
+              ],
+              [
+                62400,
+                0.686
+              ],
+              [
+                62600,
+                0.6895
+              ],
+              [
+                62800,
+                0.689
+              ],
+              [
+                63000,
+                0.685
+              ],
+              [
+                63200,
+                0.6795
+              ],
+              [
+                63400,
+                0.682
+              ],
+              [
+                63600,
+                0.688
+              ],
+              [
+                63800,
+                0.693
+              ],
+              [
+                64000,
+                0.6935
+              ],
+              [
+                64200,
+                0.6965
+              ],
+              [
+                64400,
+                0.6995
+              ],
+              [
+                64600,
+                0.696
+              ],
+              [
+                64800,
+                0.697
+              ],
+              [
+                65000,
+                0.695
+              ],
+              [
+                65200,
+                0.693
+              ],
+              [
+                65400,
+                0.6975
+              ],
+              [
+                65600,
+                0.6955
+              ],
+              [
+                65800,
+                0.6965
+              ],
+              [
+                66000,
+                0.693
+              ],
+              [
+                66200,
+                0.693
+              ],
+              [
+                66400,
+                0.694
+              ],
+              [
+                66600,
+                0.6935
+              ],
+              [
+                66800,
+                0.6955
+              ],
+              [
+                67000,
+                0.703
+              ],
+              [
+                67200,
+                0.6975
+              ],
+              [
+                67400,
+                0.692
+              ],
+              [
+                67600,
+                0.6925
+              ],
+              [
+                67800,
+                0.6955
+              ],
+              [
+                68000,
+                0.7025
+              ],
+              [
+                68200,
+                0.7025
+              ],
+              [
+                68400,
+                0.7075
+              ],
+              [
+                68600,
+                0.7125
+              ],
+              [
+                68800,
+                0.7175
+              ],
+              [
+                69000,
+                0.714
+              ],
+              [
+                69200,
+                0.7155
+              ],
+              [
+                69400,
+                0.723
+              ],
+              [
+                69600,
+                0.7185
+              ],
+              [
+                69800,
+                0.7235
+              ],
+              [
+                70000,
+                0.7215
+              ],
+              [
+                70200,
+                0.714
+              ],
+              [
+                70400,
+                0.7065
+              ],
+              [
+                70600,
+                0.703
+              ],
+              [
+                70800,
+                0.6965
+              ],
+              [
+                71000,
+                0.699
+              ],
+              [
+                71200,
+                0.7075
+              ],
+              [
+                71400,
+                0.704
+              ],
+              [
+                71600,
+                0.707
+              ],
+              [
+                71800,
+                0.7025
+              ],
+              [
+                72000,
+                0.7045
+              ],
+              [
+                72200,
+                0.709
+              ],
+              [
+                72400,
+                0.713
+              ],
+              [
+                72600,
+                0.7125
+              ],
+              [
+                72800,
+                0.717
+              ],
+              [
+                73000,
+                0.7135
+              ],
+              [
+                73200,
+                0.7125
+              ],
+              [
+                73400,
+                0.709
+              ],
+              [
+                73600,
+                0.71
+              ],
+              [
+                73800,
+                0.7065
+              ],
+              [
+                74000,
+                0.7085
+              ],
+              [
+                74200,
+                0.707
+              ],
+              [
+                74400,
+                0.702
+              ],
+              [
+                74600,
+                0.702
+              ],
+              [
+                74800,
+                0.697
+              ],
+              [
+                75000,
+                0.7025
+              ],
+              [
+                75200,
+                0.6995
+              ],
+              [
+                75400,
+                0.7075
+              ],
+              [
+                75600,
+                0.7035
+              ],
+              [
+                75800,
+                0.7125
+              ],
+              [
+                76000,
+                0.7105
+              ],
+              [
+                76200,
+                0.716
+              ],
+              [
+                76400,
+                0.7145
+              ],
+              [
+                76600,
+                0.7105
+              ],
+              [
+                76800,
+                0.7105
+              ],
+              [
+                77000,
+                0.7025
+              ],
+              [
+                77200,
+                0.7085
+              ],
+              [
+                77400,
+                0.713
+              ],
+              [
+                77600,
+                0.718
+              ],
+              [
+                77800,
+                0.706
+              ],
+              [
+                78000,
+                0.6985
+              ],
+              [
+                78200,
+                0.699
+              ],
+              [
+                78400,
+                0.7065
+              ],
+              [
+                78600,
+                0.7095
+              ],
+              [
+                78800,
+                0.7145
+              ],
+              [
+                79000,
+                0.7165
+              ],
+              [
+                79200,
+                0.7115
+              ],
+              [
+                79400,
+                0.698
+              ],
+              [
+                79600,
+                0.6945
+              ],
+              [
+                79800,
+                0.6985
+              ]
+            ],
+            "decay_bucket_assignment_stats": {
+              "stable": 0.001905280348394121,
+              "medium": 0.9980558363791897,
+              "bursty": 3.888327241620655e-05
+            },
+            "decay_slot_collision_rate": 1.541605101485341
+          },
+          "predict_full": "{\"steady_state_hit_ratio\": 0.678525, \"mean_recovery_time_requests\": 25.0, \"memory_bytes\": 786408, \"decay_slot_collision_rate\": 1.541605101485341}"
+        },
+        {
+          "input": "{\"dataset_name\": \"synthetic_alpha1.0_rank_shuffle\", \"arm\": \"oracle_only\", \"cache_ratio\": 0.05, \"table_size_mult\": 1.0}",
+          "output": "{\"steady_state_hit_ratio\": 0.67685, \"mean_recovery_time_requests\": 25.0, \"memory_bytes\": 786408}",
+          "metadata_full_record": {
+            "dataset_name": "synthetic_alpha1.0_rank_shuffle",
+            "arm": "oracle_only",
+            "cache_ratio": 0.05,
+            "cache_capacity": 2500,
+            "table_size_mult": 1.0,
+            "n_requests": 80000,
+            "n_keys": 49994,
+            "steady_state_hit_ratio": 0.67685,
+            "memory_bytes": 786408,
+            "n_drift_events_observed": 1,
+            "mean_recovery_time_requests": 25.0,
+            "recovery_times_per_event": [
+              25.0
+            ],
+            "elapsed_sec": 0.8341008219867945,
+            "hit_ratio_time_series": [
+              [
+                0,
+                0.0
+              ],
+              [
+                200,
+                0.208955223880597
+              ],
+              [
+                400,
+                0.2967581047381546
+              ],
+              [
+                600,
+                0.3544093178036606
+              ],
+              [
+                800,
+                0.3895131086142322
+              ],
+              [
+                1000,
+                0.40559440559440557
+              ],
+              [
+                1200,
+                0.41881765195670273
+              ],
+              [
+                1400,
+                0.44325481798715205
+              ],
+              [
+                1600,
+                0.4497189256714553
+              ],
+              [
+                1800,
+                0.4569683509161577
+              ],
+              [
+                2000,
+                0.466
+              ],
+              [
+                2200,
+                0.5025
+              ],
+              [
+                2400,
+                0.522
+              ],
+              [
+                2600,
+                0.5375
+              ],
+              [
+                2800,
+                0.544
+              ],
+              [
+                3000,
+                0.5495
+              ],
+              [
+                3200,
+                0.559
+              ],
+              [
+                3400,
+                0.5465
+              ],
+              [
+                3600,
+                0.5535
+              ],
+              [
+                3800,
+                0.56
+              ],
+              [
+                4000,
+                0.5635
+              ],
+              [
+                4200,
+                0.569
+              ],
+              [
+                4400,
+                0.5755
+              ],
+              [
+                4600,
+                0.578
+              ],
+              [
+                4800,
+                0.5845
+              ],
+              [
+                5000,
+                0.5975
+              ],
+              [
+                5200,
+                0.602
+              ],
+              [
+                5400,
+                0.6265
+              ],
+              [
+                5600,
+                0.63
+              ],
+              [
+                5800,
+                0.6305
+              ],
+              [
+                6000,
+                0.6385
+              ],
+              [
+                6200,
+                0.6405
+              ],
+              [
+                6400,
+                0.64
+              ],
+              [
+                6600,
+                0.639
+              ],
+              [
+                6800,
+                0.639
+              ],
+              [
+                7000,
+                0.639
+              ],
+              [
+                7200,
+                0.64
+              ],
+              [
+                7400,
+                0.6345
+              ],
+              [
+                7600,
+                0.6415
+              ],
+              [
+                7800,
+                0.655
+              ],
+              [
+                8000,
+                0.656
+              ],
+              [
+                8200,
+                0.65
+              ],
+              [
+                8400,
+                0.652
+              ],
+              [
+                8600,
+                0.656
+              ],
+              [
+                8800,
+                0.666
+              ],
+              [
+                9000,
+                0.67
+              ],
+              [
+                9200,
+                0.6785
+              ],
+              [
+                9400,
+                0.6805
+              ],
+              [
+                9600,
+                0.6755
+              ],
+              [
+                9800,
+                0.669
+              ],
+              [
+                10000,
+                0.6695
+              ],
+              [
+                10200,
+                0.6795
+              ],
+              [
+                10400,
+                0.676
+              ],
+              [
+                10600,
+                0.6785
+              ],
+              [
+                10800,
+                0.676
+              ],
+              [
+                11000,
+                0.6725
+              ],
+              [
+                11200,
+                0.669
+              ],
+              [
+                11400,
+                0.669
+              ],
+              [
+                11600,
+                0.673
+              ],
+              [
+                11800,
+                0.678
+              ],
+              [
+                12000,
+                0.681
+              ],
+              [
+                12200,
+                0.6855
+              ],
+              [
+                12400,
+                0.6865
+              ],
+              [
+                12600,
+                0.688
+              ],
+              [
+                12800,
+                0.689
+              ],
+              [
+                13000,
+                0.6915
+              ],
+              [
+                13200,
+                0.6915
+              ],
+              [
+                13400,
+                0.6875
+              ],
+              [
+                13600,
+                0.684
+              ],
+              [
+                13800,
+                0.6795
+              ],
+              [
+                14000,
+                0.669
+              ],
+              [
+                14200,
+                0.6605
+              ],
+              [
+                14400,
+                0.668
+              ],
+              [
+                14600,
+                0.6655
+              ],
+              [
+                14800,
+                0.6555
+              ],
+              [
+                15000,
+                0.6545
+              ],
+              [
+                15200,
+                0.65
+              ],
+              [
+                15400,
+                0.6505
+              ],
+              [
+                15600,
+                0.652
+              ],
+              [
+                15800,
+                0.6555
+              ],
+              [
+                16000,
+                0.661
+              ],
+              [
+                16200,
+                0.66
+              ],
+              [
+                16400,
+                0.6555
+              ],
+              [
+                16600,
+                0.6515
+              ],
+              [
+                16800,
+                0.6545
+              ],
+              [
+                17000,
+                0.6605
+              ],
+              [
+                17200,
+                0.6645
+              ],
+              [
+                17400,
+                0.6665
+              ],
+              [
+                17600,
+                0.668
+              ],
+              [
+                17800,
+                0.667
+              ],
+              [
+                18000,
+                0.666
+              ],
+              [
+                18200,
+                0.67
+              ],
+              [
+                18400,
+                0.6685
+              ],
+              [
+                18600,
+                0.6705
+              ],
+              [
+                18800,
+                0.676
+              ],
+              [
+                19000,
+                0.668
+              ],
+              [
+                19200,
+                0.6665
+              ],
+              [
+                19400,
+                0.667
+              ],
+              [
+                19600,
+                0.6635
+              ],
+              [
+                19800,
+                0.665
+              ],
+              [
+                20000,
+                0.6685
+              ],
+              [
+                20200,
+                0.6645
+              ],
+              [
+                20400,
+                0.6665
+              ],
+              [
+                20600,
+                0.6645
+              ],
+              [
+                20800,
+                0.66
+              ],
+              [
+                21000,
+                0.665
+              ],
+              [
+                21200,
+                0.661
+              ],
+              [
+                21400,
+                0.661
+              ],
+              [
+                21600,
+                0.668
+              ],
+              [
+                21800,
+                0.669
+              ],
+              [
+                22000,
+                0.668
+              ],
+              [
+                22200,
+                0.674
+              ],
+              [
+                22400,
+                0.674
+              ],
+              [
+                22600,
+                0.6825
+              ],
+              [
+                22800,
+                0.684
+              ],
+              [
+                23000,
+                0.685
+              ],
+              [
+                23200,
+                0.6875
+              ],
+              [
+                23400,
+                0.6905
+              ],
+              [
+                23600,
+                0.69
+              ],
+              [
+                23800,
+                0.6895
+              ],
+              [
+                24000,
+                0.696
+              ],
+              [
+                24200,
+                0.6935
+              ],
+              [
+                24400,
+                0.696
+              ],
+              [
+                24600,
+                0.6895
+              ],
+              [
+                24800,
+                0.6895
+              ],
+              [
+                25000,
+                0.683
+              ],
+              [
+                25200,
+                0.6875
+              ],
+              [
+                25400,
+                0.684
+              ],
+              [
+                25600,
+                0.6875
+              ],
+              [
+                25800,
+                0.6855
+              ],
+              [
+                26000,
+                0.676
+              ],
+              [
+                26200,
+                0.677
+              ],
+              [
+                26400,
+                0.673
+              ],
+              [
+                26600,
+                0.673
+              ],
+              [
+                26800,
+                0.669
+              ],
+              [
+                27000,
+                0.6695
+              ],
+              [
+                27200,
+                0.6715
+              ],
+              [
+                27400,
+                0.67
+              ],
+              [
+                27600,
+                0.6655
+              ],
+              [
+                27800,
+                0.664
+              ],
+              [
+                28000,
+                0.6685
+              ],
+              [
+                28200,
+                0.662
+              ],
+              [
+                28400,
+                0.6595
+              ],
+              [
+                28600,
+                0.6565
+              ],
+              [
+                28800,
+                0.6635
+              ],
+              [
+                29000,
+                0.6695
+              ],
+              [
+                29200,
+                0.668
+              ],
+              [
+                29400,
+                0.6765
+              ],
+              [
+                29600,
+                0.675
+              ],
+              [
+                29800,
+                0.6745
+              ],
+              [
+                30000,
+                0.6715
+              ],
+              [
+                30200,
+                0.6715
+              ],
+              [
+                30400,
+                0.6835
+              ],
+              [
+                30600,
+                0.6855
+              ],
+              [
+                30800,
+                0.689
+              ],
+              [
+                31000,
+                0.6865
+              ],
+              [
+                31200,
+                0.6895
+              ],
+              [
+                31400,
+                0.684
+              ],
+              [
+                31600,
+                0.687
+              ],
+              [
+                31800,
+                0.689
+              ],
+              [
+                32000,
+                0.689
+              ],
+              [
+                32200,
+                0.698
+              ],
+              [
+                32400,
+                0.69
+              ],
+              [
+                32600,
+                0.6915
+              ],
+              [
+                32800,
+                0.688
+              ],
+              [
+                33000,
+                0.691
+              ],
+              [
+                33200,
+                0.6895
+              ],
+              [
+                33400,
+                0.692
+              ],
+              [
+                33600,
+                0.6965
+              ],
+              [
+                33800,
+                0.696
+              ],
+              [
+                34000,
+                0.7
+              ],
+              [
+                34200,
+                0.693
+              ],
+              [
+                34400,
+                0.6975
+              ],
+              [
+                34600,
+                0.696
+              ],
+              [
+                34800,
+                0.697
+              ],
+              [
+                35000,
+                0.696
+              ],
+              [
+                35200,
+                0.693
+              ],
+              [
+                35400,
+                0.6945
+              ],
+              [
+                35600,
+                0.692
+              ],
+              [
+                35800,
+                0.6935
+              ],
+              [
+                36000,
+                0.691
+              ],
+              [
+                36200,
+                0.695
+              ],
+              [
+                36400,
+                0.692
+              ],
+              [
+                36600,
+                0.6925
+              ],
+              [
+                36800,
+                0.698
+              ],
+              [
+                37000,
+                0.6935
+              ],
+              [
+                37200,
+                0.695
+              ],
+              [
+                37400,
+                0.6925
+              ],
+              [
+                37600,
+                0.692
+              ],
+              [
+                37800,
+                0.689
+              ],
+              [
+                38000,
+                0.6845
+              ],
+              [
+                38200,
+                0.687
+              ],
+              [
+                38400,
+                0.6825
+              ],
+              [
+                38600,
+                0.6875
+              ],
+              [
+                38800,
+                0.6785
+              ],
+              [
+                39000,
+                0.676
+              ],
+              [
+                39200,
+                0.6735
+              ],
+              [
+                39400,
+                0.674
+              ],
+              [
+                39600,
+                0.67
+              ],
+              [
+                39800,
+                0.667
+              ],
+              [
+                40000,
+                0.6705
+              ],
+              [
+                40200,
+                0.673
+              ],
+              [
+                40400,
+                0.6785
+              ],
+              [
+                40600,
+                0.6705
+              ],
+              [
+                40800,
+                0.671
+              ],
+              [
+                41000,
+                0.674
+              ],
+              [
+                41200,
+                0.6755
+              ],
+              [
+                41400,
+                0.6805
+              ],
+              [
+                41600,
+                0.6835
+              ],
+              [
+                41800,
+                0.687
+              ],
+              [
+                42000,
+                0.6895
+              ],
+              [
+                42200,
+                0.689
+              ],
+              [
+                42400,
+                0.689
+              ],
+              [
+                42600,
+                0.6935
+              ],
+              [
+                42800,
+                0.6995
+              ],
+              [
+                43000,
+                0.7005
+              ],
+              [
+                43200,
+                0.702
+              ],
+              [
+                43400,
+                0.701
+              ],
+              [
+                43600,
+                0.7095
+              ],
+              [
+                43800,
+                0.717
+              ],
+              [
+                44000,
+                0.715
+              ],
+              [
+                44200,
+                0.7125
+              ],
+              [
+                44400,
+                0.714
+              ],
+              [
+                44600,
+                0.72
+              ],
+              [
+                44800,
+                0.7195
+              ],
+              [
+                45000,
+                0.7205
+              ],
+              [
+                45200,
+                0.72
+              ],
+              [
+                45400,
+                0.716
+              ],
+              [
+                45600,
+                0.6995
+              ],
+              [
+                45800,
+                0.696
+              ],
+              [
+                46000,
+                0.6985
+              ],
+              [
+                46200,
+                0.6955
+              ],
+              [
+                46400,
+                0.692
+              ],
+              [
+                46600,
+                0.6875
+              ],
+              [
+                46800,
+                0.685
+              ],
+              [
+                47000,
+                0.6795
+              ],
+              [
+                47200,
+                0.682
+              ],
+              [
+                47400,
+                0.681
+              ],
+              [
+                47600,
+                0.6835
+              ],
+              [
+                47800,
+                0.683
+              ],
+              [
+                48000,
+                0.6835
+              ],
+              [
+                48200,
+                0.6845
+              ],
+              [
+                48400,
+                0.6875
+              ],
+              [
+                48600,
+                0.687
+              ],
+              [
+                48800,
+                0.6885
+              ],
+              [
+                49000,
+                0.6935
+              ],
+              [
+                49200,
+                0.6945
+              ],
+              [
+                49400,
+                0.6975
+              ],
+              [
+                49600,
+                0.709
+              ],
+              [
+                49800,
+                0.707
+              ],
+              [
+                50000,
+                0.7095
+              ],
+              [
+                50200,
+                0.7095
+              ],
+              [
+                50400,
+                0.7085
+              ],
+              [
+                50600,
+                0.707
+              ],
+              [
+                50800,
+                0.705
+              ],
+              [
+                51000,
+                0.6995
+              ],
+              [
+                51200,
+                0.6875
+              ],
+              [
+                51400,
+                0.684
+              ],
+              [
+                51600,
+                0.682
+              ],
+              [
+                51800,
+                0.679
+              ],
+              [
+                52000,
+                0.6775
+              ],
+              [
+                52200,
+                0.6745
+              ],
+              [
+                52400,
+                0.672
+              ],
+              [
+                52600,
+                0.67
+              ],
+              [
+                52800,
+                0.665
+              ],
+              [
+                53000,
+                0.6705
+              ],
+              [
+                53200,
+                0.6825
+              ],
+              [
+                53400,
+                0.6825
+              ],
+              [
+                53600,
+                0.683
+              ],
+              [
+                53800,
+                0.687
+              ],
+              [
+                54000,
+                0.686
+              ],
+              [
+                54200,
+                0.696
+              ],
+              [
+                54400,
+                0.6945
+              ],
+              [
+                54600,
+                0.696
+              ],
+              [
+                54800,
+                0.7095
+              ],
+              [
+                55000,
+                0.7045
+              ],
+              [
+                55200,
+                0.692
+              ],
+              [
+                55400,
+                0.6965
+              ],
+              [
+                55600,
+                0.6915
+              ],
+              [
+                55800,
+                0.6905
+              ],
+              [
+                56000,
+                0.6925
+              ],
+              [
+                56200,
+                0.6885
+              ],
+              [
+                56400,
+                0.689
+              ],
+              [
+                56600,
+                0.6895
+              ],
+              [
+                56800,
+                0.685
+              ],
+              [
+                57000,
+                0.686
+              ],
+              [
+                57200,
+                0.6975
+              ],
+              [
+                57400,
+                0.693
+              ],
+              [
+                57600,
+                0.694
+              ],
+              [
+                57800,
+                0.6905
+              ],
+              [
+                58000,
+                0.6895
+              ],
+              [
+                58200,
+                0.6905
+              ],
+              [
+                58400,
+                0.6955
+              ],
+              [
+                58600,
+                0.6965
+              ],
+              [
+                58800,
+                0.6855
+              ],
+              [
+                59000,
+                0.693
+              ],
+              [
+                59200,
+                0.6915
+              ],
+              [
+                59400,
+                0.696
+              ],
+              [
+                59600,
+                0.692
+              ],
+              [
+                59800,
+                0.697
+              ],
+              [
+                60000,
+                0.693
+              ],
+              [
+                60200,
+                0.691
+              ],
+              [
+                60400,
+                0.686
+              ],
+              [
+                60600,
+                0.6845
+              ],
+              [
+                60800,
+                0.689
+              ],
+              [
+                61000,
+                0.689
+              ],
+              [
+                61200,
+                0.6965
+              ],
+              [
+                61400,
+                0.6905
+              ],
+              [
+                61600,
+                0.6935
+              ],
+              [
+                61800,
+                0.6855
+              ],
+              [
+                62000,
+                0.692
+              ],
+              [
+                62200,
+                0.69
+              ],
+              [
+                62400,
+                0.689
+              ],
+              [
+                62600,
+                0.6915
+              ],
+              [
+                62800,
+                0.692
+              ],
+              [
+                63000,
+                0.688
+              ],
+              [
+                63200,
+                0.684
+              ],
+              [
+                63400,
+                0.687
+              ],
+              [
+                63600,
+                0.691
+              ],
+              [
+                63800,
+                0.697
+              ],
+              [
+                64000,
+                0.6925
+              ],
+              [
+                64200,
+                0.6975
+              ],
+              [
+                64400,
+                0.7015
+              ],
+              [
+                64600,
+                0.699
+              ],
+              [
+                64800,
+                0.6985
+              ],
+              [
+                65000,
+                0.6945
+              ],
+              [
+                65200,
+                0.6905
+              ],
+              [
+                65400,
+                0.6935
+              ],
+              [
+                65600,
+                0.692
+              ],
+              [
+                65800,
+                0.6885
+              ],
+              [
+                66000,
+                0.6875
+              ],
+              [
+                66200,
+                0.6855
+              ],
+              [
+                66400,
+                0.688
+              ],
+              [
+                66600,
+                0.6865
+              ],
+              [
+                66800,
+                0.6865
+              ],
+              [
+                67000,
+                0.6955
+              ],
+              [
+                67200,
+                0.6885
+              ],
+              [
+                67400,
+                0.684
+              ],
+              [
+                67600,
+                0.6825
+              ],
+              [
+                67800,
+                0.686
+              ],
+              [
+                68000,
+                0.692
+              ],
+              [
+                68200,
+                0.688
+              ],
+              [
+                68400,
+                0.691
+              ],
+              [
+                68600,
+                0.6965
+              ],
+              [
+                68800,
+                0.7025
+              ],
+              [
+                69000,
+                0.7
+              ],
+              [
+                69200,
+                0.7025
+              ],
+              [
+                69400,
+                0.707
+              ],
+              [
+                69600,
+                0.7045
+              ],
+              [
+                69800,
+                0.709
+              ],
+              [
+                70000,
+                0.7055
+              ],
+              [
+                70200,
+                0.705
+              ],
+              [
+                70400,
+                0.6975
+              ],
+              [
+                70600,
+                0.6955
+              ],
+              [
+                70800,
+                0.69
+              ],
+              [
+                71000,
+                0.6945
+              ],
+              [
+                71200,
+                0.7045
+              ],
+              [
+                71400,
+                0.7025
+              ],
+              [
+                71600,
+                0.7025
+              ],
+              [
+                71800,
+                0.7005
+              ],
+              [
+                72000,
+                0.7015
+              ],
+              [
+                72200,
+                0.704
+              ],
+              [
+                72400,
+                0.71
+              ],
+              [
+                72600,
+                0.7095
+              ],
+              [
+                72800,
+                0.713
+              ],
+              [
+                73000,
+                0.7065
+              ],
+              [
+                73200,
+                0.7045
+              ],
+              [
+                73400,
+                0.701
+              ],
+              [
+                73600,
+                0.705
+              ],
+              [
+                73800,
+                0.7025
+              ],
+              [
+                74000,
+                0.7035
+              ],
+              [
+                74200,
+                0.702
+              ],
+              [
+                74400,
+                0.6975
+              ],
+              [
+                74600,
+                0.697
+              ],
+              [
+                74800,
+                0.692
+              ],
+              [
+                75000,
+                0.698
+              ],
+              [
+                75200,
+                0.6925
+              ],
+              [
+                75400,
+                0.701
+              ],
+              [
+                75600,
+                0.699
+              ],
+              [
+                75800,
+                0.7045
+              ],
+              [
+                76000,
+                0.706
+              ],
+              [
+                76200,
+                0.713
+              ],
+              [
+                76400,
+                0.7105
+              ],
+              [
+                76600,
+                0.707
+              ],
+              [
+                76800,
+                0.705
+              ],
+              [
+                77000,
+                0.699
+              ],
+              [
+                77200,
+                0.707
+              ],
+              [
+                77400,
+                0.709
+              ],
+              [
+                77600,
+                0.712
+              ],
+              [
+                77800,
+                0.7045
+              ],
+              [
+                78000,
+                0.698
+              ],
+              [
+                78200,
+                0.6985
+              ],
+              [
+                78400,
+                0.704
+              ],
+              [
+                78600,
+                0.707
+              ],
+              [
+                78800,
+                0.7155
+              ],
+              [
+                79000,
+                0.717
+              ],
+              [
+                79200,
+                0.7115
+              ],
+              [
+                79400,
+                0.7025
+              ],
+              [
+                79600,
+                0.6995
+              ],
+              [
+                79800,
+                0.7005
+              ]
+            ],
+            "decay_bucket_assignment_stats": {
+              "stable": 0.10633606684202383,
+              "medium": 0.8800479653411728,
+              "bursty": 0.013615967816803342
+            },
+            "decay_slot_collision_rate": 1.5281216153489092
+          },
+          "predict_oracle_only": "{\"steady_state_hit_ratio\": 0.67685, \"mean_recovery_time_requests\": 25.0, \"memory_bytes\": 786408, \"decay_slot_collision_rate\": 1.5281216153489092}"
+        }
+      ]
+    }
+  ]
+}
