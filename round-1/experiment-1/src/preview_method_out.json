@@ -1,245 +1,459 @@
 {
   "metadata": {
-    "method_name": "per_key_decay_cache_admission_vs_tinylfu",
-    "notes": "No real-world access trace was available in this run's data dependency (gen_art_dataset_1 was empty, no user uploads provided): per fallback_plan item (2) this run is SYNTHETIC-ONLY for BOTH the stead...",
-    "hardware": {
-      "num_cpus": 6,
-      "num_workers": 5
-    },
-    "grid_spec": {
-      "n_requests": 40000,
-      "n_keys": 1000,
-      "alphas": [
-        0.8,
-        1.0,
-        1.2
-      ],
-      "cache_ratios": [
-        0.01,
-        0.05,
-        0.1
-      ],
-      "drift_scenarios": [
-        "D1_mild_reshuffle",
-        "D2_severe_reshuffle",
-        "D3_mild_burst"
-      ],
-      "W_multipliers": [
-        1,
-        4,
-        8
-      ],
-      "seeds": [
-        0,
-        1,
-        2
-      ]
-    },
-    "parity_summary": [
-      {
-        "alpha": 1.0,
-        "cache_ratio": 0.05,
-        "drift_scenario": "D2_severe_reshuffle",
-        "baseline_best_hit_ratio": 0.58255,
-        "decay_mean_hit_ratio": 0.5596214285714286,
-        "delta_pp": -2.292857142857141
-      },
-      {
-        "alpha": 0.8,
-        "cache_ratio": 0.01,
-        "drift_scenario": "D1_mild_reshuffle",
-        "baseline_best_hit_ratio": 0.216825,
-        "decay_mean_hit_ratio": 0.20192000000000002,
-        "delta_pp": -1.4904999999999973
-      },
-      {
-        "alpha": 0.8,
-        "cache_ratio": 0.01,
-        "drift_scenario": "D2_severe_reshuffle",
-        "baseline_best_hit_ratio": 0.2102,
-        "decay_mean_hit_ratio": 0.195885,
-        "delta_pp": -1.4314999999999993
-      }
+    "method_name": "per_key_decay_vs_global_tinylfu",
+    "description": "W-TinyLFU baseline (global Count-Min + doorkeeper, periodic global reset) vs proposed per-key decay-rate-bucketed admission (CoV of shadow-queue inter-arrival gaps), on shared SLRU eviction, across sy...",
+    "n_keys": 10000,
+    "n_requests": 1000000,
+    "cache_ratios": [
+      0.01,
+      0.05,
+      0.1
     ],
-    "recovery_summary": [
-      {
-        "alpha": 1.0,
-        "cache_ratio": 0.05,
-        "drift_scenario": "D2_severe_reshuffle",
-        "baseline_recovery_ci": {
-          "median": 200.0,
-          "ci_low": 200.0,
-          "ci_high": 200.0,
-          "n": 35
-        },
-        "decay_recovery_ci": {
-          "median": 200.0,
-          "ci_low": 200.0,
-          "ci_high": 200.0,
-          "n": 7
-        }
-      },
-      {
-        "alpha": 0.8,
-        "cache_ratio": 0.01,
-        "drift_scenario": "D1_mild_reshuffle",
-        "baseline_recovery_ci": {
-          "median": 200.0,
-          "ci_low": 200.0,
-          "ci_high": 200.0,
-          "n": 25
-        },
-        "decay_recovery_ci": {
-          "median": 200.0,
-          "ci_low": 200.0,
-          "ci_high": 3000.0,
-          "n": 5
-        }
-      },
-      {
-        "alpha": 0.8,
-        "cache_ratio": 0.01,
-        "drift_scenario": "D2_severe_reshuffle",
-        "baseline_recovery_ci": {
-          "median": 200.0,
-          "ci_low": 200.0,
-          "ci_high": 200.0,
-          "n": 25
-        },
-        "decay_recovery_ci": {
-          "median": 200.0,
-          "ci_low": 200.0,
-          "ci_high": 2800.0,
-          "n": 5
-        }
-      }
+    "w_sweep": [
+      4,
+      8,
+      16
     ],
-    "memory_summary": {
-      "baseline_mean_bytes": 786432.0,
-      "decay_mean_bytes": 786406.6373626373,
-      "pct_diff": -0.003225026113214587,
-      "within_15pct_tolerance": true
-    },
-    "mean_decay_slot_collision_rate": 0.06839125392929035,
-    "unit_test_status": "PASSED",
-    "smoke_test": {
-      "baseline_hit_ratio": 0.589,
-      "decay_hit_ratio": 0.5796,
-      "baseline_memory_bytes": 786432,
-      "decay_memory_bytes": 786400
-    },
-    "total_runtime_sec": 388.2042826525867,
-    "n_configs_run": 1092,
-    "n_configs_errored": 0
+    "alphas": [
+      0.8,
+      1.0,
+      1.2
+    ],
+    "drift_types": [
+      "none",
+      "periodic_reshuffle",
+      "burst_cold_keys"
+    ],
+    "real_trace_used": true,
+    "n_seeds": 5,
+    "real_trace_windows_requested": 3,
+    "n_scenarios": 76,
+    "n_configs": 1140,
+    "n_results": 1140,
+    "total_runtime_s": 912.9929757590871,
+    "perkey_decay_bucket_histogram": {
+      "counts": {
+        "stable": 27831,
+        "mixed": 710955,
+        "volatile": 1722
+      },
+      "fractions": {
+        "stable": 0.03758365878559043,
+        "mixed": 0.9600909105640992,
+        "volatile": 0.0023254306503103276
+      },
+      "n_configs_counted": 228
+    }
   },
   "datasets": [
     {
-      "dataset": "synthetic_zipf_cache_admission_sweep",
+      "dataset": "burst_cold_keys_a0.8_seed0",
       "examples": [
         {
-          "input": "system=baseline alpha=1.0 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle W_multiplier=1 seed=0 n_requests=40000 n_keys=1000",
-          "output": "steady_state_hit_ratio=0.559750 recovery_time_requests=200.0 memory_bytes=786432",
-          "metadata_config": {
-            "trace_source": "synthetic_zipf",
-            "alpha": 1.0,
-            "cache_ratio": 0.05,
-            "cache_capacity": 50,
-            "drift_scenario": "D2_severe_reshuffle",
-            "system": "baseline",
-            "W_multiplier": 1,
-            "seed": 0,
-            "n_requests": 40000,
-            "n_keys": 1000,
-            "steady_state_hit_ratio": 0.55975,
-            "memory_bytes": 786432,
-            "recovery_time_requests": 200.0,
-            "elapsed_sec": 0.5401120707392693,
-            "hit_ratio_time_series": [
-              [
-                0,
-                0.0
-              ],
-              [
-                800,
-                0.49563046192259674
-              ],
-              [
-                1600,
-                0.5334166146158651
-              ]
-            ]
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed0\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 0, \"seed\": 1010}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.2675, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 4,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 4.5305863009998575,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.244,
+              "target_hr": 0.2196,
+              "recovery_steps": 1
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.229,
+              "target_hr": 0.2061,
+              "recovery_steps": 217
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.2365,
+              "target_hr": 0.21284999999999998,
+              "recovery_steps": 0
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 0,
+            "seed": 1010
           },
-          "predict_baseline": "steady_state_hit_ratio=0.559750 recovery_time_requests=200.0 memory_bytes=786432"
+          "predict_steady_state_hit_ratio": "0.2675",
+          "metadata_is_best_w_for_scenario": false
         },
         {
-          "input": "system=baseline alpha=1.0 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle W_multiplier=4 seed=0 n_requests=40000 n_keys=1000",
-          "output": "steady_state_hit_ratio=0.556975 recovery_time_requests=200.0 memory_bytes=786432",
-          "metadata_config": {
-            "trace_source": "synthetic_zipf",
-            "alpha": 1.0,
-            "cache_ratio": 0.05,
-            "cache_capacity": 50,
-            "drift_scenario": "D2_severe_reshuffle",
-            "system": "baseline",
-            "W_multiplier": 4,
-            "seed": 0,
-            "n_requests": 40000,
-            "n_keys": 1000,
-            "steady_state_hit_ratio": 0.556975,
-            "memory_bytes": 786432,
-            "recovery_time_requests": 200.0,
-            "elapsed_sec": 0.5662207119166851,
-            "hit_ratio_time_series": [
-              [
-                0,
-                0.0
-              ],
-              [
-                800,
-                0.5043695380774033
-              ],
-              [
-                1600,
-                0.5390381011867583
-              ]
-            ]
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed0\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 0, \"seed\": 1010}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.272, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 8,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 4.856193998944946,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.255,
+              "target_hr": 0.2295,
+              "recovery_steps": 28
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.2585,
+              "target_hr": 0.23265000000000002,
+              "recovery_steps": 562
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.2445,
+              "target_hr": 0.22005,
+              "recovery_steps": 0
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 0,
+            "seed": 1010
           },
-          "predict_baseline": "steady_state_hit_ratio=0.556975 recovery_time_requests=200.0 memory_bytes=786432"
+          "predict_steady_state_hit_ratio": "0.272",
+          "metadata_is_best_w_for_scenario": false
         },
         {
-          "input": "system=baseline alpha=1.0 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle W_multiplier=8 seed=0 n_requests=40000 n_keys=1000",
-          "output": "steady_state_hit_ratio=0.557425 recovery_time_requests=200.0 memory_bytes=786432",
-          "metadata_config": {
-            "trace_source": "synthetic_zipf",
-            "alpha": 1.0,
-            "cache_ratio": 0.05,
-            "cache_capacity": 50,
-            "drift_scenario": "D2_severe_reshuffle",
-            "system": "baseline",
-            "W_multiplier": 8,
-            "seed": 0,
-            "n_requests": 40000,
-            "n_keys": 1000,
-            "steady_state_hit_ratio": 0.557425,
-            "memory_bytes": 786432,
-            "recovery_time_requests": 200.0,
-            "elapsed_sec": 0.5687504224479198,
-            "hit_ratio_time_series": [
-              [
-                0,
-                0.0
-              ],
-              [
-                800,
-                0.5031210986267166
-              ],
-              [
-                1600,
-                0.5390381011867583
-              ]
-            ]
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed0\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 0, \"seed\": 1010}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.275, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 16,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 5.0197343319887295,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.2595,
+              "target_hr": 0.23355,
+              "recovery_steps": 416
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.268,
+              "target_hr": 0.24120000000000003,
+              "recovery_steps": 856
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.2395,
+              "target_hr": 0.21555,
+              "recovery_steps": 0
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 0,
+            "seed": 1010
           },
-          "predict_baseline": "steady_state_hit_ratio=0.557425 recovery_time_requests=200.0 memory_bytes=786432"
+          "predict_steady_state_hit_ratio": "0.275",
+          "metadata_is_best_w_for_scenario": true
+        }
+      ]
+    },
+    {
+      "dataset": "burst_cold_keys_a0.8_seed1",
+      "examples": [
+        {
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed1\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 1, \"seed\": 1011}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.2745, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 4,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 4.732715426944196,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.2395,
+              "target_hr": 0.21555,
+              "recovery_steps": 200
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.253,
+              "target_hr": 0.2277,
+              "recovery_steps": 983
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.245,
+              "target_hr": 0.2205,
+              "recovery_steps": 420
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 1,
+            "seed": 1011
+          },
+          "predict_steady_state_hit_ratio": "0.2745",
+          "metadata_is_best_w_for_scenario": false
+        },
+        {
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed1\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 1, \"seed\": 1011}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.275, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 8,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 5.125889299903065,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.248,
+              "target_hr": 0.2232,
+              "recovery_steps": 351
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.266,
+              "target_hr": 0.23940000000000003,
+              "recovery_steps": 958
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.2545,
+              "target_hr": 0.22905,
+              "recovery_steps": 770
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 1,
+            "seed": 1011
+          },
+          "predict_steady_state_hit_ratio": "0.275",
+          "metadata_is_best_w_for_scenario": false
+        },
+        {
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed1\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 1, \"seed\": 1011}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.2765, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 16,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 5.269928165012971,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.2475,
+              "target_hr": 0.22275,
+              "recovery_steps": 205
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.2725,
+              "target_hr": 0.24525000000000002,
+              "recovery_steps": 939
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.248,
+              "target_hr": 0.2232,
+              "recovery_steps": 395
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 1,
+            "seed": 1011
+          },
+          "predict_steady_state_hit_ratio": "0.2765",
+          "metadata_is_best_w_for_scenario": true
+        }
+      ]
+    },
+    {
+      "dataset": "burst_cold_keys_a0.8_seed2",
+      "examples": [
+        {
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed2\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 2, \"seed\": 1012}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.2735, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 4,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 4.599630282027647,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.2465,
+              "target_hr": 0.22185,
+              "recovery_steps": 449
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.23,
+              "target_hr": 0.20700000000000002,
+              "recovery_steps": 0
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.2595,
+              "target_hr": 0.23355,
+              "recovery_steps": 233
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 2,
+            "seed": 1012
+          },
+          "predict_steady_state_hit_ratio": "0.2735",
+          "metadata_is_best_w_for_scenario": false
+        },
+        {
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed2\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 2, \"seed\": 1012}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.2755, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 8,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 5.122344798990525,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.2575,
+              "target_hr": 0.23175,
+              "recovery_steps": 614
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.2525,
+              "target_hr": 0.22725,
+              "recovery_steps": 0
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.2675,
+              "target_hr": 0.24075000000000002,
+              "recovery_steps": 224
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 2,
+            "seed": 1012
+          },
+          "predict_steady_state_hit_ratio": "0.2755",
+          "metadata_is_best_w_for_scenario": false
+        },
+        {
+          "input": "{\"scenario\": \"burst_cold_keys_a0.8_seed2\", \"scenario_meta\": {\"alpha\": 0.8, \"drift_type\": \"burst_cold_keys\", \"seed_rep\": 2, \"seed\": 1012}, \"cache_ratio\": 0.01, \"cache_capacity\": 100, \"method\": \"baselin...",
+          "output": "{\"steady_state_hit_ratio\": 0.273, \"memory_bytes\": 1700, \"n_recovery_events\": 4}",
+          "metadata_cache_ratio": 0.01,
+          "metadata_cache_capacity": 100,
+          "metadata_method": "baseline",
+          "metadata_w_ratio": 16,
+          "metadata_memory_bytes": 1700,
+          "metadata_elapsed_s": 5.294738153927028,
+          "metadata_recovery_events": [
+            {
+              "event": "burst_cold_keys",
+              "start": 200000,
+              "end": 225000,
+              "post_optimal_hr": 0.2595,
+              "target_hr": 0.23355,
+              "recovery_steps": 614
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 400000,
+              "end": 425000,
+              "post_optimal_hr": 0.244,
+              "target_hr": 0.2196,
+              "recovery_steps": 5
+            },
+            {
+              "event": "burst_cold_keys",
+              "start": 600000,
+              "end": 625000,
+              "post_optimal_hr": 0.2675,
+              "target_hr": 0.24075000000000002,
+              "recovery_steps": 48
+            }
+          ],
+          "metadata_scenario_meta": {
+            "alpha": 0.8,
+            "drift_type": "burst_cold_keys",
+            "seed_rep": 2,
+            "seed": 1012
+          },
+          "predict_steady_state_hit_ratio": "0.273",
+          "metadata_is_best_w_for_scenario": false
         }
       ]
     }
