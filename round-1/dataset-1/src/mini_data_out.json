@@ -1,327 +1,321 @@
 {
   "metadata": {
-    "description": "Cache access traces for W-TinyLFU vs. per-key-decay admission policy evaluation: best-10 selection (of 13 candidates) -- 9 synthetic Zipf-skewed traces (drift-type coverage at alpha=1.0 and alpha=0.8, plus one alpha=1.2 'combined' variant) + 1 real e-commerce clickstream trace (RetailRocket events, itemid-as-key) with genuine measured Zipf-like skew (top 1% of items receive 22.9% of accesses in the full 2.75M-row source file).",
-    "selection_rationale": "Dropped synthetic_alpha1.2_{rank_shuffle,cold_burst,slow_drift} from the full 3-alpha x 4-drift-type matrix to reach 10 total datasets, per the plan's fallback instruction to prioritize full drift-type coverage at a canonical alpha (1.0) plus a robustness alpha (0.8), then add further alpha variants only for the most-informative scenario (combined, since it stresses both abrupt-drift mechanisms simultaneously).",
-    "synthetic_generator_params": {
-      "key_space": 50000,
-      "trace_length": 80000,
-      "selected_configs": [
-        "alpha=0.8_rank_shuffle",
-        "alpha=0.8_cold_burst",
-        "alpha=0.8_combined",
-        "alpha=1.0_rank_shuffle",
-        "alpha=1.0_cold_burst",
-        "alpha=1.0_combined",
-        "alpha=1.0_slow_drift",
-        "alpha=1.2_combined",
-        "alpha=0.8_slow_drift"
-      ],
-      "drift_types": [
-        "rank_shuffle",
-        "cold_burst",
-        "combined",
-        "slow_drift"
-      ],
-      "note": "trace_length reduced from the plan's 1-2M target to 80k requests/trace to respect the 300MB artifact size budget; drift-event schedules (request-index, magnitude, affected-key-count) are fully explicit per trace so recovery-time metrics remain exactly reproducible at this scale."
-    },
-    "real_trace_provenance": {
-      "source": "DanielKiani/RetailRocket-Recommender-Data (HuggingFace mirror of the RetailRocket e-commerce recommender dataset, originally released for a Kaggle recommender-systems competition)",
-      "file": "events.csv",
-      "full_file_rows": 2756101,
-      "full_file_unique_items": 235061,
-      "sampling": "every 12th row kept (stride sample preserving chronological span), capped at 250000 rows, re-sorted by timestamp",
-      "measured_skew": "top 1% of items account for 22.9% of all view/addtocart/transaction events in the full file (Zipf-like)",
-      "adaptation_note": "itemid is used as the cache 'key' and each row (view/addtocart/transaction) as one cache request; this is a genuine real-world skewed access log but is a recommender-clickstream proxy, not a native memcached/Redis trace -- no cache-native trace under 300MB was found reachable via HF search (see README)."
-    }
+    "description": "Standardized cache-access request traces for evaluating cache admission policies under skewed and time-varying key popularity.",
+    "num_datasets": 10,
+    "max_examples_per_trace": 20000
   },
   "datasets": [
     {
-      "dataset": "synthetic_alpha0.8_rank_shuffle",
+      "dataset": "real_twitter_cache_trace_cluster026",
       "examples": [
         {
-          "input": "{\"t\":0,\"k\":10216}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":8484}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":35946}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha0.8_cold_burst",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":11126}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":28238}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":3600}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha0.8_combined",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":35534}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":28267}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":2644}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.0_rank_shuffle",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":4715}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":7878}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":26184}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.0_cold_burst",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":29124}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":30533}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":33851}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.0_combined",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":41902}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":20484}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":20484}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.0_slow_drift",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":21222}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":36715}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":2416}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.2_combined",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":23564}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":47011}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":7226}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha0.8_slow_drift",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":12759}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":28117}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":27719}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        }
-      ]
-    },
-    {
-      "dataset": "real_retailrocket_events",
-      "examples": [
-        {
-          "input": "{\"t\":1430622165719,\"k\":209209,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
+          "input": "{\"key\": \"y:46:7d:CXm4:5kyXBgWe.tekY.CJBeWJekU-CTpJ:CY.5kyXBgWe.tekY.CJBeWJekU-CTpJ-08J0G5iY00msm7J75i4Wdd4WJG7s6GJ7:5kyXBgWe/CJBeWJekU/5kyCyByC/tSBgW3p1B1WXWpy_EkYWv_SkvvkU_rvRCyWe_jeBmmxJ_kpW_YBT:48sLd7Lsdd.7d\", \"arrival_time\": 0.0, \"row_index\": 0}",
+          "output": "y:46:7d:CXm4:5kyXBgWe.tekY.CJBeWJekU-CTpJ:CY.5kyXBgWe.tekY.CJBeWJekU-CTpJ-08J0G5iY00msm7J75i4Wdd4WJG7s6GJ7:5kyXBgWe/CJBeWJekU/5kyCyByC/tSBgW3p1B1WXWpy_EkYWv_SkvvkU_rvRCyWe_jeBmmxJ_kpW_YBT:48sLd7Lsdd.7d",
+          "metadata_trace_id": "real_twitter_cache_trace_cluster026",
           "metadata_is_synthetic": false,
+          "metadata_drift_scenario_id": "none",
           "metadata_row_index": 0
         },
         {
-          "input": "{\"t\":1430622177312,\"k\":448033,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
+          "input": "{\"key\": \"y:46:7d:CXm4:BYexBpJPWp.YWzWv.CyBmeRvWCCzJ:CY.BYexBpJPWp.YWzWv.CyBmeRvWCCzJ-6Jd0G08B65iY8JY8s8JL4dB48Y6JYJ4L:Cez/hyBmORvWChzJ/1WyrReeWpyORvWC/eWfRWCyC:48sLd7Lsdd.7d\", \"arrival_time\": 0.0, \"row_index\": 1}",
+          "output": "y:46:7d:CXm4:BYexBpJPWp.YWzWv.CyBmeRvWCCzJ:CY.BYexBpJPWp.YWzWv.CyBmeRvWCCzJ-6Jd0G08B65iY8JY8s8JL4dB48Y6JYJ4L:Cez/hyBmORvWChzJ/1WyrReeWpyORvWC/eWfRWCyC:48sLd7Lsdd.7d",
+          "metadata_trace_id": "real_twitter_cache_trace_cluster026",
           "metadata_is_synthetic": false,
+          "metadata_drift_scenario_id": "none",
           "metadata_row_index": 1
         },
         {
-          "input": "{\"t\":1430622276780,\"k\":441116,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
+          "input": "{\"key\": \"CXmJ.(XkBRYR5kp.ekvW.vYBt.eWtvxJB)-XkBRYR5kp.RpXkpxykeWY\", \"arrival_time\": 1.0, \"row_index\": 2}",
+          "output": "CXmJ.(XkBRYR5kp.ekvW.vYBt.eWtvxJB)-XkBRYR5kp.RpXkpxykeWY",
+          "metadata_trace_id": "real_twitter_cache_trace_cluster026",
           "metadata_is_synthetic": false,
+          "metadata_drift_scenario_id": "none",
           "metadata_row_index": 2
+        }
+      ]
+    },
+    {
+      "dataset": "real_derived_wikipedia_pageviews_by_second",
+      "examples": [
+        {
+          "input": "{\"key\": \"desktop\", \"arrival_time\": 1426464000.4745, \"row_index\": 0}",
+          "output": "desktop",
+          "metadata_trace_id": "real_derived_wikipedia_pageviews_by_second",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 0
+        },
+        {
+          "input": "{\"key\": \"desktop\", \"arrival_time\": 1426464000.6041, \"row_index\": 1}",
+          "output": "desktop",
+          "metadata_trace_id": "real_derived_wikipedia_pageviews_by_second",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 1
+        },
+        {
+          "input": "{\"key\": \"desktop\", \"arrival_time\": 1426464000.8288, \"row_index\": 2}",
+          "output": "desktop",
+          "metadata_trace_id": "real_derived_wikipedia_pageviews_by_second",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 2
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha0.8_control",
+      "examples": [
+        {
+          "input": "{\"key\": \"k16233\", \"arrival_time\": 0.5203, \"row_index\": 0}",
+          "output": "k16233",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 0,
+          "metadata_alpha": 0.8
+        },
+        {
+          "input": "{\"key\": \"k6184\", \"arrival_time\": 0.874, \"row_index\": 1}",
+          "output": "k6184",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 1,
+          "metadata_alpha": 0.8
+        },
+        {
+          "input": "{\"key\": \"k2776\", \"arrival_time\": 1.2687, \"row_index\": 2}",
+          "output": "k2776",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 2,
+          "metadata_alpha": 0.8
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha1.0_control",
+      "examples": [
+        {
+          "input": "{\"key\": \"k10976\", \"arrival_time\": 0.5597, \"row_index\": 0}",
+          "output": "k10976",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 0,
+          "metadata_alpha": 1.0
+        },
+        {
+          "input": "{\"key\": \"k9833\", \"arrival_time\": 1.6389, \"row_index\": 1}",
+          "output": "k9833",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 1,
+          "metadata_alpha": 1.0
+        },
+        {
+          "input": "{\"key\": \"k6952\", \"arrival_time\": 2.305, \"row_index\": 2}",
+          "output": "k6952",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 2,
+          "metadata_alpha": 1.0
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha1.2_control",
+      "examples": [
+        {
+          "input": "{\"key\": \"k19013\", \"arrival_time\": 0.8897, \"row_index\": 0}",
+          "output": "k19013",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 0,
+          "metadata_alpha": 1.2
+        },
+        {
+          "input": "{\"key\": \"k4996\", \"arrival_time\": 0.9132, \"row_index\": 1}",
+          "output": "k4996",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 1,
+          "metadata_alpha": 1.2
+        },
+        {
+          "input": "{\"key\": \"k5918\", \"arrival_time\": 2.5062, \"row_index\": 2}",
+          "output": "k5918",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_control",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "none",
+          "metadata_row_index": 2,
+          "metadata_alpha": 1.2
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare",
+      "examples": [
+        {
+          "input": "{\"key\": \"k4453\", \"arrival_time\": 1.2111, \"row_index\": 0}",
+          "output": "k4453",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare",
+          "metadata_row_index": 0,
+          "metadata_alpha": 0.8
+        },
+        {
+          "input": "{\"key\": \"k2698\", \"arrival_time\": 1.4881, \"row_index\": 1}",
+          "output": "k2698",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare",
+          "metadata_row_index": 1,
+          "metadata_alpha": 0.8
+        },
+        {
+          "input": "{\"key\": \"k10799\", \"arrival_time\": 3.6856, \"row_index\": 2}",
+          "output": "k10799",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha0.8_cold_key_burst_mag-high_freq-rare",
+          "metadata_row_index": 2,
+          "metadata_alpha": 0.8
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare",
+      "examples": [
+        {
+          "input": "{\"key\": \"k14521\", \"arrival_time\": 0.571, \"row_index\": 0}",
+          "output": "k14521",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare",
+          "metadata_row_index": 0,
+          "metadata_alpha": 1.0
+        },
+        {
+          "input": "{\"key\": \"k16460\", \"arrival_time\": 2.7789, \"row_index\": 1}",
+          "output": "k16460",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare",
+          "metadata_row_index": 1,
+          "metadata_alpha": 1.0
+        },
+        {
+          "input": "{\"key\": \"k19402\", \"arrival_time\": 2.9322, \"row_index\": 2}",
+          "output": "k19402",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.0_rank_reshuffle_mag-low_freq-rare",
+          "metadata_row_index": 2,
+          "metadata_alpha": 1.0
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare",
+      "examples": [
+        {
+          "input": "{\"key\": \"k12302\", \"arrival_time\": 2.7047, \"row_index\": 0}",
+          "output": "k12302",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare",
+          "metadata_row_index": 0,
+          "metadata_alpha": 1.0
+        },
+        {
+          "input": "{\"key\": \"k7363\", \"arrival_time\": 2.7926, \"row_index\": 1}",
+          "output": "k7363",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare",
+          "metadata_row_index": 1,
+          "metadata_alpha": 1.0
+        },
+        {
+          "input": "{\"key\": \"k16832\", \"arrival_time\": 3.4537, \"row_index\": 2}",
+          "output": "k16832",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.0_cold_key_burst_mag-high_freq-rare",
+          "metadata_row_index": 2,
+          "metadata_alpha": 1.0
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent",
+      "examples": [
+        {
+          "input": "{\"key\": \"k19044\", \"arrival_time\": 2.1921, \"row_index\": 0}",
+          "output": "k19044",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent",
+          "metadata_row_index": 0,
+          "metadata_alpha": 1.2
+        },
+        {
+          "input": "{\"key\": \"k13463\", \"arrival_time\": 3.6767, \"row_index\": 1}",
+          "output": "k13463",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent",
+          "metadata_row_index": 1,
+          "metadata_alpha": 1.2
+        },
+        {
+          "input": "{\"key\": \"k3611\", \"arrival_time\": 4.3354, \"row_index\": 2}",
+          "output": "k3611",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.2_rank_reshuffle_mag-high_freq-frequent",
+          "metadata_row_index": 2,
+          "metadata_alpha": 1.2
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent",
+      "examples": [
+        {
+          "input": "{\"key\": \"k18112\", \"arrival_time\": 1.5386, \"row_index\": 0}",
+          "output": "k18112",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent",
+          "metadata_row_index": 0,
+          "metadata_alpha": 1.2
+        },
+        {
+          "input": "{\"key\": \"k4765\", \"arrival_time\": 1.7001, \"row_index\": 1}",
+          "output": "k4765",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent",
+          "metadata_row_index": 1,
+          "metadata_alpha": 1.2
+        },
+        {
+          "input": "{\"key\": \"k388\", \"arrival_time\": 2.2646, \"row_index\": 2}",
+          "output": "k388",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent",
+          "metadata_is_synthetic": true,
+          "metadata_drift_scenario_id": "synthetic_zipf_alpha1.2_cold_key_burst_mag-low_freq-frequent",
+          "metadata_row_index": 2,
+          "metadata_alpha": 1.2
         }
       ]
     }
