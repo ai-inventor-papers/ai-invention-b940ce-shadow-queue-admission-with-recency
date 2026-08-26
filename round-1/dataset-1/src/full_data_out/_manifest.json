@@ -1,0 +1,26 @@
+{
+  "real_twitter_cache_trace": [
+    "full_data_out_1.json"
+  ],
+  "synthetic_zipf_alpha08": [
+    "full_data_out_2.json",
+    "full_data_out_3.json",
+    "full_data_out_4.json",
+    "full_data_out_5.json",
+    "full_data_out_6.json"
+  ],
+  "synthetic_zipf_alpha10": [
+    "full_data_out_7.json",
+    "full_data_out_8.json",
+    "full_data_out_9.json",
+    "full_data_out_10.json",
+    "full_data_out_11.json"
+  ],
+  "synthetic_zipf_alpha12": [
+    "full_data_out_12.json",
+    "full_data_out_13.json",
+    "full_data_out_14.json",
+    "full_data_out_15.json",
+    "full_data_out_16.json"
+  ]
+}
