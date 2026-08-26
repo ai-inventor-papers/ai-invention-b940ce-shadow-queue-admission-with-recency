@@ -1,0 +1,247 @@
+{
+  "metadata": {
+    "method_name": "per_key_decay_cache_admission_vs_tinylfu",
+    "notes": "No real-world access trace was available in this run's data dependency (gen_art_dataset_1 was empty, no user uploads provided): per fallback_plan item (2) this run is SYNTHETIC-ONLY for BOTH the stead...",
+    "hardware": {
+      "num_cpus": 6,
+      "num_workers": 5
+    },
+    "grid_spec": {
+      "n_requests": 40000,
+      "n_keys": 1000,
+      "alphas": [
+        0.8,
+        1.0,
+        1.2
+      ],
+      "cache_ratios": [
+        0.01,
+        0.05,
+        0.1
+      ],
+      "drift_scenarios": [
+        "D1_mild_reshuffle",
+        "D2_severe_reshuffle",
+        "D3_mild_burst"
+      ],
+      "W_multipliers": [
+        1,
+        4,
+        8
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    "parity_summary": [
+      {
+        "alpha": 1.0,
+        "cache_ratio": 0.05,
+        "drift_scenario": "D2_severe_reshuffle",
+        "baseline_best_hit_ratio": 0.58255,
+        "decay_mean_hit_ratio": 0.5596214285714286,
+        "delta_pp": -2.292857142857141
+      },
+      {
+        "alpha": 0.8,
+        "cache_ratio": 0.01,
+        "drift_scenario": "D1_mild_reshuffle",
+        "baseline_best_hit_ratio": 0.216825,
+        "decay_mean_hit_ratio": 0.20192000000000002,
+        "delta_pp": -1.4904999999999973
+      },
+      {
+        "alpha": 0.8,
+        "cache_ratio": 0.01,
+        "drift_scenario": "D2_severe_reshuffle",
+        "baseline_best_hit_ratio": 0.2102,
+        "decay_mean_hit_ratio": 0.195885,
+        "delta_pp": -1.4314999999999993
+      }
+    ],
+    "recovery_summary": [
+      {
+        "alpha": 1.0,
+        "cache_ratio": 0.05,
+        "drift_scenario": "D2_severe_reshuffle",
+        "baseline_recovery_ci": {
+          "median": 200.0,
+          "ci_low": 200.0,
+          "ci_high": 200.0,
+          "n": 35
+        },
+        "decay_recovery_ci": {
+          "median": 200.0,
+          "ci_low": 200.0,
+          "ci_high": 200.0,
+          "n": 7
+        }
+      },
+      {
+        "alpha": 0.8,
+        "cache_ratio": 0.01,
+        "drift_scenario": "D1_mild_reshuffle",
+        "baseline_recovery_ci": {
+          "median": 200.0,
+          "ci_low": 200.0,
+          "ci_high": 200.0,
+          "n": 25
+        },
+        "decay_recovery_ci": {
+          "median": 200.0,
+          "ci_low": 200.0,
+          "ci_high": 3000.0,
+          "n": 5
+        }
+      },
+      {
+        "alpha": 0.8,
+        "cache_ratio": 0.01,
+        "drift_scenario": "D2_severe_reshuffle",
+        "baseline_recovery_ci": {
+          "median": 200.0,
+          "ci_low": 200.0,
+          "ci_high": 200.0,
+          "n": 25
+        },
+        "decay_recovery_ci": {
+          "median": 200.0,
+          "ci_low": 200.0,
+          "ci_high": 2800.0,
+          "n": 5
+        }
+      }
+    ],
+    "memory_summary": {
+      "baseline_mean_bytes": 786432.0,
+      "decay_mean_bytes": 786406.6373626373,
+      "pct_diff": -0.003225026113214587,
+      "within_15pct_tolerance": true
+    },
+    "mean_decay_slot_collision_rate": 0.06839125392929035,
+    "unit_test_status": "PASSED",
+    "smoke_test": {
+      "baseline_hit_ratio": 0.589,
+      "decay_hit_ratio": 0.5796,
+      "baseline_memory_bytes": 786432,
+      "decay_memory_bytes": 786400
+    },
+    "total_runtime_sec": 388.2042826525867,
+    "n_configs_run": 1092,
+    "n_configs_errored": 0
+  },
+  "datasets": [
+    {
+      "dataset": "synthetic_zipf_cache_admission_sweep",
+      "examples": [
+        {
+          "input": "system=baseline alpha=1.0 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle W_multiplier=1 seed=0 n_requests=40000 n_keys=1000",
+          "output": "steady_state_hit_ratio=0.559750 recovery_time_requests=200.0 memory_bytes=786432",
+          "metadata_config": {
+            "trace_source": "synthetic_zipf",
+            "alpha": 1.0,
+            "cache_ratio": 0.05,
+            "cache_capacity": 50,
+            "drift_scenario": "D2_severe_reshuffle",
+            "system": "baseline",
+            "W_multiplier": 1,
+            "seed": 0,
+            "n_requests": 40000,
+            "n_keys": 1000,
+            "steady_state_hit_ratio": 0.55975,
+            "memory_bytes": 786432,
+            "recovery_time_requests": 200.0,
+            "elapsed_sec": 0.5401120707392693,
+            "hit_ratio_time_series": [
+              [
+                0,
+                0.0
+              ],
+              [
+                800,
+                0.49563046192259674
+              ],
+              [
+                1600,
+                0.5334166146158651
+              ]
+            ]
+          },
+          "predict_baseline": "steady_state_hit_ratio=0.559750 recovery_time_requests=200.0 memory_bytes=786432"
+        },
+        {
+          "input": "system=baseline alpha=1.0 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle W_multiplier=4 seed=0 n_requests=40000 n_keys=1000",
+          "output": "steady_state_hit_ratio=0.556975 recovery_time_requests=200.0 memory_bytes=786432",
+          "metadata_config": {
+            "trace_source": "synthetic_zipf",
+            "alpha": 1.0,
+            "cache_ratio": 0.05,
+            "cache_capacity": 50,
+            "drift_scenario": "D2_severe_reshuffle",
+            "system": "baseline",
+            "W_multiplier": 4,
+            "seed": 0,
+            "n_requests": 40000,
+            "n_keys": 1000,
+            "steady_state_hit_ratio": 0.556975,
+            "memory_bytes": 786432,
+            "recovery_time_requests": 200.0,
+            "elapsed_sec": 0.5662207119166851,
+            "hit_ratio_time_series": [
+              [
+                0,
+                0.0
+              ],
+              [
+                800,
+                0.5043695380774033
+              ],
+              [
+                1600,
+                0.5390381011867583
+              ]
+            ]
+          },
+          "predict_baseline": "steady_state_hit_ratio=0.556975 recovery_time_requests=200.0 memory_bytes=786432"
+        },
+        {
+          "input": "system=baseline alpha=1.0 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle W_multiplier=8 seed=0 n_requests=40000 n_keys=1000",
+          "output": "steady_state_hit_ratio=0.557425 recovery_time_requests=200.0 memory_bytes=786432",
+          "metadata_config": {
+            "trace_source": "synthetic_zipf",
+            "alpha": 1.0,
+            "cache_ratio": 0.05,
+            "cache_capacity": 50,
+            "drift_scenario": "D2_severe_reshuffle",
+            "system": "baseline",
+            "W_multiplier": 8,
+            "seed": 0,
+            "n_requests": 40000,
+            "n_keys": 1000,
+            "steady_state_hit_ratio": 0.557425,
+            "memory_bytes": 786432,
+            "recovery_time_requests": 200.0,
+            "elapsed_sec": 0.5687504224479198,
+            "hit_ratio_time_series": [
+              [
+                0,
+                0.0
+              ],
+              [
+                800,
+                0.5031210986267166
+              ],
+              [
+                1600,
+                0.5390381011867583
+              ]
+            ]
+          },
+          "predict_baseline": "steady_state_hit_ratio=0.557425 recovery_time_requests=200.0 memory_bytes=786432"
+        }
+      ]
+    }
+  ]
+}
