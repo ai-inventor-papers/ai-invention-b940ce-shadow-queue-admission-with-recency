@@ -1,0 +1,385 @@
+{
+  "metadata": {
+    "evaluation_name": "cache_decay_failure_causal_attribution",
+    "data_availability": {
+      "sub_claim_a_window_threshold_sweep": "ABSENT",
+      "sub_claim_b_three_arm_ablation": "ABSENT",
+      "sub_claim_b_correlational_substitute_fields": {
+        "per_config_decay_slot_collision_rate": "PRESENT",
+        "per_config_classifier_precision": "ABSENT"
+      },
+      "sub_claim_c_second_memory_accounting_convention": "ABSENT",
+      "retailrocket_real_trace_rows_in_method_out": "ABSENT",
+      "systems_present": [
+        "baseline",
+        "decay"
+      ],
+      "n_configs_run": 1092,
+      "top_level_metadata_keys": [
+        "grid_spec",
+        "hardware",
+        "mean_decay_slot_collision_rate"
+      ],
+      "per_config_metadata_keys": [
+        "W_multiplier",
+        "alpha",
+        "cache_capacity"
+      ],
+      "notes": "Confirmed by direct schema/key inspection of full_method_out.json: only 'baseline' and 'decay' systems exist (no oracle-labels or hashed/unhashed storage-mode ablation arms); no standalone window-leng..."
+    },
+    "deficit_attribution": {
+      "per_cell_deficits": [
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0065599999999999825,
+            "ci_low": 0.0018847499999999969,
+            "ci_high": 0.011350250000000025,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 240.0,
+            "ci_low": -640.0,
+            "ci_high": 1360.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00012157998858349186,
+          "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.006115000000000009,
+            "ci_low": 0.0013346250000000025,
+            "ci_high": 0.011289999999999994,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 520.0,
+            "ci_low": 0.0,
+            "ci_high": 1560.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00011856918728124383,
+          "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.003375000000000017,
+            "ci_low": 0.00023987500000001717,
+            "ci_high": 0.006680375000000043,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.006583516298256728,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.045276488254396945,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        }
+      ],
+      "pooled_meta_analysis": {
+        "pooled_hit_ratio_deficit_point": 0.004419023544944292,
+        "pooled_hit_ratio_deficit_ci95": [
+          0.003804747492709413,
+          0.005033299597179171
+        ],
+        "per_cell_range": [
+          0.0005350000000000077,
+          0.01808999999999994
+        ],
+        "n_cells_pooled": 36,
+        "heterogeneity_note": "Per-cell hit-ratio deficits range from 0.0005 to 0.0181; the pooled CI should not be read as representative of every cell individually -- see per-cell table for heterogeneity.",
+        "small_n_caveat": "n_seeds per cell is only [5] (the grid_spec sweep used 3 seeds, NOT the 5 the artifact plan assumed). Bootstrap CIs and paired-t p-values from n<=3 seeds are inherently unstable; treat any single-cell..."
+      },
+      "collision_rate_correlational_substitute": {
+        "n_configs": 182,
+        "collision_rate_vs_hit_ratio_deficit": {
+          "spearman_rho": 0.007923573003039424,
+          "p_value_raw": 0.9154553986744958,
+          "ci_low": -0.15304983702695885,
+          "ci_high": 0.16186533375523535,
+          "n": 182
+        },
+        "collision_rate_vs_recovery_time_excess": {
+          "spearman_rho": 0.07459637581505342,
+          "p_value_raw": 0.3169130816985121,
+          "ci_low": -0.0943124408969589,
+          "ci_high": 0.23943774122929087,
+          "n": 182
+        },
+        "ols_hit_ratio_deficit_on_collision_rate": {
+          "slope": -0.049598542282226134,
+          "intercept": 0.008917655950295821,
+          "r2": 0.05036156023546789,
+          "p_value": 0.0023222375950361566
+        },
+        "label": "CORRELATIONAL_SUBSTITUTE_NOT_CAUSAL",
+        "caveat": "This is a cross-config correlation between the decay variant's own hashed-slot collision rate and its performance deficit relative to the best-tuned baseline. It is NOT the 3-arm oracle/hashing ablati..."
+      }
+    },
+    "classifier_window_threshold_sweep": {
+      "status": "UNTESTABLE-DATA-MISSING",
+      "missing_fields": [
+        "a standalone labeling-task sweep over window_length in {4,8,16,32} x threshold, scored against ground-truth burst/stable labels with precision/recall/F1/AUROC"
+      ],
+      "missing_artifact": "No sibling artifact or field in art_0aR0TOK6EOBa's method_out.json contains this. Would require a follow-up EXPERIMENT artifact that runs the ShadowQueue/CV classifier as a standalone labeling task ag...",
+      "note": "The only classifier-adjacent field present is metadata.mean_decay_slot_collision_rate (a single scalar, 0.0684, aggregated over the whole sweep) and per-config decay_bucket_assignment_stats (fractions..."
+    },
+    "memory_accounting_reconciliation": {
+      "convention_present_in_this_artifact": {
+        "description": "Matched-memory tolerance check: admission-filter memory (sketch counters + doorkeeper bits + shadow-queue slots) for baseline vs decay variant, solved to be within a stated +/-15% tolerance.",
+        "baseline_mean_bytes": 786432.0,
+        "decay_mean_bytes": 786406.6373626373,
+        "pct_diff": -0.003225026113214587,
+        "within_15pct_tolerance": true
+      },
+      "second_convention_16_9x_figure": {
+        "status": "CANNOT_BE_RECONCILED_FROM_THIS_ARTIFACT",
+        "reason": "The hypothesis's 16.9x overhead figure is attributed to a second, independent simulator that is not a dependency of this evaluation (not art_0aR0TOK6EOBa). method_out.json's metadata.memory_summary ex..."
+      },
+      "recommended_convention_for_future_matched_comparisons": {
+        "recommendation": "per-key pricing of the inter-arrival-history buffer",
+        "justification": "Pricing the shadow-queue / inter-arrival-history buffer as 'shared with the sketch' undercounts the decay variant's true marginal memory cost, since that buffer would not exist at all under the TinyLF..."
+      },
+      "note": "Because only one convention exists in this artifact's data, this evaluation reports it as-is (0.003%%, well within tolerance) and does not attempt to synthesize a second number."
+    },
+    "real_trace_vs_synthetic_comparison": {
+      "status": "UNTESTABLE-DATA-MISSING",
+      "finding": "Confirmed: no real_retailrocket_events rows exist in art_0aR0TOK6EOBa's method_out.json. The experiment ran synthetic-only, as its own metadata.notes states, because its data dependency (gen_art_datas...",
+      "recommendation": "art_ypvfJGcyJJsE (delivered in the CURRENT iteration, after art_0aR0TOK6EOBa ran) now provides real_retailrocket_events (229,676 rows). This evaluation artifact cannot generate new experiment runs, so..."
+    },
+    "verdicts": {
+      "per_sub_claim_verdicts": [
+        {
+          "sub_claim": "(a) classifier window-length choice (W=8) is near-optimal for burst/stable labeling",
+          "data_status": "UNTESTABLE-DATA-MISSING",
+          "verdict": "N-A",
+          "quantitative_summary": null,
+          "caveats": [
+            "a standalone labeling-task sweep over window_length in {4,8,16,32} x threshold, scored against ground-truth burst/stable labels with precision/recall/F1/AUROC"
+          ]
+        },
+        {
+          "sub_claim": "(b) once classifier and hashing confounds are removed (oracle labels + unhashed storage), the per-key-decay mechanism closes most of its deficit vs. tuned TinyLFU",
+          "data_status": "UNTESTABLE-DATA-MISSING (causal ablation); PARTIALLY-TESTED (correlational substitute)",
+          "verdict": "N-A",
+          "quantitative_summary": {
+            "pooled_hit_ratio_deficit_of_full_decay_variant_vs_tuned_baseline": {
+              "pooled_hit_ratio_deficit_point": 0.004419023544944292,
+              "pooled_hit_ratio_deficit_ci95": [
+                0.003804747492709413,
+                0.005033299597179171
+              ],
+              "per_cell_range": [
+                0.0005350000000000077,
+                0.01808999999999994
+              ],
+              "n_cells_pooled": 36,
+              "heterogeneity_note": "Per-cell hit-ratio deficits range from 0.0005 to 0.0181; the pooled CI should not be read as representative of every cell individually -- see per-cell table for heterogeneity.",
+              "small_n_caveat": "n_seeds per cell is only [5] (the grid_spec sweep used 3 seeds, NOT the 5 the artifact plan assumed). Bootstrap CIs and paired-t p-values from n<=3 seeds are inherently unstable; treat any single-cell..."
+            },
+            "collision_rate_correlational_substitute": {
+              "n_configs": 182,
+              "collision_rate_vs_hit_ratio_deficit": {
+                "spearman_rho": 0.007923573003039424,
+                "p_value_raw": 0.9154553986744958,
+                "ci_low": -0.15304983702695885,
+                "ci_high": 0.16186533375523535,
+                "n": 182
+              },
+              "collision_rate_vs_recovery_time_excess": {
+                "spearman_rho": 0.07459637581505342,
+                "p_value_raw": 0.3169130816985121,
+                "ci_low": -0.0943124408969589,
+                "ci_high": 0.23943774122929087,
+                "n": 182
+              },
+              "ols_hit_ratio_deficit_on_collision_rate": {
+                "slope": -0.049598542282226134,
+                "intercept": 0.008917655950295821,
+                "r2": 0.05036156023546789,
+                "p_value": 0.0023222375950361566
+              },
+              "label": "CORRELATIONAL_SUBSTITUTE_NOT_CAUSAL",
+              "caveat": "This is a cross-config correlation between the decay variant's own hashed-slot collision rate and its performance deficit relative to the best-tuned baseline. It is NOT the 3-arm oracle/hashing ablati..."
+            }
+          },
+          "caveats": [
+            "No oracle-labels/unhashed-storage ablation arms exist in the dependency's output; the 3-arm ablation this sub-claim requires was never run.",
+            "The correlational substitute (collision rate vs. deficit) cannot separate classifier-labeling error from hashing collision, and correlation is not causation."
+          ]
+        },
+        {
+          "sub_claim": "(c) the two prior simulators' memory-overhead figures (0.003%% vs 16.9x) can be reconciled under one consistent accounting convention",
+          "data_status": "PARTIALLY-TESTED",
+          "verdict": "MIXED",
+          "quantitative_summary": {
+            "description": "Matched-memory tolerance check: admission-filter memory (sketch counters + doorkeeper bits + shadow-queue slots) for baseline vs decay variant, solved to be within a stated +/-15% tolerance.",
+            "baseline_mean_bytes": 786432.0,
+            "decay_mean_bytes": 786406.6373626373,
+            "pct_diff": -0.003225026113214587,
+            "within_15pct_tolerance": true
+          },
+          "caveats": [
+            "Only one convention is present in this artifact's data; the 16.9x figure originates from a second simulator not available as a dependency, so full reconciliation is not executable here."
+          ]
+        }
+      ],
+      "ceiling_vs_baseline_headline_question": {
+        "question": "Does the oracle-labels+unhashed-storage 'ceiling' arm's drift-recovery time beat the tuned baseline's best-W recovery time (the pre-registered >=20%% reduction, CI excluding zero, bar)?",
+        "status": "UNTESTED",
+        "reason": "The oracle+unhashed ceiling arm does not exist in art_0aR0TOK6EOBa's output.",
+        "priority": "This is flagged as the single highest-priority follow-up experiment: without it, the hypothesis cannot be distinguished from 'the idea is architecturally fine but the implementation (classifier + hash..."
+      }
+    },
+    "notes": [
+      "This evaluation's dependency (art_0aR0TOK6EOBa) does NOT contain the 3-arm oracle/hashing ablation, the classifier window/threshold sweep, RetailRocket rows, or a second memory-pricing convention that...",
+      "What COULD be done with the available data: (i) a full bootstrap/Holm-corrected re-analysis of the steady-state hit-ratio and drift-recovery deficits per (alpha, cache_ratio, drift_scenario) cell usin...",
+      "Follow-up EXPERIMENT artifact requirements to make sub-claims (a)/(b)/(c) fully testable: (a) a standalone classifier labeling-task sweep over window_length in {4,8,16,32} x threshold, scored with pre..."
+    ]
+  },
+  "metrics_agg": {
+    "n_cells_analyzed": 36.0,
+    "n_seeds_per_cell": 5.0,
+    "pooled_hit_ratio_deficit_baseline_minus_decay": 0.004419023544944292,
+    "pooled_hit_ratio_deficit_ci_low": 0.003804747492709413,
+    "pooled_hit_ratio_deficit_ci_high": 0.005033299597179171,
+    "n_cells_significant_after_holm": 18.0,
+    "collision_rate_vs_hit_ratio_deficit_spearman_rho": 0.007923573003039424,
+    "memory_overhead_pct_diff_matched_convention": -0.003225026113214587,
+    "mean_decay_slot_collision_rate": 0.06839125392929035,
+    "n_subclaims_untestable_data_missing": 2.0,
+    "ceiling_vs_baseline_tested": 0.0
+  },
+  "datasets": [
+    {
+      "dataset": "cache_decay_causal_attribution_per_cell",
+      "examples": [
+        {
+          "input": "alpha=0.8 cache_ratio=0.01 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00656 [0.00188, 0.01135] recovery_time_excess_decay_minus_baseline=240.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0065599999999999825,
+              "ci_low": 0.0018847499999999969,
+              "ci_high": 0.011350250000000025,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 240.0,
+              "ci_low": -640.0,
+              "ci_high": 1360.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00012157998858349186,
+            "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.0065599999999999825,
+          "eval_recovery_time_excess_point": 240.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.01 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00612 [0.00133, 0.01129] recovery_time_excess_decay_minus_baseline=520.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.006115000000000009,
+              "ci_low": 0.0013346250000000025,
+              "ci_high": 0.011289999999999994,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 520.0,
+              "ci_low": 0.0,
+              "ci_high": 1560.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00011856918728124383,
+            "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.006115000000000009,
+          "eval_recovery_time_excess_point": 520.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.01 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00338 [0.00024, 0.00668] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.003375000000000017,
+              "ci_low": 0.00023987500000001717,
+              "ci_high": 0.006680375000000043,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.006583516298256728,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.045276488254396945,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.003375000000000017,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        }
+      ]
+    }
+  ]
+}

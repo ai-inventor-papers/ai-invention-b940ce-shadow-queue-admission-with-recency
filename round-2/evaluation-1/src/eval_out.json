@@ -1,0 +1,2291 @@
+{
+  "metadata": {
+    "evaluation_name": "cache_decay_failure_causal_attribution",
+    "data_availability": {
+      "sub_claim_a_window_threshold_sweep": "ABSENT",
+      "sub_claim_b_three_arm_ablation": "ABSENT",
+      "sub_claim_b_correlational_substitute_fields": {
+        "per_config_decay_slot_collision_rate": "PRESENT",
+        "per_config_classifier_precision": "ABSENT"
+      },
+      "sub_claim_c_second_memory_accounting_convention": "ABSENT",
+      "retailrocket_real_trace_rows_in_method_out": "ABSENT",
+      "systems_present": [
+        "baseline",
+        "decay"
+      ],
+      "n_configs_run": 1092,
+      "top_level_metadata_keys": [
+        "grid_spec",
+        "hardware",
+        "mean_decay_slot_collision_rate",
+        "memory_summary",
+        "method_name",
+        "n_configs_errored",
+        "n_configs_run",
+        "notes",
+        "parity_summary",
+        "recovery_summary",
+        "smoke_test",
+        "total_runtime_sec",
+        "unit_test_status"
+      ],
+      "per_config_metadata_keys": [
+        "W_multiplier",
+        "alpha",
+        "cache_capacity",
+        "cache_ratio",
+        "decay_bucket_assignment_stats",
+        "decay_slot_collision_rate",
+        "drift_scenario",
+        "elapsed_sec",
+        "hit_ratio_time_series",
+        "memory_bytes",
+        "n_keys",
+        "n_requests",
+        "recovery_time_requests",
+        "seed",
+        "steady_state_hit_ratio",
+        "system",
+        "trace_source"
+      ],
+      "notes": "Confirmed by direct schema/key inspection of full_method_out.json: only 'baseline' and 'decay' systems exist (no oracle-labels or hashed/unhashed storage-mode ablation arms); no standalone window-length/threshold-placement labeling sweep exists; no real_retailrocket_events rows exist in this method_out.json (the experiment ran synthetic-only per its own documented scope reduction); metadata.memory_summary exposes exactly one pricing convention (the matched-memory 0.003%% figure), not two, so the 16.9x figure referenced in the hypothesis cannot be reconciled from this artifact's data -- it originates from a different, non-dependency simulator. Per-config decay_slot_collision_rate IS present (per decay-system example), enabling a correlational (not causal) substitute analysis for sub-claim (b); per-config classifier precision is NOT logged."
+    },
+    "deficit_attribution": {
+      "per_cell_deficits": [
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0065599999999999825,
+            "ci_low": 0.0018847499999999969,
+            "ci_high": 0.011350250000000025,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 240.0,
+            "ci_low": -640.0,
+            "ci_high": 1360.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00012157998858349186,
+          "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.006115000000000009,
+            "ci_low": 0.0013346250000000025,
+            "ci_high": 0.011289999999999994,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 520.0,
+            "ci_low": 0.0,
+            "ci_high": 1560.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00011856918728124383,
+          "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.003375000000000017,
+            "ci_low": 0.00023987500000001717,
+            "ci_high": 0.006680375000000043,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.006583516298256728,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.045276488254396945,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0006049999999999944,
+            "ci_low": -0.0021700000000000053,
+            "ci_high": 0.002990374999999991,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.3129366261331306,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.6258732522662612,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0047800000000000065,
+            "ci_low": -0.0006400000000000849,
+            "ci_high": 0.009895999999999981,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00013643707847956328,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.003372490799539615,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.005089999999999983,
+            "ci_low": -0.0044755000000000055,
+            "ci_high": 0.015075000000000005,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 120.0,
+            "ci_low": -1040.0,
+            "ci_high": 1400.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00016590483836880448,
+          "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0038158112824825028,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.005404999999999993,
+            "ci_low": 0.003410000000000024,
+            "ci_high": 0.007095250000000016,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 240.0,
+            "ci_low": -560.0,
+            "ci_high": 1280.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00041487781751676687,
+          "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.008297556350335338,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0035199999999999676,
+            "ci_low": 0.0016399999999999735,
+            "ci_high": 0.005305125000000004,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0005741016549890605,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.01090793144479215,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0035149999999999904,
+            "ci_low": -0.0024700000000000277,
+            "ci_high": 0.009250375000000033,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.001320470406837705,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.01848658569572787,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.003500000000000003,
+            "ci_low": -0.005900625000000018,
+            "ci_high": 0.013160000000000005,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 80.0,
+            "ci_low": -1200.0,
+            "ci_high": 1440.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0034096872962702247,
+          "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.034096872962702245,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.007675000000000209,
+            "ci_low": 0.004864750000000117,
+            "ci_high": 0.010445249999999927,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 320.0,
+            "ci_low": 160.0,
+            "ci_high": 480.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0008059573455263137,
+          "recovery_time_paired_t_pvalue_raw": 0.034919706674539024,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.013701274873947332,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 0.8,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0021449999999998415,
+            "ci_low": -0.00021999999999999797,
+            "ci_high": 0.00445012500000001,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.013635616908029174,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.061357650916552924,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.011995000000000033,
+            "ci_low": 0.004664625000000031,
+            "ci_high": 0.019279999999999964,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 800.0,
+            "ci_low": -200.0,
+            "ci_high": 2000.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 2.530950395484919e-06,
+          "recovery_time_paired_t_pvalue_raw": 0.22041453616151446,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 9.111421423745707e-05,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.01084999999999997,
+            "ci_low": 0.00301499999999999,
+            "ci_high": 0.018244999999999956,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 9.00515547547935e-06,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0003151804416417772,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0034299999999999886,
+            "ci_low": 0.0004597499999999602,
+            "ci_high": 0.006630624999999967,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0034839125998887294,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.034096872962702245,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0005350000000000077,
+            "ci_low": -0.0021616249999999956,
+            "ci_high": 0.0032999999999999974,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.5062823883115857,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.6258732522662612,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.006769999999999943,
+            "ci_low": -0.0015560000000000823,
+            "ci_high": 0.015060125000000068,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00010015268631607369,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0030045805894822106,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.00568499999999994,
+            "ci_low": -0.007505874999999984,
+            "ci_high": 0.01947099999999998,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.006468069750628135,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.045276488254396945,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.005689999999999973,
+            "ci_low": 0.00013487499999999543,
+            "ci_high": 0.011440375000000223,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0007453128730277992,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.013415631714500385,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.00378999999999996,
+            "ci_low": -0.0006558749999999613,
+            "ci_high": 0.00825537500000001,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0051347393298748776,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.04107791463899902,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.003689999999999971,
+            "ci_low": -0.0031405000000000296,
+            "ci_high": 0.010235124999999994,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00010262966721760752,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0030045805894822106,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.003169999999999895,
+            "ci_low": -0.008155125000000023,
+            "ci_high": 0.014604999999999984,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 8.987504726648237e-05,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0027861264652609533,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.007544999999999913,
+            "ci_low": 0.0031494999999998803,
+            "ci_high": 0.011785375000000046,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": -760.0,
+            "ci_low": -1560.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0008823728845417835,
+          "recovery_time_paired_t_pvalue_raw": 0.17859527830282218,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.014117966152668537,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.0,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.00179499999999988,
+            "ci_low": -0.0023953750000001465,
+            "ci_high": 0.0059601249999999655,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.012271530183310585,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.061357650916552924,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.01808999999999994,
+            "ci_low": 0.009767749999999947,
+            "ci_high": 0.026590625000000107,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 920.0,
+            "ci_low": 0.0,
+            "ci_high": 1880.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 2.2751927504877494e-05,
+          "recovery_time_paired_t_pvalue_raw": 0.17834539038149474,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0007735655351658348,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.017525000000000013,
+            "ci_low": 0.008749874999999926,
+            "ci_high": 0.025924999999999976,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 2.5264426505687044e-05,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0008337260746876724,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.007620000000000016,
+            "ci_low": 0.005029499999999981,
+            "ci_high": 0.010139999999999982,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.002605926016851321,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.029474956414862752,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.01,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0040699999999999625,
+            "ci_low": 0.0009194999999999218,
+            "ci_high": 0.007095000000000018,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0009709724586055373,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.014564586879083059,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0046600000000001085,
+            "ci_low": -0.003005874999999922,
+            "ci_high": 0.01295000000000002,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00032918581155706733,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.007242087854255481,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.004369999999999985,
+            "ci_low": -0.004905000000000048,
+            "ci_high": 0.013981250000000096,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 2.6234661893327196e-05,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0008395091805864703,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0050200000000000244,
+            "ci_low": 0.0014998749999998423,
+            "ci_high": 0.008620124999999966,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0014017418033901074,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.01848658569572787,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.05,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0027400000000000757,
+            "ci_low": -0.001000250000000108,
+            "ci_high": 0.00670537500000007,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.019846919830989452,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.061357650916552924,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D1_mild_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0033600000000000296,
+            "ci_low": -0.0021308749999999627,
+            "ci_high": 0.0086452499999999,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0024562463679052293,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.029474956414862752,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D2_severe_reshuffle",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.0036000000000001586,
+            "ci_low": -0.00458074999999992,
+            "ci_high": 0.011905875000000156,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.00013489963198158462,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.003372490799539615,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": false
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D3_mild_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.006175000000000153,
+            "ci_low": 0.0037300000000000085,
+            "ci_high": 0.00887024999999993,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0003934232652104043,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.00826188856941849,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        },
+        {
+          "alpha": 1.2,
+          "cache_ratio": 0.1,
+          "drift_scenario": "D4_severe_burst",
+          "n_seeds": 5,
+          "hit_ratio_deficit_baseline_minus_decay": {
+            "point": 0.003449999999999953,
+            "ci_low": 0.0008748749999998529,
+            "ci_high": 0.006030250000000086,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "recovery_time_excess_decay_minus_baseline": {
+            "point": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+            "n_a": 5,
+            "n_b": 5
+          },
+          "hit_ratio_paired_t_pvalue_raw": 0.0001147122041002122,
+          "recovery_time_paired_t_pvalue_raw": 1.0,
+          "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+          "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+          "hit_ratio_deficit_significant_after_holm": true
+        }
+      ],
+      "pooled_meta_analysis": {
+        "pooled_hit_ratio_deficit_point": 0.004419023544944292,
+        "pooled_hit_ratio_deficit_ci95": [
+          0.003804747492709413,
+          0.005033299597179171
+        ],
+        "per_cell_range": [
+          0.0005350000000000077,
+          0.01808999999999994
+        ],
+        "n_cells_pooled": 36,
+        "heterogeneity_note": "Per-cell hit-ratio deficits range from 0.0005 to 0.0181; the pooled CI should not be read as representative of every cell individually -- see per-cell table for heterogeneity.",
+        "small_n_caveat": "n_seeds per cell is only [5] (the grid_spec sweep used 3 seeds, NOT the 5 the artifact plan assumed). Bootstrap CIs and paired-t p-values from n<=3 seeds are inherently unstable; treat any single-cell 'significant after Holm' flag as suggestive, not proof."
+      },
+      "collision_rate_correlational_substitute": {
+        "n_configs": 182,
+        "collision_rate_vs_hit_ratio_deficit": {
+          "spearman_rho": 0.007923573003039424,
+          "p_value_raw": 0.9154553986744958,
+          "ci_low": -0.15304983702695885,
+          "ci_high": 0.16186533375523535,
+          "n": 182
+        },
+        "collision_rate_vs_recovery_time_excess": {
+          "spearman_rho": 0.07459637581505342,
+          "p_value_raw": 0.3169130816985121,
+          "ci_low": -0.0943124408969589,
+          "ci_high": 0.23943774122929087,
+          "n": 182
+        },
+        "ols_hit_ratio_deficit_on_collision_rate": {
+          "slope": -0.049598542282226134,
+          "intercept": 0.008917655950295821,
+          "r2": 0.05036156023546789,
+          "p_value": 0.0023222375950361566
+        },
+        "label": "CORRELATIONAL_SUBSTITUTE_NOT_CAUSAL",
+        "caveat": "This is a cross-config correlation between the decay variant's own hashed-slot collision rate and its performance deficit relative to the best-tuned baseline. It is NOT the 3-arm oracle/hashing ablation the hypothesis's sub-claim (b) requires, cannot separate classifier-labeling error from hashing collision (no per-config classifier_precision is logged), and cannot establish causation -- both collision rate and deficit could be driven by a common third factor (e.g. cache_ratio, alpha)."
+      }
+    },
+    "classifier_window_threshold_sweep": {
+      "status": "UNTESTABLE-DATA-MISSING",
+      "missing_fields": [
+        "a standalone labeling-task sweep over window_length in {4,8,16,32} x threshold, scored against ground-truth burst/stable labels with precision/recall/F1/AUROC"
+      ],
+      "missing_artifact": "No sibling artifact or field in art_0aR0TOK6EOBa's method_out.json contains this. Would require a follow-up EXPERIMENT artifact that runs the ShadowQueue/CV classifier as a standalone labeling task against ground-truth volatility labels.",
+      "note": "The only classifier-adjacent field present is metadata.mean_decay_slot_collision_rate (a single scalar, 0.0684, aggregated over the whole sweep) and per-config decay_bucket_assignment_stats (fractions of keys labeled stable/medium/bursty) -- neither is a precision/recall/F1 table against ground truth, so sub-claim (a) cannot be tested even weakly from this data."
+    },
+    "memory_accounting_reconciliation": {
+      "convention_present_in_this_artifact": {
+        "description": "Matched-memory tolerance check: admission-filter memory (sketch counters + doorkeeper bits + shadow-queue slots) for baseline vs decay variant, solved to be within a stated +/-15% tolerance.",
+        "baseline_mean_bytes": 786432.0,
+        "decay_mean_bytes": 786406.6373626373,
+        "pct_diff": -0.003225026113214587,
+        "within_15pct_tolerance": true
+      },
+      "second_convention_16_9x_figure": {
+        "status": "CANNOT_BE_RECONCILED_FROM_THIS_ARTIFACT",
+        "reason": "The hypothesis's 16.9x overhead figure is attributed to a second, independent simulator that is not a dependency of this evaluation (not art_0aR0TOK6EOBa). method_out.json's metadata.memory_summary exposes exactly one pricing convention (a single baseline_mean_bytes/decay_mean_bytes pair), not a shared-with-sketch vs per-key split, so there is nothing to recompute the second figure from without that other simulator's code."
+      },
+      "recommended_convention_for_future_matched_comparisons": {
+        "recommendation": "per-key pricing of the inter-arrival-history buffer",
+        "justification": "Pricing the shadow-queue / inter-arrival-history buffer as 'shared with the sketch' undercounts the decay variant's true marginal memory cost, since that buffer would not exist at all under the TinyLFU baseline -- it exists purely to support the decay mechanism's per-key CV classification. A fair memory-matched ablation should price it per-key (its actual marginal footprint), which is the more conservative and more honest convention for attributing any hit-ratio advantage to the decay mechanism rather than to uncounted memory."
+      },
+      "note": "Because only one convention exists in this artifact's data, this evaluation reports it as-is (0.003%%, well within tolerance) and does not attempt to synthesize a second number."
+    },
+    "real_trace_vs_synthetic_comparison": {
+      "status": "UNTESTABLE-DATA-MISSING",
+      "finding": "Confirmed: no real_retailrocket_events rows exist in art_0aR0TOK6EOBa's method_out.json. The experiment ran synthetic-only, as its own metadata.notes states, because its data dependency (gen_art_dataset_1) was empty at the time it ran.",
+      "recommendation": "art_ypvfJGcyJJsE (delivered in the CURRENT iteration, after art_0aR0TOK6EOBa ran) now provides real_retailrocket_events (229,676 rows). This evaluation artifact cannot generate new experiment runs, so the real-vs-synthetic comparison remains an open item for a follow-up EXPERIMENT artifact that re-runs method.py against the now-available RetailRocket trace."
+    },
+    "verdicts": {
+      "per_sub_claim_verdicts": [
+        {
+          "sub_claim": "(a) classifier window-length choice (W=8) is near-optimal for burst/stable labeling",
+          "data_status": "UNTESTABLE-DATA-MISSING",
+          "verdict": "N-A",
+          "quantitative_summary": null,
+          "caveats": [
+            "a standalone labeling-task sweep over window_length in {4,8,16,32} x threshold, scored against ground-truth burst/stable labels with precision/recall/F1/AUROC"
+          ]
+        },
+        {
+          "sub_claim": "(b) once classifier and hashing confounds are removed (oracle labels + unhashed storage), the per-key-decay mechanism closes most of its deficit vs. tuned TinyLFU",
+          "data_status": "UNTESTABLE-DATA-MISSING (causal ablation); PARTIALLY-TESTED (correlational substitute)",
+          "verdict": "N-A",
+          "quantitative_summary": {
+            "pooled_hit_ratio_deficit_of_full_decay_variant_vs_tuned_baseline": {
+              "pooled_hit_ratio_deficit_point": 0.004419023544944292,
+              "pooled_hit_ratio_deficit_ci95": [
+                0.003804747492709413,
+                0.005033299597179171
+              ],
+              "per_cell_range": [
+                0.0005350000000000077,
+                0.01808999999999994
+              ],
+              "n_cells_pooled": 36,
+              "heterogeneity_note": "Per-cell hit-ratio deficits range from 0.0005 to 0.0181; the pooled CI should not be read as representative of every cell individually -- see per-cell table for heterogeneity.",
+              "small_n_caveat": "n_seeds per cell is only [5] (the grid_spec sweep used 3 seeds, NOT the 5 the artifact plan assumed). Bootstrap CIs and paired-t p-values from n<=3 seeds are inherently unstable; treat any single-cell 'significant after Holm' flag as suggestive, not proof."
+            },
+            "collision_rate_correlational_substitute": {
+              "n_configs": 182,
+              "collision_rate_vs_hit_ratio_deficit": {
+                "spearman_rho": 0.007923573003039424,
+                "p_value_raw": 0.9154553986744958,
+                "ci_low": -0.15304983702695885,
+                "ci_high": 0.16186533375523535,
+                "n": 182
+              },
+              "collision_rate_vs_recovery_time_excess": {
+                "spearman_rho": 0.07459637581505342,
+                "p_value_raw": 0.3169130816985121,
+                "ci_low": -0.0943124408969589,
+                "ci_high": 0.23943774122929087,
+                "n": 182
+              },
+              "ols_hit_ratio_deficit_on_collision_rate": {
+                "slope": -0.049598542282226134,
+                "intercept": 0.008917655950295821,
+                "r2": 0.05036156023546789,
+                "p_value": 0.0023222375950361566
+              },
+              "label": "CORRELATIONAL_SUBSTITUTE_NOT_CAUSAL",
+              "caveat": "This is a cross-config correlation between the decay variant's own hashed-slot collision rate and its performance deficit relative to the best-tuned baseline. It is NOT the 3-arm oracle/hashing ablation the hypothesis's sub-claim (b) requires, cannot separate classifier-labeling error from hashing collision (no per-config classifier_precision is logged), and cannot establish causation -- both collision rate and deficit could be driven by a common third factor (e.g. cache_ratio, alpha)."
+            }
+          },
+          "caveats": [
+            "No oracle-labels/unhashed-storage ablation arms exist in the dependency's output; the 3-arm ablation this sub-claim requires was never run.",
+            "The correlational substitute (collision rate vs. deficit) cannot separate classifier-labeling error from hashing collision, and correlation is not causation."
+          ]
+        },
+        {
+          "sub_claim": "(c) the two prior simulators' memory-overhead figures (0.003%% vs 16.9x) can be reconciled under one consistent accounting convention",
+          "data_status": "PARTIALLY-TESTED",
+          "verdict": "MIXED",
+          "quantitative_summary": {
+            "description": "Matched-memory tolerance check: admission-filter memory (sketch counters + doorkeeper bits + shadow-queue slots) for baseline vs decay variant, solved to be within a stated +/-15% tolerance.",
+            "baseline_mean_bytes": 786432.0,
+            "decay_mean_bytes": 786406.6373626373,
+            "pct_diff": -0.003225026113214587,
+            "within_15pct_tolerance": true
+          },
+          "caveats": [
+            "Only one convention is present in this artifact's data; the 16.9x figure originates from a second simulator not available as a dependency, so full reconciliation is not executable here."
+          ]
+        }
+      ],
+      "ceiling_vs_baseline_headline_question": {
+        "question": "Does the oracle-labels+unhashed-storage 'ceiling' arm's drift-recovery time beat the tuned baseline's best-W recovery time (the pre-registered >=20%% reduction, CI excluding zero, bar)?",
+        "status": "UNTESTED",
+        "reason": "The oracle+unhashed ceiling arm does not exist in art_0aR0TOK6EOBa's output.",
+        "priority": "This is flagged as the single highest-priority follow-up experiment: without it, the hypothesis cannot be distinguished from 'the idea is architecturally fine but the implementation (classifier + hashing) was bad' versus 'the idea itself is inferior to a global reset even under ideal conditions'."
+      }
+    },
+    "notes": [
+      "This evaluation's dependency (art_0aR0TOK6EOBa) does NOT contain the 3-arm oracle/hashing ablation, the classifier window/threshold sweep, RetailRocket rows, or a second memory-pricing convention that the artifact plan's objective assumes exist. Every place this evaluation could not perform the requested analysis is marked UNTESTABLE-DATA-MISSING above, with the exact missing fields/artifact named, rather than fabricated or silently skipped.",
+      "What COULD be done with the available data: (i) a full bootstrap/Holm-corrected re-analysis of the steady-state hit-ratio and drift-recovery deficits per (alpha, cache_ratio, drift_scenario) cell using the best-tuned baseline as the comparator, (ii) a correlational (explicitly non-causal) substitute linking the decay variant's own per-config hashed-slot collision rate to its performance deficit, (iii) a reconciled single-convention memory-overhead table with an explicit recommendation for which convention is more defensible going forward, all with bootstrap 95%% CIs and Holm-Bonferroni-corrected significance calls.",
+      "Follow-up EXPERIMENT artifact requirements to make sub-claims (a)/(b)/(c) fully testable: (a) a standalone classifier labeling-task sweep over window_length in {4,8,16,32} x threshold, scored with precision/recall/F1/AUROC against ground-truth burst/stable labels; (b) re-run method.py's grid with two additional systems, e.g. system in {'oracle_hashed', 'real_unhashed', 'oracle_unhashed'} (classifier_mode in {real, oracle} crossed with storage_mode in {hashed, unhashed}), logging per-config classifier_precision alongside the existing decay_slot_collision_rate; (c) either obtain the second simulator's code/config as a dependency, or log both a 'history_buffer_priced_shared_with_sketch' and 'history_buffer_priced_per_key' byte count in metadata.memory_summary from a single simulator; (d) re-run method.py with art_ypvfJGcyJJsE's real_retailrocket_events trace now that it is available as a dependency, to enable the real-vs-synthetic comparison.",
+      "n_seeds actually available per cell was 5 (grid_spec.seeds), NOT the 5 seeds the artifact plan's objective assumed -- flagged per the small-n caveat in deficit_attribution.pooled_meta_analysis."
+    ]
+  },
+  "metrics_agg": {
+    "n_cells_analyzed": 36.0,
+    "n_seeds_per_cell": 5.0,
+    "pooled_hit_ratio_deficit_baseline_minus_decay": 0.004419023544944292,
+    "pooled_hit_ratio_deficit_ci_low": 0.003804747492709413,
+    "pooled_hit_ratio_deficit_ci_high": 0.005033299597179171,
+    "n_cells_significant_after_holm": 18.0,
+    "collision_rate_vs_hit_ratio_deficit_spearman_rho": 0.007923573003039424,
+    "memory_overhead_pct_diff_matched_convention": -0.003225026113214587,
+    "mean_decay_slot_collision_rate": 0.06839125392929035,
+    "n_subclaims_untestable_data_missing": 2.0,
+    "ceiling_vs_baseline_tested": 0.0
+  },
+  "datasets": [
+    {
+      "dataset": "cache_decay_causal_attribution_per_cell",
+      "examples": [
+        {
+          "input": "alpha=0.8 cache_ratio=0.01 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00656 [0.00188, 0.01135] recovery_time_excess_decay_minus_baseline=240.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0065599999999999825,
+              "ci_low": 0.0018847499999999969,
+              "ci_high": 0.011350250000000025,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 240.0,
+              "ci_low": -640.0,
+              "ci_high": 1360.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00012157998858349186,
+            "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.0065599999999999825,
+          "eval_recovery_time_excess_point": 240.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.01 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00612 [0.00133, 0.01129] recovery_time_excess_decay_minus_baseline=520.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.006115000000000009,
+              "ci_low": 0.0013346250000000025,
+              "ci_high": 0.011289999999999994,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 520.0,
+              "ci_low": 0.0,
+              "ci_high": 1560.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00011856918728124383,
+            "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.006115000000000009,
+          "eval_recovery_time_excess_point": 520.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.01 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00338 [0.00024, 0.00668] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.003375000000000017,
+              "ci_low": 0.00023987500000001717,
+              "ci_high": 0.006680375000000043,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.006583516298256728,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.045276488254396945,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.003375000000000017,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.01 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00060 [-0.00217, 0.00299] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0006049999999999944,
+              "ci_low": -0.0021700000000000053,
+              "ci_high": 0.002990374999999991,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.3129366261331306,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.6258732522662612,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0006049999999999944,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.05 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00478 [-0.00064, 0.00990] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0047800000000000065,
+              "ci_low": -0.0006400000000000849,
+              "ci_high": 0.009895999999999981,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00013643707847956328,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.003372490799539615,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0047800000000000065,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00509 [-0.00448, 0.01508] recovery_time_excess_decay_minus_baseline=120.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.005089999999999983,
+              "ci_low": -0.0044755000000000055,
+              "ci_high": 0.015075000000000005,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 120.0,
+              "ci_low": -1040.0,
+              "ci_high": 1400.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00016590483836880448,
+            "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0038158112824825028,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.005089999999999983,
+          "eval_recovery_time_excess_point": 120.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.05 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00540 [0.00341, 0.00710] recovery_time_excess_decay_minus_baseline=240.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.005404999999999993,
+              "ci_low": 0.003410000000000024,
+              "ci_high": 0.007095250000000016,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 240.0,
+              "ci_low": -560.0,
+              "ci_high": 1280.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00041487781751676687,
+            "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.008297556350335338,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.005404999999999993,
+          "eval_recovery_time_excess_point": 240.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.05 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00352 [0.00164, 0.00531] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0035199999999999676,
+              "ci_low": 0.0016399999999999735,
+              "ci_high": 0.005305125000000004,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0005741016549890605,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.01090793144479215,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.0035199999999999676,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.1 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00351 [-0.00247, 0.00925] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0035149999999999904,
+              "ci_low": -0.0024700000000000277,
+              "ci_high": 0.009250375000000033,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.001320470406837705,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.01848658569572787,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0035149999999999904,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.1 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00350 [-0.00590, 0.01316] recovery_time_excess_decay_minus_baseline=80.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.003500000000000003,
+              "ci_low": -0.005900625000000018,
+              "ci_high": 0.013160000000000005,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 80.0,
+              "ci_low": -1200.0,
+              "ci_high": 1440.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0034096872962702247,
+            "recovery_time_paired_t_pvalue_raw": 0.37390096630005887,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.034096872962702245,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.003500000000000003,
+          "eval_recovery_time_excess_point": 80.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.1 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00768 [0.00486, 0.01045] recovery_time_excess_decay_minus_baseline=320.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.007675000000000209,
+              "ci_low": 0.004864750000000117,
+              "ci_high": 0.010445249999999927,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 320.0,
+              "ci_low": 160.0,
+              "ci_high": 480.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0008059573455263137,
+            "recovery_time_paired_t_pvalue_raw": 0.034919706674539024,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.013701274873947332,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.007675000000000209,
+          "eval_recovery_time_excess_point": 320.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=0.8 cache_ratio=0.1 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00214 [-0.00022, 0.00445] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 0.8,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0021449999999998415,
+              "ci_low": -0.00021999999999999797,
+              "ci_high": 0.00445012500000001,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.013635616908029174,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.061357650916552924,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0021449999999998415,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.01 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.01200 [0.00466, 0.01928] recovery_time_excess_decay_minus_baseline=800.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.011995000000000033,
+              "ci_low": 0.004664625000000031,
+              "ci_high": 0.019279999999999964,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 800.0,
+              "ci_low": -200.0,
+              "ci_high": 2000.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 2.530950395484919e-06,
+            "recovery_time_paired_t_pvalue_raw": 0.22041453616151446,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 9.111421423745707e-05,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.011995000000000033,
+          "eval_recovery_time_excess_point": 800.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.01 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.01085 [0.00301, 0.01824] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.01084999999999997,
+              "ci_low": 0.00301499999999999,
+              "ci_high": 0.018244999999999956,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 9.00515547547935e-06,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0003151804416417772,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.01084999999999997,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.01 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00343 [0.00046, 0.00663] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0034299999999999886,
+              "ci_low": 0.0004597499999999602,
+              "ci_high": 0.006630624999999967,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0034839125998887294,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.034096872962702245,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.0034299999999999886,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.01 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00054 [-0.00216, 0.00330] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0005350000000000077,
+              "ci_low": -0.0021616249999999956,
+              "ci_high": 0.0032999999999999974,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.5062823883115857,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.6258732522662612,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0005350000000000077,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.05 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00677 [-0.00156, 0.01506] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.006769999999999943,
+              "ci_low": -0.0015560000000000823,
+              "ci_high": 0.015060125000000068,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00010015268631607369,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0030045805894822106,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.006769999999999943,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00568 [-0.00751, 0.01947] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.00568499999999994,
+              "ci_low": -0.007505874999999984,
+              "ci_high": 0.01947099999999998,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.006468069750628135,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.045276488254396945,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.00568499999999994,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.05 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00569 [0.00013, 0.01144] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.005689999999999973,
+              "ci_low": 0.00013487499999999543,
+              "ci_high": 0.011440375000000223,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0007453128730277992,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.013415631714500385,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.005689999999999973,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.05 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00379 [-0.00066, 0.00826] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.00378999999999996,
+              "ci_low": -0.0006558749999999613,
+              "ci_high": 0.00825537500000001,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0051347393298748776,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.04107791463899902,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.00378999999999996,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.1 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00369 [-0.00314, 0.01024] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.003689999999999971,
+              "ci_low": -0.0031405000000000296,
+              "ci_high": 0.010235124999999994,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00010262966721760752,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0030045805894822106,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.003689999999999971,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.1 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00317 [-0.00816, 0.01460] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.003169999999999895,
+              "ci_low": -0.008155125000000023,
+              "ci_high": 0.014604999999999984,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 8.987504726648237e-05,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0027861264652609533,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.003169999999999895,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.1 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00754 [0.00315, 0.01179] recovery_time_excess_decay_minus_baseline=-760.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.007544999999999913,
+              "ci_low": 0.0031494999999998803,
+              "ci_high": 0.011785375000000046,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": -760.0,
+              "ci_low": -1560.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0008823728845417835,
+            "recovery_time_paired_t_pvalue_raw": 0.17859527830282218,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.014117966152668537,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.007544999999999913,
+          "eval_recovery_time_excess_point": -760.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.0 cache_ratio=0.1 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00179 [-0.00240, 0.00596] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.0,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.00179499999999988,
+              "ci_low": -0.0023953750000001465,
+              "ci_high": 0.0059601249999999655,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.012271530183310585,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.061357650916552924,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.00179499999999988,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.01 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.01809 [0.00977, 0.02659] recovery_time_excess_decay_minus_baseline=920.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.01808999999999994,
+              "ci_low": 0.009767749999999947,
+              "ci_high": 0.026590625000000107,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 920.0,
+              "ci_low": 0.0,
+              "ci_high": 1880.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 2.2751927504877494e-05,
+            "recovery_time_paired_t_pvalue_raw": 0.17834539038149474,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0007735655351658348,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.01808999999999994,
+          "eval_recovery_time_excess_point": 920.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.01 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.01753 [0.00875, 0.02592] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.017525000000000013,
+              "ci_low": 0.008749874999999926,
+              "ci_high": 0.025924999999999976,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 2.5264426505687044e-05,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0008337260746876724,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.017525000000000013,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.01 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00762 [0.00503, 0.01014] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.007620000000000016,
+              "ci_low": 0.005029499999999981,
+              "ci_high": 0.010139999999999982,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.002605926016851321,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.029474956414862752,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.007620000000000016,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.01 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00407 [0.00092, 0.00710] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.01,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0040699999999999625,
+              "ci_low": 0.0009194999999999218,
+              "ci_high": 0.007095000000000018,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0009709724586055373,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.014564586879083059,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.0040699999999999625,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.05 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00466 [-0.00301, 0.01295] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0046600000000001085,
+              "ci_low": -0.003005874999999922,
+              "ci_high": 0.01295000000000002,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00032918581155706733,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.007242087854255481,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0046600000000001085,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.05 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00437 [-0.00491, 0.01398] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.004369999999999985,
+              "ci_low": -0.004905000000000048,
+              "ci_high": 0.013981250000000096,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 2.6234661893327196e-05,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0008395091805864703,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.004369999999999985,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.05 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00502 [0.00150, 0.00862] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0050200000000000244,
+              "ci_low": 0.0014998749999998423,
+              "ci_high": 0.008620124999999966,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0014017418033901074,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.01848658569572787,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.0050200000000000244,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.05 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00274 [-0.00100, 0.00671] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.05,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0027400000000000757,
+              "ci_low": -0.001000250000000108,
+              "ci_high": 0.00670537500000007,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.019846919830989452,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.061357650916552924,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0027400000000000757,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.1 drift_scenario=D1_mild_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00336 [-0.00213, 0.00865] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D1_mild_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0033600000000000296,
+              "ci_low": -0.0021308749999999627,
+              "ci_high": 0.0086452499999999,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0024562463679052293,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.029474956414862752,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0033600000000000296,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.1 drift_scenario=D2_severe_reshuffle",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00360 [-0.00458, 0.01191] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D2_severe_reshuffle",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.0036000000000001586,
+              "ci_low": -0.00458074999999992,
+              "ci_high": 0.011905875000000156,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.00013489963198158462,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.003372490799539615,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": false
+          },
+          "eval_hit_ratio_deficit_point": 0.0036000000000001586,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 0.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.1 drift_scenario=D3_mild_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00618 [0.00373, 0.00887] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D3_mild_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.006175000000000153,
+              "ci_low": 0.0037300000000000085,
+              "ci_high": 0.00887024999999993,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0003934232652104043,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.00826188856941849,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.006175000000000153,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        },
+        {
+          "input": "alpha=1.2 cache_ratio=0.1 drift_scenario=D4_severe_burst",
+          "output": "hit_ratio_deficit_baseline_minus_decay=0.00345 [0.00087, 0.00603] recovery_time_excess_decay_minus_baseline=0.00",
+          "metadata_cell_stats": {
+            "alpha": 1.2,
+            "cache_ratio": 0.1,
+            "drift_scenario": "D4_severe_burst",
+            "n_seeds": 5,
+            "hit_ratio_deficit_baseline_minus_decay": {
+              "point": 0.003449999999999953,
+              "ci_low": 0.0008748749999998529,
+              "ci_high": 0.006030250000000086,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "recovery_time_excess_decay_minus_baseline": {
+              "point": 0.0,
+              "ci_low": 0.0,
+              "ci_high": 0.0,
+              "n_a": 5,
+              "n_b": 5
+            },
+            "hit_ratio_paired_t_pvalue_raw": 0.0001147122041002122,
+            "recovery_time_paired_t_pvalue_raw": 1.0,
+            "hit_ratio_paired_t_pvalue_holm_adjusted": 0.0032119417148059417,
+            "recovery_time_paired_t_pvalue_holm_adjusted": 1.0,
+            "hit_ratio_deficit_significant_after_holm": true
+          },
+          "eval_hit_ratio_deficit_point": 0.003449999999999953,
+          "eval_recovery_time_excess_point": 0.0,
+          "eval_hit_ratio_deficit_significant_after_holm": 1.0
+        }
+      ]
+    }
+  ]
+}

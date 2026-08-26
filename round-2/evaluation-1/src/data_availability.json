@@ -1,0 +1,50 @@
+{
+  "sub_claim_a_window_threshold_sweep": "ABSENT",
+  "sub_claim_b_three_arm_ablation": "ABSENT",
+  "sub_claim_b_correlational_substitute_fields": {
+    "per_config_decay_slot_collision_rate": "PRESENT",
+    "per_config_classifier_precision": "ABSENT"
+  },
+  "sub_claim_c_second_memory_accounting_convention": "ABSENT",
+  "retailrocket_real_trace_rows_in_method_out": "ABSENT",
+  "systems_present": [
+    "baseline",
+    "decay"
+  ],
+  "n_configs_run": 1092,
+  "top_level_metadata_keys": [
+    "grid_spec",
+    "hardware",
+    "mean_decay_slot_collision_rate",
+    "memory_summary",
+    "method_name",
+    "n_configs_errored",
+    "n_configs_run",
+    "notes",
+    "parity_summary",
+    "recovery_summary",
+    "smoke_test",
+    "total_runtime_sec",
+    "unit_test_status"
+  ],
+  "per_config_metadata_keys": [
+    "W_multiplier",
+    "alpha",
+    "cache_capacity",
+    "cache_ratio",
+    "decay_bucket_assignment_stats",
+    "decay_slot_collision_rate",
+    "drift_scenario",
+    "elapsed_sec",
+    "hit_ratio_time_series",
+    "memory_bytes",
+    "n_keys",
+    "n_requests",
+    "recovery_time_requests",
+    "seed",
+    "steady_state_hit_ratio",
+    "system",
+    "trace_source"
+  ],
+  "notes": "Confirmed by direct schema/key inspection of full_method_out.json: only 'baseline' and 'decay' systems exist (no oracle-labels or hashed/unhashed storage-mode ablation arms); no standalone window-length/threshold-placement labeling sweep exists; no real_retailrocket_events rows exist in this method_out.json (the experiment ran synthetic-only per its own documented scope reduction); metadata.memory_summary exposes exactly one pricing convention (the matched-memory 0.003%% figure), not two, so the 16.9x figure referenced in the hypothesis cannot be reconciled from this artifact's data -- it originates from a different, non-dependency simulator. Per-config decay_slot_collision_rate IS present (per decay-system example), enabling a correlational (not causal) substitute analysis for sub-claim (b); per-config classifier precision is NOT logged."
+}
