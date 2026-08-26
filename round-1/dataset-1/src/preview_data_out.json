@@ -1,887 +1,197 @@
 {
   "metadata": {
-    "description": "Cache access traces for W-TinyLFU vs. per-key-decay admission policy evaluation: best-10 selection (of 13 candidates) -- 9 synthetic Zipf-skewed traces (drift-type coverage at alpha=1.0 and alpha=0.8, plus one alpha=1.2 'combined' variant) + 1 real e-commerce clickstream trace (RetailRocket events, itemid-as-key) with genuine measured Zipf-like skew (top 1% of items receive 22.9% of accesses in the full 2.75M-row source file).",
-    "selection_rationale": "Dropped synthetic_alpha1.2_{rank_shuffle,cold_burst,slow_drift} from the full 3-alpha x 4-drift-type matrix to reach 10 total datasets, per the plan's fallback instruction to prioritize full drift-type coverage at a canonical alpha (1.0) plus a robustness alpha (0.8), then add further alpha variants only for the most-informative scenario (combined, since it stresses both abrupt-drift mechanisms simultaneously).",
-    "synthetic_generator_params": {
-      "key_space": 50000,
-      "trace_length": 80000,
-      "selected_configs": [
-        "alpha=0.8_rank_shuffle",
-        "alpha=0.8_cold_burst",
-        "alpha=0.8_combined",
-        "alpha=1.0_rank_shuffle",
-        "alpha=1.0_cold_burst",
-        "alpha=1.0_combined",
-        "alpha=1.0_slow_drift",
-        "alpha=1.2_combined",
-        "alpha=0.8_slow_drift"
-      ],
-      "drift_types": [
-        "rank_shuffle",
-        "cold_burst",
-        "combined",
-        "slow_drift"
-      ],
-      "note": "trace_length reduced from the plan's 1-2M target to 80k requests/trace to respect the 300MB artifact size budget; drift-event schedules (request-index, magnitude, affected-key-count) are fully explicit per trace so recovery-time metrics remain exactly reproducible at this scale."
-    },
-    "real_trace_provenance": {
-      "source": "DanielKiani/RetailRocket-Recommender-Data (HuggingFace mirror of the RetailRocket e-commerce recommender dataset, originally released for a Kaggle recommender-systems competition)",
-      "file": "events.csv",
-      "full_file_rows": 2756101,
-      "full_file_unique_items": 235061,
-      "sampling": "every 12th row kept (stride sample preserving chronological span), capped at 250000 rows, re-sorted by timestamp",
-      "measured_skew": "top 1% of items account for 22.9% of all view/addtocart/transaction events in the full file (Zipf-like)",
-      "adaptation_note": "itemid is used as the cache 'key' and each row (view/addtocart/transaction) as one cache request; this is a genuine real-world skewed access log but is a recommender-clickstream proxy, not a native memcached/Redis trace -- no cache-native trace under 300MB was found reachable via HF search (see README)."
-    }
+    "source": "twitter/cache-trace (real, OSDI'20 CacheLib) + synthetic Zipf-with-drift generator",
+    "description": "Cache access traces (real + synthetic-with-ground-truth-drift) for cache admission policy experiments"
   },
   "datasets": [
     {
-      "dataset": "synthetic_alpha0.8_rank_shuffle",
+      "dataset": "real_twitter_cache_trace",
       "examples": [
         {
-          "input": "{\"t\":0,\"k\":10216}",
-          "output": "",
+          "input": "{\"seq\": 0, \"timestamp\": 0.0, \"key\": \"y:46:7d:CXm4:5kyXBgWe.tekY.CJBeWJekU-CTpJ:CY.5kyXBgWe.tekY.CJBeWJekU-CTpJ-08J0G5iY00msm7J75i4Wdd4WJG7s6GJ7:5kyXBgWe/CJBeWJekU/5kyCyByC/tSBgW3p1B1WXWpy_EkYWv_SkvvkU",
+          "output": "y:46:7d:CXm4:5kyXBgWe.tekY.CJBeWJekU-CTpJ:CY.5kyXBgWe.tekY.CJBeWJekU-CTpJ-08J0G5iY00msm7J75i4Wdd4WJG7s6GJ7:5kyXBgWe/CJBeWJekU/5kyCyByC/tSBgW3p1B1WXWpy_EkYWv_SkvvkU_rvRCyWe_jeBmmxJ_kpW_YBT:48sLd7Lsdd.7",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
+          "metadata_seq": 0,
+          "metadata_key": "y:46:7d:CXm4:5kyXBgWe.tekY.CJBeWJekU-CTpJ:CY.5kyXBgWe.tekY.CJBeWJekU-CTpJ-08J0G5iY00msm7J75i4Wdd4WJG7s6GJ7:5kyXBgWe/CJBeWJekU/5kyCyByC/tSBgW3p1B1WXWpy_EkYWv_SkvvkU_rvRCyWe_jeBmmxJ_kpW_YBT:48sLd7Lsdd.7",
+          "metadata_trace_id": "twitter_cluster026",
+          "metadata_request_type": "get",
+          "metadata_source": "real",
+          "metadata_drift_event": null,
+          "metadata_alpha": null,
+          "metadata_trace_name": "twitter_cluster026",
+          "metadata_key_size": 201,
+          "metadata_value_size": 2259,
+          "metadata_client_id": 1,
+          "metadata_ttl": 0,
+          "metadata_provenance": "Twitter production in-memory caching (Twemcache/Pelikan) trace, sample cluster026 from github.com/twitter/cache-trace, released alongside Yang et al. 'The CacheLib Caching Engine' OSDI 2020"
         },
         {
-          "input": "{\"t\":1,\"k\":8484}",
-          "output": "",
+          "input": "{\"seq\": 1, \"timestamp\": 0.0, \"key\": \"y:46:7d:CXm4:BYexBpJPWp.YWzWv.CyBmeRvWCCzJ:CY.BYexBpJPWp.YWzWv.CyBmeRvWCCzJ-6Jd0G08B65iY8JY8s8JL4dB48Y6JYJ4L:Cez/hyBmORvWChzJ/1WyrReeWpyORvWC/eWfRWCyC:48sLd7Lsdd.7",
+          "output": "y:46:7d:CXm4:BYexBpJPWp.YWzWv.CyBmeRvWCCzJ:CY.BYexBpJPWp.YWzWv.CyBmeRvWCCzJ-6Jd0G08B65iY8JY8s8JL4dB48Y6JYJ4L:Cez/hyBmORvWChzJ/1WyrReeWpyORvWC/eWfRWCyC:48sLd7Lsdd.7d",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
+          "metadata_seq": 1,
+          "metadata_key": "y:46:7d:CXm4:BYexBpJPWp.YWzWv.CyBmeRvWCCzJ:CY.BYexBpJPWp.YWzWv.CyBmeRvWCCzJ-6Jd0G08B65iY8JY8s8JL4dB48Y6JYJ4L:Cez/hyBmORvWChzJ/1WyrReeWpyORvWC/eWfRWCyC:48sLd7Lsdd.7d",
+          "metadata_trace_id": "twitter_cluster026",
+          "metadata_request_type": "get",
+          "metadata_source": "real",
+          "metadata_drift_event": null,
+          "metadata_alpha": null,
+          "metadata_trace_name": "twitter_cluster026",
+          "metadata_key_size": 164,
+          "metadata_value_size": 0,
+          "metadata_client_id": 2,
+          "metadata_ttl": 0,
+          "metadata_provenance": "Twitter production in-memory caching (Twemcache/Pelikan) trace, sample cluster026 from github.com/twitter/cache-trace, released alongside Yang et al. 'The CacheLib Caching Engine' OSDI 2020"
         },
         {
-          "input": "{\"t\":2,\"k\":35946}",
-          "output": "",
+          "input": "{\"seq\": 2, \"timestamp\": 1.0, \"key\": \"CXmJ.(XkBRYR5kp.ekvW.vYBt.eWtvxJB)-XkBRYR5kp.RpXkpxykeWY\", \"trace_id\": \"twitter_cluster026\", \"request_type\": \"set\"}",
+          "output": "CXmJ.(XkBRYR5kp.ekvW.vYBt.eWtvxJB)-XkBRYR5kp.RpXkpxykeWY",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":5834}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":5892}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":37687}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":8597}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":14800}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":34023}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":43565}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
+          "metadata_seq": 2,
+          "metadata_key": "CXmJ.(XkBRYR5kp.ekvW.vYBt.eWtvxJB)-XkBRYR5kp.RpXkpxykeWY",
+          "metadata_trace_id": "twitter_cluster026",
+          "metadata_request_type": "set",
+          "metadata_source": "real",
+          "metadata_drift_event": null,
+          "metadata_alpha": null,
+          "metadata_trace_name": "twitter_cluster026",
+          "metadata_key_size": 56,
+          "metadata_value_size": 63,
+          "metadata_client_id": 3,
+          "metadata_ttl": 600,
+          "metadata_provenance": "Twitter production in-memory caching (Twemcache/Pelikan) trace, sample cluster026 from github.com/twitter/cache-trace, released alongside Yang et al. 'The CacheLib Caching Engine' OSDI 2020"
         }
       ]
     },
     {
-      "dataset": "synthetic_alpha0.8_cold_burst",
+      "dataset": "synthetic_zipf_alpha08",
       "examples": [
         {
-          "input": "{\"t\":0,\"k\":11126}",
-          "output": "",
+          "input": "{\"seq\": 0, \"timestamp\": 0.0, \"key\": \"k08_018670\", \"trace_id\": \"synthetic_zipf_alpha0.8\", \"request_type\": \"GET\"}",
+          "output": "k08_018670",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
+          "metadata_seq": 0,
+          "metadata_key": "k08_018670",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 0.8,
+          "metadata_trace_name": "synthetic_zipf_alpha0.8"
         },
         {
-          "input": "{\"t\":1,\"k\":28238}",
-          "output": "",
+          "input": "{\"seq\": 1, \"timestamp\": 1.0, \"key\": \"k08_000020\", \"trace_id\": \"synthetic_zipf_alpha0.8\", \"request_type\": \"GET\"}",
+          "output": "k08_000020",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
+          "metadata_seq": 1,
+          "metadata_key": "k08_000020",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 0.8,
+          "metadata_trace_name": "synthetic_zipf_alpha0.8"
         },
         {
-          "input": "{\"t\":2,\"k\":3600}",
-          "output": "",
+          "input": "{\"seq\": 2, \"timestamp\": 2.0, \"key\": \"k08_000322\", \"trace_id\": \"synthetic_zipf_alpha0.8\", \"request_type\": \"GET\"}",
+          "output": "k08_000322",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":41261}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":28254}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":31253}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":19539}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":38429}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":17044}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":42970}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
+          "metadata_seq": 2,
+          "metadata_key": "k08_000322",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 0.8,
+          "metadata_trace_name": "synthetic_zipf_alpha0.8"
         }
       ]
     },
     {
-      "dataset": "synthetic_alpha0.8_combined",
+      "dataset": "synthetic_zipf_alpha10",
       "examples": [
         {
-          "input": "{\"t\":0,\"k\":35534}",
-          "output": "",
+          "input": "{\"seq\": 0, \"timestamp\": 0.0, \"key\": \"k10_000000\", \"trace_id\": \"synthetic_zipf_alpha1.0\", \"request_type\": \"GET\"}",
+          "output": "k10_000000",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
+          "metadata_seq": 0,
+          "metadata_key": "k10_000000",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.0,
+          "metadata_trace_name": "synthetic_zipf_alpha1.0"
         },
         {
-          "input": "{\"t\":1,\"k\":28267}",
-          "output": "",
+          "input": "{\"seq\": 1, \"timestamp\": 1.0, \"key\": \"k10_000000\", \"trace_id\": \"synthetic_zipf_alpha1.0\", \"request_type\": \"GET\"}",
+          "output": "k10_000000",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
+          "metadata_seq": 1,
+          "metadata_key": "k10_000000",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.0,
+          "metadata_trace_name": "synthetic_zipf_alpha1.0"
         },
         {
-          "input": "{\"t\":2,\"k\":2644}",
-          "output": "",
+          "input": "{\"seq\": 2, \"timestamp\": 2.0, \"key\": \"k10_001707\", \"trace_id\": \"synthetic_zipf_alpha1.0\", \"request_type\": \"GET\"}",
+          "output": "k10_001707",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":45562}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":44695}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":5926}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":24098}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":47764}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":2327}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":32094}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
+          "metadata_seq": 2,
+          "metadata_key": "k10_001707",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.0,
+          "metadata_trace_name": "synthetic_zipf_alpha1.0"
         }
       ]
     },
     {
-      "dataset": "synthetic_alpha1.0_rank_shuffle",
+      "dataset": "synthetic_zipf_alpha12",
       "examples": [
         {
-          "input": "{\"t\":0,\"k\":4715}",
-          "output": "",
+          "input": "{\"seq\": 0, \"timestamp\": 0.0, \"key\": \"k12_000037\", \"trace_id\": \"synthetic_zipf_alpha1.2\", \"request_type\": \"GET\"}",
+          "output": "k12_000037",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
+          "metadata_seq": 0,
+          "metadata_key": "k12_000037",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.2,
+          "metadata_trace_name": "synthetic_zipf_alpha1.2"
         },
         {
-          "input": "{\"t\":1,\"k\":7878}",
-          "output": "",
+          "input": "{\"seq\": 1, \"timestamp\": 1.0, \"key\": \"k12_001972\", \"trace_id\": \"synthetic_zipf_alpha1.2\", \"request_type\": \"GET\"}",
+          "output": "k12_001972",
           "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
+          "metadata_seq": 1,
+          "metadata_key": "k12_001972",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.2,
+          "metadata_trace_name": "synthetic_zipf_alpha1.2"
         },
         {
-          "input": "{\"t\":2,\"k\":26184}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":24079}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":30944}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":7168}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":4846}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":6602}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":5317}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":49655}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_rank_shuffle",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.0_cold_burst",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":29124}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":30533}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":33851}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":31175}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":36037}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":26789}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":37370}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":20571}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":41641}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":29124}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_cold_burst",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.0_combined",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":41902}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":20484}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":20484}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":14286}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":20484}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":14286}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":4883}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":11396}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":20484}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":12505}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.0_slow_drift",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":21222}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":36715}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":2416}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":10100}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":5441}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":2346}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":46056}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":2346}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":32710}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":23220}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.0_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha1.2_combined",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":23564}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":47011}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":7226}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":18922}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":22625}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":7579}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":23564}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":24433}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":17974}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":22541}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha1.2_combined",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
-        }
-      ]
-    },
-    {
-      "dataset": "synthetic_alpha0.8_slow_drift",
-      "examples": [
-        {
-          "input": "{\"t\":0,\"k\":12759}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1,\"k\":28117}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":2,\"k\":27719}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":3,\"k\":8374}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":4,\"k\":8386}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":5,\"k\":9130}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":6,\"k\":27176}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":7,\"k\":10266}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":8,\"k\":43236}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":9,\"k\":11907}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "synthetic_alpha0.8_slow_drift",
-          "metadata_is_synthetic": true,
-          "metadata_row_index": 9
-        }
-      ]
-    },
-    {
-      "dataset": "real_retailrocket_events",
-      "examples": [
-        {
-          "input": "{\"t\":1430622165719,\"k\":209209,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 0
-        },
-        {
-          "input": "{\"t\":1430622177312,\"k\":448033,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 1
-        },
-        {
-          "input": "{\"t\":1430622276780,\"k\":441116,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 2
-        },
-        {
-          "input": "{\"t\":1430622292564,\"k\":389306,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 3
-        },
-        {
-          "input": "{\"t\":1430622334902,\"k\":14103,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 4
-        },
-        {
-          "input": "{\"t\":1430622442032,\"k\":82455,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 5
-        },
-        {
-          "input": "{\"t\":1430622449563,\"k\":406133,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 6
-        },
-        {
-          "input": "{\"t\":1430622468715,\"k\":1949,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 7
-        },
-        {
-          "input": "{\"t\":1430622499153,\"k\":49461,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 8
-        },
-        {
-          "input": "{\"t\":1430622501143,\"k\":187785,\"event\":\"view\"}",
-          "output": "",
-          "metadata_fold": "train",
-          "metadata_trace_id": "real_retailrocket_events",
-          "metadata_is_synthetic": false,
-          "metadata_row_index": 9
+          "input": "{\"seq\": 2, \"timestamp\": 2.0, \"key\": \"k12_000008\", \"trace_id\": \"synthetic_zipf_alpha1.2\", \"request_type\": \"GET\"}",
+          "output": "k12_000008",
+          "metadata_fold": "train",
+          "metadata_seq": 2,
+          "metadata_key": "k12_000008",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.2,
+          "metadata_trace_name": "synthetic_zipf_alpha1.2"
         }
       ]
     }
