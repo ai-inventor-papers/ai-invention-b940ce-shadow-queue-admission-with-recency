@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "evaluation_name": "fdr_corrected_verdict_on_per_key_cache_decay",
+    "description": "BH/BY-FDR correction of the 36-group recovery-time-ratio bootstrap tests, a 3x3 CoV-threshold sensitivity grid re-simulated on the win-corner cell only, an analytical + microbenchmarked per-request co...",
+    "final_verdict_label": "INCONCLUSIVE_UNDERPOWERED",
+    "statsmodels_version": "0.14.6",
+    "win_corner_definition": "ratio=0.01, alpha=1.2, all 4 drift scenarios",
+    "total_runtime_seconds": 185.02362632751465
+  },
+  "metrics_agg": {
+    "n_groups_total": 36,
+    "n_raw_significant_p05": 26,
+    "n_bh_significant_q05": 26,
+    "n_by_significant_q05": 26,
+    "n_win_corner_groups": 3,
+    "n_win_corner_survive_bh": 3,
+    "n_win_corner_survive_by": 3,
+    "threshold_grid_n_advantage_holds": 12,
+    "threshold_grid_n_advantage_narrows_or_disappears": 24,
+    "threshold_grid_n_reverses": 0,
+    "threshold_grid_max_consistency_delta": 0.0,
+    "compute_cost_op_count_ratio": 1.72,
+    "compute_cost_wallclock_ratio": 2.130938366568804,
+    "memory_overhead_mean_ratio": 5.219583403160448,
+    "memory_overhead_min_ratio": 5.135801799603201,
+    "memory_overhead_max_ratio": 5.676123631356363,
+    "real_trace_steady_state_delta_pp": -0.41690277777777784,
+    "real_trace_within_1pp_margin": 1.0,
+    "short_reset_ablation_present": 0.0,
+    "total_runtime_seconds": 185.02362394332886
+  },
+  "datasets": [
+    {
+      "dataset": "eval_analyses",
+      "examples": [
+        {
+          "input": "{\"analysis\": \"bh_fdr_correction\", \"group_id\": 0, \"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_high_freq\"}",
+          "output": "{\"group_id\": 0, \"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_high_freq\", \"n_seeds\": 3, \"recovery_ratio_mean\": 1.206318620925794, \"raw_p_value\": 0.002, \"bh_qvalue\": 0.0027692307692307695, \"...",
+          "predict_bh_significant": "True",
+          "eval_raw_p_value": 0.002,
+          "eval_bh_qvalue": 0.0027692307692307695
+        },
+        {
+          "input": "{\"analysis\": \"bh_fdr_correction\", \"group_id\": 1, \"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_low_freq\"}",
+          "output": "{\"group_id\": 1, \"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"high_mag_low_freq\", \"n_seeds\": 3, \"recovery_ratio_mean\": 1.838978449864604, \"raw_p_value\": 0.002, \"bh_qvalue\": 0.0027692307692307695, \"b...",
+          "predict_bh_significant": "True",
+          "eval_raw_p_value": 0.002,
+          "eval_bh_qvalue": 0.0027692307692307695
+        },
+        {
+          "input": "{\"analysis\": \"bh_fdr_correction\", \"group_id\": 2, \"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_high_freq\"}",
+          "output": "{\"group_id\": 2, \"ratio\": 0.01, \"alpha\": 0.8, \"drift_scenario\": \"low_mag_high_freq\", \"n_seeds\": 3, \"recovery_ratio_mean\": 1.0511694106026603, \"raw_p_value\": 0.002, \"bh_qvalue\": 0.0027692307692307695, \"...",
+          "predict_bh_significant": "True",
+          "eval_raw_p_value": 0.002,
+          "eval_bh_qvalue": 0.0027692307692307695
+        }
+      ]
+    }
+  ]
+}
