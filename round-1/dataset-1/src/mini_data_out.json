@@ -1,0 +1,199 @@
+{
+  "metadata": {
+    "source": "twitter/cache-trace (real, OSDI'20 CacheLib) + synthetic Zipf-with-drift generator",
+    "description": "Cache access traces (real + synthetic-with-ground-truth-drift) for cache admission policy experiments"
+  },
+  "datasets": [
+    {
+      "dataset": "real_twitter_cache_trace",
+      "examples": [
+        {
+          "input": "{\"seq\": 0, \"timestamp\": 0.0, \"key\": \"y:46:7d:CXm4:5kyXBgWe.tekY.CJBeWJekU-CTpJ:CY.5kyXBgWe.tekY.CJBeWJekU-CTpJ-08J0G5iY00msm7J75i4Wdd4WJG7s6GJ7:5kyXBgWe/CJBeWJekU/5kyCyByC/tSBgW3p1B1WXWpy_EkYWv_SkvvkU_rvRCyWe_jeBmmxJ_kpW_YBT:48sLd7Lsdd.7d\", \"trace_id\": \"twitter_cluster026\", \"request_type\": \"get\"}",
+          "output": "y:46:7d:CXm4:5kyXBgWe.tekY.CJBeWJekU-CTpJ:CY.5kyXBgWe.tekY.CJBeWJekU-CTpJ-08J0G5iY00msm7J75i4Wdd4WJG7s6GJ7:5kyXBgWe/CJBeWJekU/5kyCyByC/tSBgW3p1B1WXWpy_EkYWv_SkvvkU_rvRCyWe_jeBmmxJ_kpW_YBT:48sLd7Lsdd.7d",
+          "metadata_fold": "train",
+          "metadata_seq": 0,
+          "metadata_key": "y:46:7d:CXm4:5kyXBgWe.tekY.CJBeWJekU-CTpJ:CY.5kyXBgWe.tekY.CJBeWJekU-CTpJ-08J0G5iY00msm7J75i4Wdd4WJG7s6GJ7:5kyXBgWe/CJBeWJekU/5kyCyByC/tSBgW3p1B1WXWpy_EkYWv_SkvvkU_rvRCyWe_jeBmmxJ_kpW_YBT:48sLd7Lsdd.7d",
+          "metadata_trace_id": "twitter_cluster026",
+          "metadata_request_type": "get",
+          "metadata_source": "real",
+          "metadata_drift_event": null,
+          "metadata_alpha": null,
+          "metadata_trace_name": "twitter_cluster026",
+          "metadata_key_size": 201,
+          "metadata_value_size": 2259,
+          "metadata_client_id": 1,
+          "metadata_ttl": 0,
+          "metadata_provenance": "Twitter production in-memory caching (Twemcache/Pelikan) trace, sample cluster026 from github.com/twitter/cache-trace, released alongside Yang et al. 'The CacheLib Caching Engine' OSDI 2020"
+        },
+        {
+          "input": "{\"seq\": 1, \"timestamp\": 0.0, \"key\": \"y:46:7d:CXm4:BYexBpJPWp.YWzWv.CyBmeRvWCCzJ:CY.BYexBpJPWp.YWzWv.CyBmeRvWCCzJ-6Jd0G08B65iY8JY8s8JL4dB48Y6JYJ4L:Cez/hyBmORvWChzJ/1WyrReeWpyORvWC/eWfRWCyC:48sLd7Lsdd.7d\", \"trace_id\": \"twitter_cluster026\", \"request_type\": \"get\"}",
+          "output": "y:46:7d:CXm4:BYexBpJPWp.YWzWv.CyBmeRvWCCzJ:CY.BYexBpJPWp.YWzWv.CyBmeRvWCCzJ-6Jd0G08B65iY8JY8s8JL4dB48Y6JYJ4L:Cez/hyBmORvWChzJ/1WyrReeWpyORvWC/eWfRWCyC:48sLd7Lsdd.7d",
+          "metadata_fold": "train",
+          "metadata_seq": 1,
+          "metadata_key": "y:46:7d:CXm4:BYexBpJPWp.YWzWv.CyBmeRvWCCzJ:CY.BYexBpJPWp.YWzWv.CyBmeRvWCCzJ-6Jd0G08B65iY8JY8s8JL4dB48Y6JYJ4L:Cez/hyBmORvWChzJ/1WyrReeWpyORvWC/eWfRWCyC:48sLd7Lsdd.7d",
+          "metadata_trace_id": "twitter_cluster026",
+          "metadata_request_type": "get",
+          "metadata_source": "real",
+          "metadata_drift_event": null,
+          "metadata_alpha": null,
+          "metadata_trace_name": "twitter_cluster026",
+          "metadata_key_size": 164,
+          "metadata_value_size": 0,
+          "metadata_client_id": 2,
+          "metadata_ttl": 0,
+          "metadata_provenance": "Twitter production in-memory caching (Twemcache/Pelikan) trace, sample cluster026 from github.com/twitter/cache-trace, released alongside Yang et al. 'The CacheLib Caching Engine' OSDI 2020"
+        },
+        {
+          "input": "{\"seq\": 2, \"timestamp\": 1.0, \"key\": \"CXmJ.(XkBRYR5kp.ekvW.vYBt.eWtvxJB)-XkBRYR5kp.RpXkpxykeWY\", \"trace_id\": \"twitter_cluster026\", \"request_type\": \"set\"}",
+          "output": "CXmJ.(XkBRYR5kp.ekvW.vYBt.eWtvxJB)-XkBRYR5kp.RpXkpxykeWY",
+          "metadata_fold": "train",
+          "metadata_seq": 2,
+          "metadata_key": "CXmJ.(XkBRYR5kp.ekvW.vYBt.eWtvxJB)-XkBRYR5kp.RpXkpxykeWY",
+          "metadata_trace_id": "twitter_cluster026",
+          "metadata_request_type": "set",
+          "metadata_source": "real",
+          "metadata_drift_event": null,
+          "metadata_alpha": null,
+          "metadata_trace_name": "twitter_cluster026",
+          "metadata_key_size": 56,
+          "metadata_value_size": 63,
+          "metadata_client_id": 3,
+          "metadata_ttl": 600,
+          "metadata_provenance": "Twitter production in-memory caching (Twemcache/Pelikan) trace, sample cluster026 from github.com/twitter/cache-trace, released alongside Yang et al. 'The CacheLib Caching Engine' OSDI 2020"
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha08",
+      "examples": [
+        {
+          "input": "{\"seq\": 0, \"timestamp\": 0.0, \"key\": \"k08_018670\", \"trace_id\": \"synthetic_zipf_alpha0.8\", \"request_type\": \"GET\"}",
+          "output": "k08_018670",
+          "metadata_fold": "train",
+          "metadata_seq": 0,
+          "metadata_key": "k08_018670",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 0.8,
+          "metadata_trace_name": "synthetic_zipf_alpha0.8"
+        },
+        {
+          "input": "{\"seq\": 1, \"timestamp\": 1.0, \"key\": \"k08_000020\", \"trace_id\": \"synthetic_zipf_alpha0.8\", \"request_type\": \"GET\"}",
+          "output": "k08_000020",
+          "metadata_fold": "train",
+          "metadata_seq": 1,
+          "metadata_key": "k08_000020",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 0.8,
+          "metadata_trace_name": "synthetic_zipf_alpha0.8"
+        },
+        {
+          "input": "{\"seq\": 2, \"timestamp\": 2.0, \"key\": \"k08_000322\", \"trace_id\": \"synthetic_zipf_alpha0.8\", \"request_type\": \"GET\"}",
+          "output": "k08_000322",
+          "metadata_fold": "train",
+          "metadata_seq": 2,
+          "metadata_key": "k08_000322",
+          "metadata_trace_id": "synthetic_zipf_alpha0.8",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 0.8,
+          "metadata_trace_name": "synthetic_zipf_alpha0.8"
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha10",
+      "examples": [
+        {
+          "input": "{\"seq\": 0, \"timestamp\": 0.0, \"key\": \"k10_000000\", \"trace_id\": \"synthetic_zipf_alpha1.0\", \"request_type\": \"GET\"}",
+          "output": "k10_000000",
+          "metadata_fold": "train",
+          "metadata_seq": 0,
+          "metadata_key": "k10_000000",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.0,
+          "metadata_trace_name": "synthetic_zipf_alpha1.0"
+        },
+        {
+          "input": "{\"seq\": 1, \"timestamp\": 1.0, \"key\": \"k10_000000\", \"trace_id\": \"synthetic_zipf_alpha1.0\", \"request_type\": \"GET\"}",
+          "output": "k10_000000",
+          "metadata_fold": "train",
+          "metadata_seq": 1,
+          "metadata_key": "k10_000000",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.0,
+          "metadata_trace_name": "synthetic_zipf_alpha1.0"
+        },
+        {
+          "input": "{\"seq\": 2, \"timestamp\": 2.0, \"key\": \"k10_001707\", \"trace_id\": \"synthetic_zipf_alpha1.0\", \"request_type\": \"GET\"}",
+          "output": "k10_001707",
+          "metadata_fold": "train",
+          "metadata_seq": 2,
+          "metadata_key": "k10_001707",
+          "metadata_trace_id": "synthetic_zipf_alpha1.0",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.0,
+          "metadata_trace_name": "synthetic_zipf_alpha1.0"
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_zipf_alpha12",
+      "examples": [
+        {
+          "input": "{\"seq\": 0, \"timestamp\": 0.0, \"key\": \"k12_000037\", \"trace_id\": \"synthetic_zipf_alpha1.2\", \"request_type\": \"GET\"}",
+          "output": "k12_000037",
+          "metadata_fold": "train",
+          "metadata_seq": 0,
+          "metadata_key": "k12_000037",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.2,
+          "metadata_trace_name": "synthetic_zipf_alpha1.2"
+        },
+        {
+          "input": "{\"seq\": 1, \"timestamp\": 1.0, \"key\": \"k12_001972\", \"trace_id\": \"synthetic_zipf_alpha1.2\", \"request_type\": \"GET\"}",
+          "output": "k12_001972",
+          "metadata_fold": "train",
+          "metadata_seq": 1,
+          "metadata_key": "k12_001972",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.2,
+          "metadata_trace_name": "synthetic_zipf_alpha1.2"
+        },
+        {
+          "input": "{\"seq\": 2, \"timestamp\": 2.0, \"key\": \"k12_000008\", \"trace_id\": \"synthetic_zipf_alpha1.2\", \"request_type\": \"GET\"}",
+          "output": "k12_000008",
+          "metadata_fold": "train",
+          "metadata_seq": 2,
+          "metadata_key": "k12_000008",
+          "metadata_trace_id": "synthetic_zipf_alpha1.2",
+          "metadata_request_type": "GET",
+          "metadata_source": "synthetic",
+          "metadata_drift_event": null,
+          "metadata_alpha": 1.2,
+          "metadata_trace_name": "synthetic_zipf_alpha1.2"
+        }
+      ]
+    }
+  ]
+}
