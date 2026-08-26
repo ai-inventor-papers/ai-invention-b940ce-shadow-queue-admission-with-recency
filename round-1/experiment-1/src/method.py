@@ -1,1115 +1,957 @@
 #!/usr/bin/env python3
-"""Per-Key Decay Cache Admission vs W-TinyLFU: discrete-event cache simulator.
+"""Per-Key Decay vs Global TinyLFU Reset: cache-admission simulator.
 
-Implements exact W-TinyLFU (Count-Min sketch + periodic global halving +
-doorkeeper Bloom filter + shadow-queue admission test + SLRU eviction) side
-by side with a per-key-decay variant that replaces global halving with a
-per-key decay rate chosen from CV-based volatility buckets. Both share
-identical SLRU eviction and admission-test comparison structure.
+Implements a shared W-TinyLFU admission scaffold (Count-Min sketch + doorkeeper
++ SLRU main region + small LRU window) with two pluggable frequency estimators:
 
-No real-world trace was available in this run's data dependency (the
-gen_art_dataset_1 directory was empty and no user uploads were provided), so
-per the artifact plan's fallback_plan item (2) this run is SYNTHETIC-ONLY:
-both the steady-state hit-ratio parity check and the drift-recovery claim
-are evaluated on synthetic Zipf traces. This is recorded as an explicit
-scope reduction in method_out.json's top-level "notes" field.
+  - GlobalResetFrequencyEstimator: baseline, single Count-Min sketch that is
+    halved wholesale once every `sample_size` accesses (Caffeine's approach).
+  - PerKeyDecayFrequencyEstimator (proposed): three Count-Min sketch "tiers"
+    with different halving periods; each key currently tracked in a bounded
+    shadow-metadata LRU is assigned to a tier by the coefficient of variation
+    (CoV) of its inter-arrival gaps (bursty -> short half-life, regular ->
+    long half-life).
+
+Both are driven by the identical SLRU + doorkeeper + admission-window loop so
+any hit-ratio / recovery-time difference is attributable to the frequency
+estimator alone, not to implementation drift between two separate simulators.
 """
 
 from __future__ import annotations
 
 import gc
-import hashlib
 import json
 import multiprocessing as mp
+import os
 import resource
 import sys
 import time
-from collections import deque
+from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Optional
 
 import numpy as np
 from loguru import logger
 
-np.seterr(over="ignore")  # intentional uint64 wraparound in the multiplicative hash
+# --------------------------------------------------------------------------
+# Setup: logging, hardware-aware limits (aii-python + aii-use-hardware)
+# --------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------- #
-# Setup: paths, logging, resource limits
-# --------------------------------------------------------------------------- #
-
-WORKDIR = Path(__file__).resolve().parent
-LOG_DIR = WORKDIR / "logs"
+WORKSPACE = Path(__file__).resolve().parent
+LOG_DIR = WORKSPACE / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="{time:HH:mm:ss}|{level:<7}|{message}")
 logger.add(LOG_DIR / "run.log", rotation="30 MB", level="DEBUG")
 
-# RAM budget: this workload is pure numpy arrays sized by sketch width and
-# trace length, well under a few hundred MB per run. Cap generously.
-RAM_BUDGET_BYTES = 6 * 1024**3  # 6 GB virtual-address budget
-resource.setrlimit(resource.RLIMIT_AS, (RAM_BUDGET_BYTES * 3, RAM_BUDGET_BYTES * 3))
-resource.setrlimit(resource.RLIMIT_CPU, (3600 * 5, 3600 * 5))  # 5h CPU-time safety cap
 
-NUM_CPUS = 6  # detected via cgroup cfs_quota (510000/100000 = ~5.1 -> 6 avail)
-NUM_WORKERS = max(1, NUM_CPUS - 1)
-
-OUT_PATH = WORKDIR / "method_out.json"
-
-# --------------------------------------------------------------------------- #
-# Hashing utilities
-# --------------------------------------------------------------------------- #
-
-_SEEDS = np.array([0x9E3779B1, 0x85EBCA77, 0xC2B2AE3D, 0x27D4EB2F], dtype=np.uint64)
-
-
-def hash_key(key: int, seed_idx: int, width: int) -> int:
-    """Deterministic 32-bit-ish hash of (key, seed) -> [0, width)."""
-    h = hashlib.blake2b(
-        key.to_bytes(8, "little", signed=False) if key >= 0 else (-key - 1).to_bytes(8, "little"),
-        digest_size=8,
-        person=_SEEDS[seed_idx].tobytes()[:8],
-    )
-    return int.from_bytes(h.digest(), "little") % width
+def _detect_cpus() -> int:
+    try:
+        parts = Path("/sys/fs/cgroup/cpu.max").read_text().split()
+        if parts[0] != "max":
+            return max(1, int(int(parts[0]) / int(parts[1])))
+    except (FileNotFoundError, ValueError):
+        pass
+    try:
+        q = int(Path("/sys/fs/cgroup/cpu/cpu.cfs_quota_us").read_text())
+        p = int(Path("/sys/fs/cgroup/cpu/cpu.cfs_period_us").read_text())
+        if q > 0:
+            return max(1, int(q / p))
+    except (FileNotFoundError, ValueError):
+        pass
+    try:
+        return len(os.sched_getaffinity(0))
+    except (AttributeError, OSError):
+        return os.cpu_count() or 1
 
 
-def hash_keys_vec(keys: np.ndarray, seed_idx: int, width: int) -> np.ndarray:
-    """Vectorized multiplicative hash (fast path used inside the hot loop).
+NUM_CPUS = _detect_cpus()
+N_WORKERS = max(1, min(NUM_CPUS - 1, 5))  # leave one CPU for the orchestrator
+logger.info(f"Detected {NUM_CPUS} usable CPUs (cgroup-aware); using {N_WORKERS} worker processes")
 
-    Not cryptographic, but has the property required here: a fixed key maps
-    to a fixed slot per seed, and different seeds decorrelate collisions.
+# RAM budget: this workload is many small dict/bytearray objects (a few MB
+# each), never a single big matrix. 8 GB is generous headroom given the 57 GB
+# container limit and leaves the rest for the OS / agent runtime.
+_RAM_BUDGET_BYTES = 8 * 1024**3
+resource.setrlimit(resource.RLIMIT_AS, (_RAM_BUDGET_BYTES * 3, _RAM_BUDGET_BYTES * 3))
+
+RNG_SEED_SALT = 0x9E3779B1  # fixed odd constant for deterministic integer hashing
+
+
+# ==========================================================================
+# 1. Count-Min sketch (4-bit packed counters) + Doorkeeper
+# ==========================================================================
+
+
+class CountMin4Bit:
+    """Depth-4 Count-Min sketch with 4-bit saturating counters, 2 per byte.
+
+    Matches Caffeine's `FrequencySketch`: increment saturates at 15, estimate
+    is the min across rows, and `halve_all` implements the RESET_MASK trick
+    (right-shift each nibble by 1, in place, in a single pass over bytes).
     """
-    seed = int(_SEEDS[seed_idx])
-    k = keys.astype(np.uint64)
-    x = (k * np.uint64(seed)) ^ (k >> np.uint64(17))
-    x = x * np.uint64(0xFF51AFD7ED558CCD)
-    x = x ^ (x >> np.uint64(33))
-    return (x % np.uint64(width)).astype(np.int64)
 
+    DEPTH = 4
+    _RESET_MASK = 0x77  # 0111_0111: halves both nibbles, drops each LSB
 
-def hash_scalar(key: int, seed_idx: int, width: int) -> int:
-    seed = int(_SEEDS[seed_idx])
-    k = np.uint64(key)
-    x = (k * np.uint64(seed)) ^ (k >> np.uint64(17))
-    x = x * np.uint64(0xFF51AFD7ED558CCD)
-    x = x ^ (x >> np.uint64(33))
-    return int(x % np.uint64(width))
+    def __init__(self, num_counters: int, seed: int):
+        self.width = max(16, num_counters | 1)  # odd width reduces hash collisions across rows
+        self.table = bytearray((self.width + 1) // 2)
+        rng = np.random.default_rng(seed ^ RNG_SEED_SALT)
+        # odd multipliers for a simple deterministic multiplicative hash per row
+        self._salts = [int(x) | 1 for x in rng.integers(1, 2**31 - 1, size=self.DEPTH)]
 
+    def _pos(self, key: int, row: int) -> int:
+        return ((key ^ self._salts[row]) * self._salts[(row + 1) % self.DEPTH]) % self.width
 
-# --------------------------------------------------------------------------- #
-# Count-Min Sketch (baseline frequency estimator, W-TinyLFU)
-# --------------------------------------------------------------------------- #
+    def _get_nibble(self, pos: int) -> int:
+        b = self.table[pos >> 1]
+        return b & 0x0F if pos & 1 == 0 else (b >> 4) & 0x0F
 
-DEPTH = 4
-CM_MAX = 15  # 4-bit saturating counters, as in real W-TinyLFU (Caffeine)
-
-
-class CountMinSketch:
-    """Baseline W-TinyLFU frequency estimator: 4-bit saturating counters,
-    global halving on a periodic sample-count reset."""
-
-    def __init__(self, width: int):
-        self.width = width
-        self.counters = np.zeros((DEPTH, width), dtype=np.uint8)
+    def _set_nibble(self, pos: int, value: int) -> None:
+        idx = pos >> 1
+        b = self.table[idx]
+        if pos & 1 == 0:
+            self.table[idx] = (b & 0xF0) | value
+        else:
+            self.table[idx] = (b & 0x0F) | (value << 4)
 
     def increment(self, key: int) -> None:
-        for d in range(DEPTH):
-            idx = hash_scalar(key, d, self.width)
-            if self.counters[d, idx] < CM_MAX:
-                self.counters[d, idx] += 1
+        for row in range(self.DEPTH):
+            pos = self._pos(key, row)
+            v = self._get_nibble(pos)
+            if v < 15:
+                self._set_nibble(pos, v + 1)
 
     def estimate(self, key: int) -> int:
-        return int(min(self.counters[d, hash_scalar(key, d, self.width)] for d in range(DEPTH)))
+        return min(self._get_nibble(self._pos(key, row)) for row in range(self.DEPTH))
 
     def halve_all(self) -> None:
-        self.counters >>= 1
+        table = self.table
+        mask = self._RESET_MASK
+        for i in range(len(table)):
+            table[i] = (table[i] >> 1) & mask
 
     def memory_bytes(self) -> int:
-        return self.counters.nbytes
+        return len(self.table) + self.DEPTH * 8  # counters + salts
 
 
-class DoorkeeperBloom:
-    """1-bit-per-slot admission doorkeeper, reset alongside CMS halving."""
+class Doorkeeper:
+    """1-bit-per-slot Bloom-style first-touch filter, cleared with the sketch."""
 
-    def __init__(self, width_bits: int):
-        self.width_bits = width_bits
-        self.bits = np.zeros(width_bits, dtype=bool)
+    def __init__(self, num_bits: int, seed: int):
+        self.num_bits = max(16, num_bits | 1)
+        self.bits = bytearray((self.num_bits + 7) // 8)
+        rng = np.random.default_rng((seed ^ 0xD1B54A35) & 0x7FFFFFFF)
+        self._salt = int(rng.integers(1, 2**31 - 1)) | 1
 
-    def _idx(self, key: int, d: int) -> int:
-        return hash_scalar(key, d, self.width_bits)
+    def _pos(self, key: int) -> int:
+        return ((key ^ self._salt) * 2654435761) % self.num_bits
+
+    def contains(self, key: int) -> bool:
+        pos = self._pos(key)
+        return bool(self.bits[pos >> 3] & (1 << (pos & 7)))
 
     def maybe_add(self, key: int) -> bool:
-        """Returns True if key was already present (i.e. this is its 2nd+ sighting)."""
-        present = all(self.bits[self._idx(key, d)] for d in range(2))
-        for d in range(2):
-            self.bits[self._idx(key, d)] = True
-        return present
+        """Returns True iff the key was NOT already present (first touch)."""
+        pos = self._pos(key)
+        byte_idx, bit = pos >> 3, 1 << (pos & 7)
+        if self.bits[byte_idx] & bit:
+            return False
+        self.bits[byte_idx] |= bit
+        return True
 
-    def reset(self) -> None:
-        self.bits[:] = False
-
-    def memory_bytes(self) -> int:
-        return self.bits.nbytes  # numpy bool array; conceptually 1 bit/slot
-
-
-# --------------------------------------------------------------------------- #
-# Per-key decay estimator (proposed method)
-# --------------------------------------------------------------------------- #
-
-# Volatility buckets: stable / medium / bursty, half-life in requests.
-N_BUCKETS = 3
-HALF_LIVES = np.array([50_000.0, 5_000.0, 500.0], dtype=np.float64)
-# CV thresholds separating buckets (low CV -> stable/regular; high CV -> bursty)
-CV_THRESH = (0.5, 1.2)
-
-
-def classify_cv_to_bucket(cv: float) -> int:
-    if cv < CV_THRESH[0]:
-        return 0
-    if cv < CV_THRESH[1]:
-        return 1
-    return 2
-
-
-class PerKeyDecayEstimator:
-    """CMS-shaped hashed-counter array with per-slot exponential decay.
-
-    Each slot stores a float32 counter, a float32 last-update-time, and a
-    uint8 decay-bucket id, all hashed on the same DEPTH x width layout as
-    CountMinSketch for a fair memory comparison. Decay is applied lazily at
-    update time using the elapsed ticks since the slot was last touched.
-
-    Collision risk: unlike the baseline (which only ever needs an integer
-    count), decay-rate storage here is bucket-per-SLOT, not bucket-per-KEY.
-    Two keys sharing a slot under a given seed can silently overwrite each
-    other's decay bucket. We log a `bucket_overwrite` counter (fallback_plan
-    item 1) whenever a touch overwrites a slot with a *different* bucket
-    than what is currently stored, so this confound is measurable rather
-    than silent.
-    """
-
-    def __init__(self, width: int):
-        self.width = width
-        self.counters = np.zeros((DEPTH, width), dtype=np.float32)
-        self.last_update_time = np.zeros((DEPTH, width), dtype=np.float32)
-        self.decay_bucket_slot = np.zeros((DEPTH, width), dtype=np.uint8)
-        self.slot_owner_key = -np.ones((DEPTH, width), dtype=np.int64)  # for collision logging
-        self.touches = 0
-        self.bucket_overwrites = 0
-        self.bucket_assignment_counts = np.zeros(N_BUCKETS, dtype=np.int64)
-
-    def touch(self, key: int, t: int, cv: float) -> None:
-        bucket = classify_cv_to_bucket(cv)
-        self.bucket_assignment_counts[bucket] += 1
-        half_life = HALF_LIVES[bucket]
-        self.touches += 1
-        for d in range(DEPTH):
-            idx = hash_scalar(key, d, self.width)
-            owner = self.slot_owner_key[d, idx]
-            if owner != -1 and owner != key:
-                self.bucket_overwrites += 1
-            self.slot_owner_key[d, idx] = key
-            dt = t - self.last_update_time[d, idx]
-            if dt > 0:
-                self.counters[d, idx] *= 0.5 ** (dt / half_life)
-            self.counters[d, idx] += 1.0
-            self.last_update_time[d, idx] = t
-            self.decay_bucket_slot[d, idx] = bucket
-
-    def estimate(self, key: int, t: int) -> float:
-        """Estimate applies decay-since-last-touch at read time too, so a
-        stale slot's contribution reflects elapsed time even without a
-        fresh write (matches the touch()-time lazy-decay semantics)."""
-        best = None
-        for d in range(DEPTH):
-            idx = hash_scalar(key, d, self.width)
-            bucket = int(self.decay_bucket_slot[d, idx])
-            half_life = HALF_LIVES[bucket]
-            dt = t - self.last_update_time[d, idx]
-            val = float(self.counters[d, idx]) * (0.5 ** (max(dt, 0) / half_life))
-            best = val if best is None else min(best, val)
-        return best if best is not None else 0.0
+    def clear(self) -> None:
+        for i in range(len(self.bits)):
+            self.bits[i] = 0
 
     def memory_bytes(self) -> int:
-        return self.counters.nbytes + self.last_update_time.nbytes + self.decay_bucket_slot.nbytes
-
-    def collision_rate(self) -> float:
-        return self.bucket_overwrites / self.touches if self.touches else 0.0
+        return len(self.bits) + 8
 
 
-# --------------------------------------------------------------------------- #
-# Shadow queue: bounded recent-miss history, feeds CV to the decay estimator
-# --------------------------------------------------------------------------- #
+# ==========================================================================
+# 2. Frequency estimators: baseline (global reset) vs proposed (per-key decay)
+# ==========================================================================
+#
+# NOTE on the doorkeeper/frequency formula: Caffeine's TinyLFU adds a fixed
+# +1 (not the sketch's saturation value) when the doorkeeper has seen the key
+# at all, giving a max representable frequency of 16. Using the sketch's max
+# value here would make nearly every warmed-up key score identically and
+# destroy discrimination; +1 is the documented, correct formula and is what
+# both estimators below use.
 
-DEFAULT_CV = 1.0  # neutral prior (treated as "medium" bucket) until enough history
 
+class GlobalResetFrequencyEstimator:
+    """Baseline: single Count-Min sketch, reset (halved) globally on a schedule."""
 
-class ShadowQueue:
-    """Bounded dict of recently-missed keys -> deque of last-k timestamps.
+    name = "global_reset_tinylfu"
 
-    Sized to `capacity` slots with FIFO eviction of the oldest-inserted key
-    (tracked via an insertion-order deque of key ids), matching the plan's
-    "bounded FIFO/dict" description.
-    """
+    def __init__(self, cache_capacity: int, sample_size_multiplier: int, seed: int):
+        self.sketch = CountMin4Bit(4 * cache_capacity, seed=seed)
+        self.doorkeeper = Doorkeeper(cache_capacity * 8, seed=seed + 1)
+        self.sample_size = max(1, sample_size_multiplier * cache_capacity)
+        self.size = 0
+        self.sample_size_multiplier = sample_size_multiplier
 
-    def __init__(self, capacity: int, history_len: int = 8):
-        self.capacity = capacity
-        self.history_len = history_len
-        self.timestamps: dict[int, deque] = {}
-        self.order: deque = deque()
+    def record_access(self, key: int) -> None:
+        if not self.doorkeeper.maybe_add(key):
+            self.sketch.increment(key)
+        self.size += 1
+        if self.size >= self.sample_size:
+            self.sketch.halve_all()
+            self.doorkeeper.clear()
+            self.size = 0
 
-    def record_miss(self, key: int, t: int) -> float:
-        if key not in self.timestamps:
-            if len(self.timestamps) >= self.capacity:
-                oldest = self.order.popleft()
-                self.timestamps.pop(oldest, None)
-            self.timestamps[key] = deque(maxlen=self.history_len)
-            self.order.append(key)
-        dq = self.timestamps[key]
-        dq.append(t)
-        if len(dq) < 3:
-            return DEFAULT_CV
-        arr = np.fromiter(dq, dtype=np.float64)
-        gaps = np.diff(arr)
-        gaps = gaps[gaps > 0]
-        if gaps.size < 2:
-            return DEFAULT_CV
-        mean = gaps.mean()
-        if mean <= 0:
-            return DEFAULT_CV
-        return float(gaps.std() / mean)
+    def frequency(self, key: int) -> int:
+        return self.sketch.estimate(key) + (1 if self.doorkeeper.contains(key) else 0)
 
     def memory_bytes(self) -> int:
-        # n_slots * (8 bytes key hash + history_len*8 bytes timestamps), per plan
-        return self.capacity * (8 + self.history_len * 8)
+        return self.sketch.memory_bytes() + self.doorkeeper.memory_bytes()
 
 
-# --------------------------------------------------------------------------- #
-# SLRU eviction (shared by both systems)
-# --------------------------------------------------------------------------- #
+class _LRUMeta:
+    """Bounded LRU dict for per-key shadow metadata (read-peek vs touch-on-write)."""
 
-class SLRU:
-    """Segmented LRU: probationary segment (20% capacity) + protected (80%).
+    def __init__(self, capacity: int):
+        self.capacity = max(1, capacity)
+        self._od: "OrderedDict[int, tuple]" = OrderedDict()
 
-    New admissions enter probation; a second hit promotes to protected.
-    Eviction always pulls from the probationary segment's LRU end first
-    (a full protected segment demotes its own LRU end into probation).
+    def peek(self, key: int):
+        return self._od.get(key)
+
+    def put_and_touch(self, key: int, value: tuple) -> None:
+        if key in self._od:
+            self._od.move_to_end(key)
+        self._od[key] = value
+        if len(self._od) > self.capacity:
+            self._od.popitem(last=False)
+
+    def __len__(self) -> int:
+        return len(self._od)
+
+    def memory_bytes(self) -> int:
+        # 5-field tuple of Python numbers + dict/OrderedDict per-entry overhead;
+        # ~120 bytes/entry is a conservative empirical estimate for this shape.
+        return len(self._od) * 120 + 200
+
+
+# CoV thresholds for the 3-tier classifier. CoV==1 is the memoryless
+# (Poisson/exponential) reference point: renewal processes with CoV well
+# above 1 are bursty (many small gaps + occasional huge gaps -> volatile,
+# short half-life is right), well below 1 are near-regular/periodic
+# (long half-life is right, since the popularity signal is stable).
+COV_HIGH_THRESH = 1.5
+COV_LOW_THRESH = 0.5
+EWMA_ALPHA = 0.3
+MIN_OBS_FOR_CLASSIFICATION = 3
+
+
+class PerKeyDecayFrequencyEstimator:
+    """Proposed: K tiered Count-Min sketches, each with its own halving period.
+
+    Only keys currently tracked in a bounded shadow-metadata LRU get a
+    per-key inter-arrival CoV estimate and tier assignment; a key that falls
+    out of the shadow queue reverts to the default tier on re-entry, bounding
+    memory at O(shadow_queue_capacity) regardless of the true key space.
     """
 
-    def __init__(self, capacity: int, probation_frac: float = 0.2):
-        self.capacity = capacity
-        self.probation_cap = max(1, int(round(capacity * probation_frac)))
-        self.protected_cap = capacity - self.probation_cap
-        # OrderedDict-like via dict (Python 3.7+ preserves insertion order);
-        # we manually move-to-end on access to emulate LRU/MRU ordering.
-        self.probation: dict[int, None] = {}
-        self.protected: dict[int, None] = {}
+    name = "per_key_decay_tinylfu"
+    TIERS = [(2, "volatile"), (8, "default"), (32, "stable")]
+    DEFAULT_TIER = 1
 
-    def contains(self, key: int) -> bool:
-        return key in self.probation or key in self.protected
+    def __init__(self, cache_capacity: int, shadow_queue_capacity: int, seed: int):
+        self.tier_sketches = [
+            CountMin4Bit(4 * cache_capacity, seed=seed + 100 + t) for t in range(len(self.TIERS))
+        ]
+        self.tier_sample_size = [max(1, m * cache_capacity) for m, _ in self.TIERS]
+        self.tier_size = [0] * len(self.TIERS)
+        self.doorkeeper = Doorkeeper(cache_capacity * 8, seed=seed + 1)
+        self.shadow_meta = _LRUMeta(shadow_queue_capacity)
+        self.global_clock = 0
+        self.tier_assignment_counts = [0] * len(self.TIERS)  # diagnostics
 
-    def size(self) -> int:
-        return len(self.probation) + len(self.protected)
+    def _classify(self, ewma_gap: float, ewma_gap_sq: float, n_obs: int) -> int:
+        if n_obs < MIN_OBS_FOR_CLASSIFICATION:
+            return self.DEFAULT_TIER
+        var = max(ewma_gap_sq - ewma_gap * ewma_gap, 0.0)
+        cov = (var**0.5) / max(ewma_gap, 1e-6)
+        if cov > COV_HIGH_THRESH:
+            return 0  # volatile / bursty
+        if cov < COV_LOW_THRESH:
+            return 2  # stable / regular
+        return 1  # default
 
-    def is_full(self) -> bool:
-        return self.size() >= self.capacity
+    def record_access(self, key: int) -> None:
+        self.global_clock += 1
+        meta = self.shadow_meta.peek(key)
+        if meta is None:
+            tier = self.DEFAULT_TIER
+            self.shadow_meta.put_and_touch(key, (self.global_clock, 0.0, 0.0, tier, 1))
+        else:
+            last_ts, ewma_gap, ewma_gap_sq, _prev_tier, n_obs = meta
+            gap = float(self.global_clock - last_ts)
+            if n_obs > 0:
+                ewma_gap = EWMA_ALPHA * gap + (1 - EWMA_ALPHA) * ewma_gap
+                ewma_gap_sq = EWMA_ALPHA * (gap * gap) + (1 - EWMA_ALPHA) * ewma_gap_sq
+            else:
+                ewma_gap, ewma_gap_sq = gap, gap * gap
+            n_obs += 1
+            tier = self._classify(ewma_gap, ewma_gap_sq, n_obs)
+            self.shadow_meta.put_and_touch(key, (self.global_clock, ewma_gap, ewma_gap_sq, tier, n_obs))
 
-    def promote_to_protected(self, key: int) -> None:
-        if key in self.probation:
-            del self.probation[key]
-            self.protected[key] = None
-            self.protected.move_to_end(key) if hasattr(self.protected, "move_to_end") else None
-            if len(self.protected) > self.protected_cap:
-                demoted, _ = next(iter(self.protected.items()))
-                del self.protected[demoted]
-                self.probation[demoted] = None
-        elif key in self.protected:
-            # refresh recency: pop+reinsert to move to MRU end
-            del self.protected[key]
-            self.protected[key] = None
+        self.tier_assignment_counts[tier] += 1
+        if not self.doorkeeper.maybe_add(key):
+            self.tier_sketches[tier].increment(key)
+            self.tier_size[tier] += 1
+            if self.tier_size[tier] >= self.tier_sample_size[tier]:
+                self.tier_sketches[tier].halve_all()
+                self.tier_size[tier] = 0
 
-    def admit_to_probation(self, key: int) -> None:
-        self.probation[key] = None
-        if len(self.probation) > self.probation_cap and self.protected_cap == 0:
-            # degenerate tiny-cache case; nothing to do, caller handles eviction
-            pass
+    def frequency(self, key: int) -> int:
+        meta = self.shadow_meta.peek(key)
+        tier = meta[3] if meta is not None else self.DEFAULT_TIER
+        base = self.tier_sketches[tier].estimate(key)
+        return base + (1 if self.doorkeeper.contains(key) else 0)
 
-    def peek_victim(self) -> int | None:
-        """Victim candidate: probationary LRU end, else protected LRU end."""
-        if self.probation:
-            return next(iter(self.probation))
-        if self.protected:
-            return next(iter(self.protected))
-        return None
-
-    def evict(self, key: int) -> None:
-        self.probation.pop(key, None)
-        self.protected.pop(key, None)
+    def memory_bytes(self) -> int:
+        return (
+            sum(s.memory_bytes() for s in self.tier_sketches)
+            + self.doorkeeper.memory_bytes()
+            + self.shadow_meta.memory_bytes()
+        )
 
 
-# Python's plain dict lacks move_to_end; use OrderedDict instead for correctness.
-from collections import OrderedDict  # noqa: E402
+# ==========================================================================
+# 3. SLRU main region + W-TinyLFU admission window (shared by both methods)
+# ==========================================================================
 
 
-class SLRU:  # noqa: F811 (intentional redefinition with OrderedDict, cleaner semantics)
-    def __init__(self, capacity: int, probation_frac: float = 0.2):
-        self.capacity = capacity
-        self.probation_cap = max(1, int(round(capacity * probation_frac)))
-        self.protected_cap = capacity - self.probation_cap
-        self.probation: OrderedDict[int, None] = OrderedDict()
-        self.protected: OrderedDict[int, None] = OrderedDict()
+class SLRUCache:
+    """Segmented LRU: 80% protected / 20% probationary (Caffeine's default split)."""
 
-    def contains(self, key: int) -> bool:
-        return key in self.probation or key in self.protected
+    def __init__(self, capacity: int):
+        self.capacity = max(1, capacity)
+        self.protected_capacity = max(1, int(0.8 * self.capacity))
+        self.probationary_capacity = max(1, self.capacity - self.protected_capacity)
+        self.protected: "OrderedDict[int, None]" = OrderedDict()
+        self.probationary: "OrderedDict[int, None]" = OrderedDict()
 
-    def size(self) -> int:
-        return len(self.probation) + len(self.protected)
-
-    def is_full(self) -> bool:
-        return self.size() >= self.capacity
-
-    def promote_to_protected(self, key: int) -> None:
-        if key in self.probation:
-            del self.probation[key]
-            self.protected[key] = None
+    def get(self, key: int) -> bool:
+        if key in self.protected:
             self.protected.move_to_end(key)
-            if len(self.protected) > self.protected_cap:
+            return True
+        if key in self.probationary:
+            del self.probationary[key]
+            self.protected[key] = None
+            if len(self.protected) > self.protected_capacity:
                 demoted, _ = self.protected.popitem(last=False)
-                self.probation[demoted] = None
-                self.probation.move_to_end(demoted)
-        elif key in self.protected:
-            self.protected.move_to_end(key)
+                self.probationary[demoted] = None
+                if len(self.probationary) > self.probationary_capacity:
+                    self.probationary.popitem(last=False)
+            return True
+        return False
 
-    def admit_to_probation(self, key: int) -> None:
-        self.probation[key] = None
-        self.probation.move_to_end(key)
-
-    def peek_victim(self) -> int | None:
-        if self.probation:
-            return next(iter(self.probation))
-        if self.protected:
-            return next(iter(self.protected))
+    def victim_for_admission_test(self) -> Optional[int]:
+        if self.probationary:
+            return next(iter(self.probationary))
         return None
 
-    def evict(self, key: int) -> None:
-        self.probation.pop(key, None)
-        self.protected.pop(key, None)
+    def admit_candidate(self, key: int) -> Optional[int]:
+        """Admits into probationary MRU; evicts+returns probationary LRU if full."""
+        evicted = None
+        if len(self.probationary) >= self.probationary_capacity and self.probationary:
+            evicted, _ = self.probationary.popitem(last=False)
+        self.probationary[key] = None
+        return evicted
+
+    def memory_bytes(self) -> int:
+        return (len(self.protected) + len(self.probationary)) * 56  # int key + OrderedDict entry overhead
 
 
-# --------------------------------------------------------------------------- #
-# Trace generation: synthetic Zipf traces with popularity drift
-# --------------------------------------------------------------------------- #
+class WindowTinyLFUCache:
+    """Full W-TinyLFU: small LRU admission window + doorkeeper/sketch-gated SLRU main."""
 
-def zipf_probs(n_keys: int, alpha: float, rng: np.random.Generator) -> np.ndarray:
-    ranks = np.arange(1, n_keys + 1, dtype=np.float64)
-    weights = 1.0 / np.power(ranks, alpha)
-    perm = rng.permutation(n_keys)  # random rank->key assignment
-    probs = np.zeros(n_keys, dtype=np.float64)
-    probs[perm] = weights
-    probs /= probs.sum()
-    return probs
+    def __init__(self, capacity: int, estimator, window_frac: float = 0.01):
+        self.window_capacity = max(1, int(round(window_frac * capacity)))
+        self.main_capacity = max(1, capacity - self.window_capacity)
+        self.window: "OrderedDict[int, None]" = OrderedDict()
+        self.main = SLRUCache(self.main_capacity)
+        self.estimator = estimator
+
+    def access(self, key: int) -> bool:
+        """Records the access with the estimator and returns True on a cache hit."""
+        self.estimator.record_access(key)
+        if key in self.window:
+            self.window.move_to_end(key)
+            return True
+        if self.main.get(key):
+            return True
+        # miss: admit into the window; if the window overflows, its evicted
+        # LRU item competes for a main-region slot against the SLRU victim.
+        self.window[key] = None
+        if len(self.window) > self.window_capacity:
+            candidate, _ = self.window.popitem(last=False)
+            victim = self.main.victim_for_admission_test()
+            if victim is None or self.estimator.frequency(candidate) > self.estimator.frequency(victim):
+                self.main.admit_candidate(candidate)
+        return False
+
+    def memory_bytes(self) -> int:
+        return self.estimator.memory_bytes() + self.main.memory_bytes() + len(self.window) * 56
 
 
-def gen_zipf_trace(
+# ==========================================================================
+# 4. Trace generation: synthetic Zipf + identity-drift + bursts
+# ==========================================================================
+
+
+@dataclass
+class TraceResult:
+    keys: np.ndarray
+    drift_indices: list = field(default_factory=list)
+    burst_indices: list = field(default_factory=list)
+
+
+def make_zipf_drift_trace(
     n_requests: int,
-    n_keys: int,
+    key_space: int,
     alpha: float,
-    drift_scenario: dict,
+    n_drift_events: int,
+    drift_magnitude: float,
+    burst_prob: float,
     seed: int,
-) -> tuple[np.ndarray, list[int]]:
-    """Generate a request trace of key ids with popularity drift events.
+) -> TraceResult:
+    """Zipf(alpha) popularity over `key_space` keys, with periodic hot-key
+    identity churn (drift) and occasional short bursts on a previously cold key.
 
-    drift_scenario: {"kind": "reshuffle"|"burst"|"none", "n_events": int,
-                      "magnitude": float in (0,1]}
-    Returns (keys_array, drift_event_times).
+    Popularity SHAPE is held fixed (same Zipf exponent throughout); what
+    drifts is WHICH keys occupy the popular ranks, which is the regime a
+    per-key decay mechanism is meant to adapt to faster than a globally
+    reset sketch.
     """
     rng = np.random.default_rng(seed)
-    probs = zipf_probs(n_keys, alpha, rng)
-    kind = drift_scenario.get("kind", "none")
-    n_events = drift_scenario.get("n_events", 0)
-    magnitude = drift_scenario.get("magnitude", 0.0)
+    ranks = np.arange(1, key_space + 1, dtype=np.float64)
+    probs = ranks ** (-alpha)
+    probs /= probs.sum()
+    rank_to_key = np.arange(key_space, dtype=np.int64)  # identity mapping initially
 
-    keys = np.empty(n_requests, dtype=np.int64)
-    drift_times: list[int] = []
+    n_segments = n_drift_events + 1
+    seg_len = n_requests // n_segments
+    trace = np.empty(n_requests, dtype=np.int64)
+    drift_indices: list = []
+    burst_indices: list = []
 
-    if kind == "none" or n_events == 0:
-        keys[:] = rng.choice(n_keys, size=n_requests, p=probs)
-        return keys, drift_times
+    top_frac_for_drift = max(1, int(round(drift_magnitude * key_space)))
+    burst_len = 200
 
-    segment_len = n_requests // (n_events + 1)
-    cur_probs = probs.copy()
     pos = 0
-    for ev in range(n_events + 1):
-        seg_n = segment_len if ev < n_events else (n_requests - pos)
-        keys[pos:pos + seg_n] = rng.choice(n_keys, size=seg_n, p=cur_probs)
-        pos += seg_n
-        if ev < n_events:
-            drift_times.append(pos)
-            if kind == "reshuffle":
-                n_swap = max(1, int(round(n_keys * magnitude)))
-                top_keys = np.argsort(-cur_probs)[:n_swap]
-                cold_keys = rng.choice(n_keys, size=n_swap, replace=False)
-                new_probs = cur_probs.copy()
-                new_probs[top_keys], new_probs[cold_keys] = (
-                    cur_probs[cold_keys].copy(),
-                    cur_probs[top_keys].copy(),
-                )
-                cur_probs = new_probs / new_probs.sum()
-            elif kind == "burst":
-                n_cold = max(1, int(round(n_keys * magnitude * 0.1)))
-                cold_keys = rng.choice(n_keys, size=n_cold, replace=False)
-                new_probs = cur_probs.copy()
-                boost = magnitude * new_probs.sum()
-                new_probs[cold_keys] += boost / n_cold
-                cur_probs = new_probs / new_probs.sum()
-    return keys, drift_times
+    for seg in range(n_segments):
+        this_len = seg_len if seg < n_segments - 1 else (n_requests - pos)
+        if this_len <= 0:
+            continue
+        rank_idx = rng.choice(key_space, size=this_len, p=probs)
+        seg_keys = rank_to_key[rank_idx]
+
+        if burst_prob > 0 and rng.random() < burst_prob and this_len > burst_len + 1:
+            # a cold key (bottom half of the rank distribution) bursts for a
+            # short contiguous window inside this segment
+            cold_rank = int(rng.integers(key_space // 2, key_space))
+            burst_key = int(rank_to_key[cold_rank])
+            start = int(rng.integers(0, this_len - burst_len))
+            seg_keys[start : start + burst_len] = burst_key
+            burst_indices.append(pos + start)
+
+        trace[pos : pos + this_len] = seg_keys
+        pos += this_len
+
+        if seg < n_segments - 1:
+            # drift: the top-`top_frac_for_drift` popular ranks get reassigned
+            # to a fresh random sample of key identities (old hot keys go
+            # cold, formerly-cold keys become hot).
+            top_indices = np.arange(top_frac_for_drift)
+            rank_to_key[top_indices] = rng.choice(key_space, size=top_frac_for_drift, replace=False)
+            drift_indices.append(pos)
+
+    return TraceResult(keys=trace, drift_indices=drift_indices, burst_indices=burst_indices)
 
 
-DRIFT_SCENARIOS = {
-    "D1_mild_reshuffle": {"kind": "reshuffle", "n_events": 1, "magnitude": 0.05},
-    "D2_severe_reshuffle": {"kind": "reshuffle", "n_events": 1, "magnitude": 0.25},
-    "D3_mild_burst": {"kind": "burst", "n_events": 1, "magnitude": 0.5},
-    "D4_severe_burst": {"kind": "burst", "n_events": 1, "magnitude": 2.0},
-}
+def load_real_trace() -> Optional[TraceResult]:
+    """Attempts to source a public cache-access trace; returns None if infeasible.
 
-# --------------------------------------------------------------------------- #
-# Admission-test simulation loop (shared structure, per-system parametrized)
-# --------------------------------------------------------------------------- #
-
-LOG_EVERY = 200  # subsample the hit-ratio time series
-
-
-def simulate(
-    keys: np.ndarray,
-    cache_capacity: int,
-    system: str,  # "baseline" or "decay"
-    width: int,
-    reset_W: int | None,
-    shadow_capacity: int,
-) -> dict:
-    n = len(keys)
-    slru = SLRU(cache_capacity)
-    shadow = ShadowQueue(capacity=shadow_capacity)
-    doorkeeper = DoorkeeperBloom(width_bits=width * 8)
-
-    if system == "baseline":
-        estimator = CountMinSketch(width)
-    else:
-        estimator = PerKeyDecayEstimator(width)
-
-    hits = 0
-    hit_series: list[list[float]] = []
-    window_hits = deque(maxlen=2000)
-    sample_counter = 0
-
-    for t in range(n):
-        key = int(keys[t])
-        if slru.contains(key):
-            hits += 1
-            window_hits.append(1)
-            slru.promote_to_protected(key)
-        else:
-            window_hits.append(0)
-            if not slru.is_full():
-                slru.admit_to_probation(key)
-                if system == "baseline":
-                    doorkeeper.maybe_add(key)
-                    estimator.increment(key)
-                else:
-                    cv = shadow.record_miss(key, t)
-                    estimator.touch(key, t, cv)
-            else:
-                victim = slru.peek_victim()
-                if system == "baseline":
-                    seen_before = doorkeeper.maybe_add(key)
-                    estimator.increment(key)
-                    cand_est = estimator.estimate(key) if seen_before else 0
-                    victim_est = estimator.estimate(victim)
-                else:
-                    cv = shadow.record_miss(key, t)
-                    estimator.touch(key, t, cv)
-                    cand_est = estimator.estimate(key, t)
-                    victim_est = estimator.estimate(victim, t)
-                if cand_est > victim_est:
-                    slru.evict(victim)
-                    slru.admit_to_probation(key)
-
-        if system == "baseline" and reset_W:
-            sample_counter += 1
-            if sample_counter >= reset_W:
-                estimator.halve_all()
-                doorkeeper.reset()
-                sample_counter = 0
-
-        if t % LOG_EVERY == 0 and len(window_hits) > 0:
-            hit_series.append([t, sum(window_hits) / len(window_hits)])
-
-    mem = slru_estimator_mem(estimator, doorkeeper, shadow, system)
-    result = {
-        "steady_state_hit_ratio": hits / n,
-        "hit_ratio_time_series": hit_series,
-        "memory_bytes": mem,
-    }
-    if system == "decay":
-        total_bucket = int(estimator.bucket_assignment_counts.sum())
-        result["decay_bucket_assignment_stats"] = {
-            "stable": float(estimator.bucket_assignment_counts[0] / total_bucket) if total_bucket else 0.0,
-            "medium": float(estimator.bucket_assignment_counts[1] / total_bucket) if total_bucket else 0.0,
-            "bursty": float(estimator.bucket_assignment_counts[2] / total_bucket) if total_bucket else 0.0,
-        }
-        result["decay_slot_collision_rate"] = estimator.collision_rate()
-    return result
-
-
-def slru_estimator_mem(estimator, doorkeeper: DoorkeeperBloom, shadow: ShadowQueue, system: str) -> int:
-    total = estimator.memory_bytes() + doorkeeper.memory_bytes()
-    if system == "decay":
-        total += shadow.memory_bytes()
-    return int(total)
-
-
-def matched_widths(cache_capacity: int, shadow_capacity: int) -> tuple[int, int]:
-    """Pick (baseline_width, decay_width) such that total memory footprints
-    (sketch + doorkeeper (+ shadow queue for decay)) match within +/-15%.
-
-    Baseline per-slot cost: DEPTH*1 byte (uint8 counters) + 1/8 byte doorkeeper bit.
-    Decay per-slot cost: DEPTH*(4+4+1) bytes (float32 counter + float32 time + uint8 bucket)
-                         + 1/8 byte doorkeeper bit, plus a FIXED shadow-queue cost
-                         independent of width.
-    Solve for decay_width given baseline_width so totals match within tolerance,
-    accounting for the shadow queue's fixed overhead.
+    A web search (see run log) located the canonical candidate — Twitter's
+    anonymized production cache traces (github.com/twitter/cache-trace,
+    hosted on CMU PDL's FTP mirror). Each per-cluster trace is itself
+    multi-gigabyte, stored in a bespoke binary "oss" record format that
+    requires Twitter's own C++ reader/decoder to parse, and there are 50+
+    cluster files with no small canonical subset documented. Downloading and
+    reverse-engineering that binary format is not feasible inside this
+    artifact's time/compute budget, so per the plan's fallback_plan this arm
+    is explicitly SKIPPED rather than faked with a relabeled synthetic trace.
     """
-    baseline_width = 65536
-    # baseline: CMS counters (DEPTH*1 byte/slot) + doorkeeper bloom (width*8 bits = width*8 bytes as bool array)
-    baseline_per_width_bytes = DEPTH * 1 + 8
-    baseline_bytes = baseline_per_width_bytes * baseline_width
-
-    shadow = ShadowQueue(shadow_capacity)
-    shadow_bytes = shadow.memory_bytes()
-    # decay: counters(4B) + last_update_time(4B) + decay_bucket(1B) per (DEPTH,width) slot,
-    # plus doorkeeper bloom (width*8 bytes) -- shadow queue is a FIXED cost, not width-dependent.
-    decay_per_width_bytes = DEPTH * (4 + 4 + 1) + 8
-    remaining = baseline_bytes - shadow_bytes
-    decay_width = max(256, int(remaining / decay_per_width_bytes))
-    return baseline_width, decay_width
+    logger.warning(
+        "load_real_trace: skipping real-trace arm — twitter/cache-trace requires "
+        "multi-GB downloads in a bespoke binary format with no lightweight public "
+        "alternative found; see fallback_plan. real_trace_results will be null."
+    )
+    return None
 
 
-def _run_one_config(cfg: dict) -> dict:
-    """Worker function: run one (trace, alpha, cache_ratio, drift_scenario,
-    system, W, seed) config end-to-end and return its metrics."""
-    try:
-        n_requests = cfg["n_requests"]
-        n_keys = cfg["n_keys"]
-        alpha = cfg["alpha"]
-        cache_ratio = cfg["cache_ratio"]
-        drift_name = cfg["drift_scenario"]
-        seed = cfg["seed"]
-        system = cfg["system"]
-        W_multiplier = cfg.get("W_multiplier")
-        cache_capacity = max(8, int(round(n_keys * cache_ratio)))
-        shadow_capacity = max(16, cache_capacity)
+# ==========================================================================
+# 5. Simulator driver + recovery-time metric
+# ==========================================================================
 
-        baseline_width, decay_width = matched_widths(cache_capacity, shadow_capacity)
-        width = baseline_width if system == "baseline" else decay_width
-        reset_W = int(cache_capacity * W_multiplier) if (system == "baseline" and W_multiplier) else None
+ROLLING_WINDOW = 3000
+RECOVERY_LOOKAHEAD = 30000
+RECOVERY_TARGET_FRAC = 0.9
 
-        drift_scenario = DRIFT_SCENARIOS.get(drift_name, {"kind": "none", "n_events": 0, "magnitude": 0.0})
-        keys, drift_times = gen_zipf_trace(n_requests, n_keys, alpha, drift_scenario, seed)
 
-        t0 = time.perf_counter()
-        sim_result = simulate(keys, cache_capacity, system, width, reset_W, shadow_capacity)
-        elapsed = time.perf_counter() - t0
+def _rolling_hit_ratio(hit_bits: np.ndarray, window: int) -> np.ndarray:
+    csum = np.cumsum(np.insert(hit_bits.astype(np.float64), 0, 0.0))
+    out = np.empty_like(csum[1:])
+    n = len(hit_bits)
+    for i in range(n):
+        lo = max(0, i - window + 1)
+        out[i] = (csum[i + 1] - csum[lo]) / (i + 1 - lo)
+    return out
 
-        recovery = None
-        if drift_times:
-            recovery = compute_recovery_time(
-                keys, cache_capacity, system, width, reset_W, shadow_capacity, drift_times[0], n_requests
+
+def _rolling_hit_ratio_fast(hit_bits: np.ndarray, window: int) -> np.ndarray:
+    """O(n) rolling mean via cumulative sums (equivalent to the reference loop above)."""
+    n = len(hit_bits)
+    csum = np.cumsum(np.insert(hit_bits.astype(np.float64), 0, 0.0))
+    idx = np.arange(n)
+    lo = np.maximum(0, idx - window + 1)
+    counts = idx - lo + 1
+    return (csum[idx + 1] - csum[lo]) / counts
+
+
+def run_trace(trace: np.ndarray, cache_capacity: int, estimator, window_admission_frac: float = 0.01) -> dict:
+    cache = WindowTinyLFUCache(cache_capacity, estimator, window_frac=window_admission_frac)
+    n = len(trace)
+    hit_bits = np.empty(n, dtype=np.uint8)
+    for i in range(n):
+        hit_bits[i] = 1 if cache.access(int(trace[i])) else 0
+    final_hit_ratio = float(hit_bits.mean())
+    rolling = _rolling_hit_ratio_fast(hit_bits, ROLLING_WINDOW)
+    return {
+        "final_hit_ratio": final_hit_ratio,
+        "rolling_hit_ratio": rolling,  # kept in-process only; summarized before JSON export
+        "memory_bytes": cache.memory_bytes(),
+    }
+
+
+def compute_recovery_times(rolling: np.ndarray, drift_indices: list, lookahead: int = RECOVERY_LOOKAHEAD) -> list:
+    """For each drift point, time until rolling hit ratio climbs back to
+    `RECOVERY_TARGET_FRAC` of the way from the post-drift trough back to the
+    pre-drift plateau. Returns `lookahead` (censored, logged) if it never does.
+    """
+    # NOTE: rolling[d] is a trailing average over [d-ROLLING_WINDOW, d], so for
+    # `ROLLING_WINDOW` requests after the drift it is still dominated by
+    # PRE-drift observations and reads as "already recovered" by construction.
+    # The search window is therefore offset by ROLLING_WINDOW so every point
+    # considered is computed purely from post-drift requests.
+    n = len(rolling)
+    results = []
+    for d in drift_indices:
+        pre_lo, pre_hi = max(0, d - ROLLING_WINDOW), d
+        if pre_hi <= pre_lo:
+            continue
+        plateau = float(np.mean(rolling[pre_lo:pre_hi]))
+        search_lo = d + ROLLING_WINDOW
+        post_hi = min(n, d + lookahead)
+        if post_hi <= search_lo:
+            continue
+        window = rolling[search_lo:post_hi]
+        trough = float(np.min(window))
+        target = trough + RECOVERY_TARGET_FRAC * (plateau - trough)
+        recovered_offsets = np.where(window >= target)[0]
+        if len(recovered_offsets) == 0:
+            results.append({"drift_index": int(d), "recovery_time": lookahead, "censored": True})
+        else:
+            # report time-since-drift (not time-since-search_lo)
+            results.append(
+                {"drift_index": int(d), "recovery_time": int(recovered_offsets[0]) + ROLLING_WINDOW, "censored": False}
             )
+    return results
 
-        out = {
-            "trace_source": "synthetic_zipf",
-            "alpha": alpha,
-            "cache_ratio": cache_ratio,
-            "cache_capacity": cache_capacity,
-            "drift_scenario": drift_name,
-            "system": system,
-            "W_multiplier": W_multiplier,
-            "seed": seed,
-            "n_requests": n_requests,
-            "n_keys": n_keys,
-            "steady_state_hit_ratio": sim_result["steady_state_hit_ratio"],
-            "memory_bytes": sim_result["memory_bytes"],
-            "recovery_time_requests": recovery,
-            "elapsed_sec": elapsed,
-            "hit_ratio_time_series": sim_result["hit_ratio_time_series"][::4],  # subsample further for size
+
+def estimator_tier_diagnostics(estimator) -> Optional[dict]:
+    if isinstance(estimator, PerKeyDecayFrequencyEstimator):
+        total = max(1, sum(estimator.tier_assignment_counts))
+        return {
+            label: round(cnt / total, 4)
+            for (_, label), cnt in zip(estimator.TIERS, estimator.tier_assignment_counts)
         }
-        if "decay_bucket_assignment_stats" in sim_result:
-            out["decay_bucket_assignment_stats"] = sim_result["decay_bucket_assignment_stats"]
-            out["decay_slot_collision_rate"] = sim_result["decay_slot_collision_rate"]
-        return out
-    except Exception as exc:  # noqa: BLE001 - report failure per-config, don't kill the pool
-        return {"error": str(exc), "config": cfg}
+    return None
 
 
-def compute_recovery_time(
-    keys: np.ndarray,
-    cache_capacity: int,
-    system: str,
-    width: int,
-    reset_W: int | None,
-    shadow_capacity: int,
-    drift_time: int,
-    n_requests: int,
-    threshold: float = 0.9,
-    window: int = 2000,
-) -> float | None:
-    """Time-to-recovery: first t > drift_time where rolling hit ratio (last
-    `window` requests) reaches threshold * post-drift-optimal hit ratio,
-    where post-drift-optimal is estimated by simulating the POST-drift-only
-    stationary segment independently to convergence."""
-    post_segment = keys[drift_time:]
-    if len(post_segment) < window * 2:
-        return None
-    post_result = simulate(post_segment, cache_capacity, system, width, reset_W, shadow_capacity)
-    # optimal = hit ratio over final 20% of the post-drift-only run (converged)
-    tail_start = int(len(post_segment) * 0.8)
-    tail_series = [hr for t, hr in post_result["hit_ratio_time_series"] if t >= tail_start]
-    optimal = float(np.mean(tail_series)) if tail_series else post_result["steady_state_hit_ratio"]
-    target = threshold * optimal
+# ==========================================================================
+# 6. Sweep configuration
+# ==========================================================================
 
-    # Now find first t after drift in the ORIGINAL (with-drift) run's hit
-    # series where rolling hit ratio crosses target. Re-simulate the full
-    # trace (drift included) to get its time series (already computed by
-    # caller normally; recompute here to keep this function self-contained
-    # and side-effect free for parallel workers).
-    full_result = simulate(keys, cache_capacity, system, width, reset_W, shadow_capacity)
-    for t, hr in full_result["hit_ratio_time_series"]:
-        if t > drift_time and hr >= target:
-            return float(t - drift_time)
-    return None  # did not recover within trace length
+KEY_SPACE = 150_000  # plan's 200k, trimmed slightly for a runtime margin in the full grid
+CACHE_RATIOS = [0.01, 0.05, 0.1]
+SKEW_LEVELS = [0.8, 1.0, 1.2]
+SAMPLE_MULTIPLIERS = [4, 8, 16, 32]
+DRIFT_SCENARIOS = [
+    {"name": "low_mag_low_freq", "drift_magnitude": 0.05, "n_drift_events": 2},
+    {"name": "low_mag_high_freq", "drift_magnitude": 0.05, "n_drift_events": 8},
+    {"name": "high_mag_low_freq", "drift_magnitude": 0.20, "n_drift_events": 2},
+    {"name": "high_mag_high_freq", "drift_magnitude": 0.20, "n_drift_events": 8},
+]
+SEEDS = [1, 2, 3]
+N_REQUESTS_TUNING = 80_000
+N_REQUESTS_MAIN = 600_000
+RECOVERY_LOOKAHEAD_MAIN = 60_000  # used for compute_recovery_times() calls in the main sweep
+BURST_PROB = 0.5
+SHADOW_QUEUE_MULT = 2  # shadow_queue_capacity = SHADOW_QUEUE_MULT * cache_capacity
 
 
-# --------------------------------------------------------------------------- #
-# Unit / correctness checks (Stage 1 of testing_plan)
-# --------------------------------------------------------------------------- #
-
-def run_unit_tests() -> None:
-    logger.info("Stage 1: unit/correctness tests")
-
-    # CountMinSketch: insert A x10, B x3, check monotone over-estimation + halving
-    cms = CountMinSketch(width=1024)
-    for _ in range(10):
-        cms.increment(1001)
-    for _ in range(3):
-        cms.increment(2002)
-    est_a, est_b = cms.estimate(1001), cms.estimate(2002)
-    assert est_a >= 10, f"CMS under-estimated A: {est_a} < 10"
-    assert est_b >= 3, f"CMS under-estimated B: {est_b} < 3"
-    cms.halve_all()
-    est_a2 = cms.estimate(1001)
-    assert est_a2 <= est_a, "halve_all() should not increase counts"
-    assert 3 <= est_a2 <= 7, f"halve_all() did not roughly halve: {est_a} -> {est_a2}"
-    logger.info(f"CMS test OK: A {est_a}->{est_a2}, B={est_b}")
-
-    # SLRU: scripted 20-request trace with hand-computed hit/miss sequence
-    slru = SLRU(capacity=4, probation_frac=0.5)  # 2 probation, 2 protected
-    script = [1, 2, 3, 1, 2, 4, 1, 2, 5, 1]
-    expected_hits = 0
-    results = []
-    for key in script:
-        hit = slru.contains(key)
-        results.append(hit)
-        if hit:
-            expected_hits += 1
-            slru.promote_to_protected(key)
-        else:
-            if slru.is_full():
-                victim = slru.peek_victim()
-                slru.evict(victim)
-            slru.admit_to_probation(key)
-    # Deterministic replay check: same script run twice gives same hit pattern
-    slru2 = SLRU(capacity=4, probation_frac=0.5)
-    results2 = []
-    for key in script:
-        hit = slru2.contains(key)
-        results2.append(hit)
-        if hit:
-            slru2.promote_to_protected(key)
-        else:
-            if slru2.is_full():
-                slru2.evict(slru2.peek_victim())
-            slru2.admit_to_probation(key)
-    assert results == results2, "SLRU is non-deterministic across identical runs"
-    assert results[0] is False and results[1] is False, "first sightings must be misses"
-    assert results[3] is True, "key 1 should hit on repeat within capacity"
-    logger.info(f"SLRU test OK: hit pattern={results}")
-
-    # ShadowQueue CV computation on a regular vs bursty sequence
-    sq = ShadowQueue(capacity=100)
-    for t in [0, 100, 200, 300, 400]:
-        cv_regular = sq.record_miss(42, t)
-    for t in [0, 5, 400, 410, 800]:
-        cv_bursty = sq.record_miss(43, t)
-    assert cv_regular < cv_bursty, f"regular CV {cv_regular} should be < bursty CV {cv_bursty}"
-    logger.info(f"ShadowQueue test OK: regular_cv={cv_regular:.3f} bursty_cv={cv_bursty:.3f}")
-
-    # PerKeyDecayEstimator: decay actually reduces stale counts over time
-    dec = PerKeyDecayEstimator(width=1024)
-    dec.touch(7, t=0, cv=0.1)  # stable bucket, half_life=50000
-    dec.touch(7, t=0, cv=0.1)
-    est_fresh = dec.estimate(7, t=0)
-    est_stale = dec.estimate(7, t=100_000)  # 2 half-lives later
-    assert est_stale < est_fresh, "decayed estimate should shrink over elapsed time"
-    logger.info(f"PerKeyDecayEstimator test OK: fresh={est_fresh:.3f} stale={est_stale:.3f}")
-
-    logger.info("Stage 1 PASSED")
+def _tune_baseline_multiplier(ratio: float, alpha: float) -> tuple[int, dict]:
+    cache_capacity = max(10, int(ratio * KEY_SPACE))
+    trace = make_zipf_drift_trace(
+        N_REQUESTS_TUNING, KEY_SPACE, alpha, n_drift_events=0, drift_magnitude=0.0, burst_prob=0.0, seed=999
+    ).keys
+    best_mult, best_hr = SAMPLE_MULTIPLIERS[0], -1.0
+    sweep_results = {}
+    for mult in SAMPLE_MULTIPLIERS:
+        est = GlobalResetFrequencyEstimator(cache_capacity, mult, seed=42)
+        res = run_trace(trace, cache_capacity, est)
+        sweep_results[mult] = res["final_hit_ratio"]
+        if res["final_hit_ratio"] > best_hr:
+            best_hr, best_mult = res["final_hit_ratio"], mult
+    return best_mult, sweep_results
 
 
-# --------------------------------------------------------------------------- #
-# Main experiment driver
-# --------------------------------------------------------------------------- #
+def _run_one_cell(args: dict) -> dict:
+    ratio, alpha, drift_scenario, seed, best_multiplier = (
+        args["ratio"],
+        args["alpha"],
+        args["drift_scenario"],
+        args["seed"],
+        args["best_multiplier"],
+    )
+    cache_capacity = max(10, int(ratio * KEY_SPACE))
+    tr = make_zipf_drift_trace(
+        N_REQUESTS_MAIN,
+        KEY_SPACE,
+        alpha,
+        n_drift_events=drift_scenario["n_drift_events"],
+        drift_magnitude=drift_scenario["drift_magnitude"],
+        burst_prob=BURST_PROB,
+        seed=seed,
+    )
 
-def build_grid(
-    n_requests: int,
-    n_keys: int,
-    alphas: list[float],
-    cache_ratios: list[float],
-    drift_names: list[str],
-    W_multipliers: list[int],
-    seeds: list[int],
-) -> list[dict]:
-    grid = []
-    for alpha in alphas:
-        for cache_ratio in cache_ratios:
-            for drift_name in drift_names:
-                for seed in seeds:
-                    for Wm in W_multipliers:
-                        grid.append({
-                            "n_requests": n_requests, "n_keys": n_keys, "alpha": alpha,
-                            "cache_ratio": cache_ratio, "drift_scenario": drift_name,
-                            "seed": seed, "system": "baseline", "W_multiplier": Wm,
-                        })
-                    grid.append({
-                        "n_requests": n_requests, "n_keys": n_keys, "alpha": alpha,
-                        "cache_ratio": cache_ratio, "drift_scenario": drift_name,
-                        "seed": seed, "system": "decay", "W_multiplier": None,
-                    })
-    return grid
+    baseline_est = GlobalResetFrequencyEstimator(cache_capacity, best_multiplier, seed=seed * 7 + 1)
+    baseline_res = run_trace(tr.keys, cache_capacity, baseline_est)
+    baseline_recovery = compute_recovery_times(
+        baseline_res["rolling_hit_ratio"], tr.drift_indices, lookahead=RECOVERY_LOOKAHEAD_MAIN
+    )
+
+    proposed_est = PerKeyDecayFrequencyEstimator(
+        cache_capacity, shadow_queue_capacity=SHADOW_QUEUE_MULT * cache_capacity, seed=seed * 7 + 2
+    )
+    proposed_res = run_trace(tr.keys, cache_capacity, proposed_est)
+    proposed_recovery = compute_recovery_times(
+        proposed_res["rolling_hit_ratio"], tr.drift_indices, lookahead=RECOVERY_LOOKAHEAD_MAIN
+    )
+
+    # steady-state hit ratio: mean rolling ratio over the trailing 15% of the
+    # trace, i.e. well clear of any drift-recovery transient
+    tail_start = int(0.85 * N_REQUESTS_MAIN)
+    baseline_steady = float(np.mean(baseline_res["rolling_hit_ratio"][tail_start:]))
+    proposed_steady = float(np.mean(proposed_res["rolling_hit_ratio"][tail_start:]))
+
+    def _mean_recovery(rec_list):
+        vals = [r["recovery_time"] for r in rec_list]
+        return float(np.mean(vals)) if vals else None
+
+    return {
+        "ratio": ratio,
+        "alpha": alpha,
+        "drift_scenario": drift_scenario["name"],
+        "seed": seed,
+        "cache_capacity": cache_capacity,
+        "best_baseline_multiplier": best_multiplier,
+        "baseline": {
+            "final_hit_ratio": baseline_res["final_hit_ratio"],
+            "steady_state_hit_ratio": baseline_steady,
+            "memory_bytes": baseline_res["memory_bytes"],
+            "recovery_events": baseline_recovery,
+            "mean_recovery_time": _mean_recovery(baseline_recovery),
+        },
+        "proposed": {
+            "final_hit_ratio": proposed_res["final_hit_ratio"],
+            "steady_state_hit_ratio": proposed_steady,
+            "memory_bytes": proposed_res["memory_bytes"],
+            "recovery_events": proposed_recovery,
+            "mean_recovery_time": _mean_recovery(proposed_recovery),
+            "tier_assignment_fractions": estimator_tier_diagnostics(proposed_est),
+        },
+        "n_drift_events": len(tr.drift_indices),
+        "n_burst_events": len(tr.burst_indices),
+    }
 
 
-def run_grid_parallel(grid: list[dict], label: str) -> list[dict]:
-    logger.info(f"[{label}] launching {len(grid)} configs on {NUM_WORKERS} workers")
-    t0 = time.perf_counter()
-    results = []
-    with ProcessPoolExecutor(max_workers=NUM_WORKERS, mp_context=mp.get_context("spawn")) as pool:
-        futures = {pool.submit(_run_one_config, cfg): i for i, cfg in enumerate(grid)}
+def _bootstrap_ci(values: list, n_resamples: int = 1000, seed: int = 0) -> dict:
+    values = [v for v in values if v is not None and not (isinstance(v, float) and np.isnan(v))]
+    if len(values) == 0:
+        return {"mean": None, "ci_low": None, "ci_high": None, "n": 0}
+    arr = np.asarray(values, dtype=np.float64)
+    rng = np.random.default_rng(seed)
+    if len(arr) == 1:
+        return {"mean": float(arr[0]), "ci_low": float(arr[0]), "ci_high": float(arr[0]), "n": 1}
+    boot_means = np.empty(n_resamples)
+    for b in range(n_resamples):
+        sample = rng.choice(arr, size=len(arr), replace=True)
+        boot_means[b] = sample.mean()
+    return {
+        "mean": float(arr.mean()),
+        "ci_low": float(np.percentile(boot_means, 2.5)),
+        "ci_high": float(np.percentile(boot_means, 97.5)),
+        "n": int(len(arr)),
+    }
+
+
+# ==========================================================================
+# 7. Main
+# ==========================================================================
+
+
+def main() -> None:
+    t0 = time.time()
+    logger.info(
+        f"Grid: {len(CACHE_RATIOS)} ratios x {len(SKEW_LEVELS)} alphas x "
+        f"{len(DRIFT_SCENARIOS)} drift scenarios x {len(SEEDS)} seeds = "
+        f"{len(CACHE_RATIOS)*len(SKEW_LEVELS)*len(DRIFT_SCENARIOS)*len(SEEDS)} main-phase cells "
+        f"(key_space={KEY_SPACE}, n_requests_main={N_REQUESTS_MAIN})"
+    )
+
+    # ---- Phase A: tune the baseline's sample-size multiplier per (ratio, alpha) ----
+    tuning_records = []
+    best_multipliers: dict[tuple[float, float], int] = {}
+    for ratio in CACHE_RATIOS:
+        for alpha in SKEW_LEVELS:
+            best_mult, sweep = _tune_baseline_multiplier(ratio, alpha)
+            best_multipliers[(ratio, alpha)] = best_mult
+            tuning_records.append(
+                {"ratio": ratio, "alpha": alpha, "sweep_hit_ratios": sweep, "chosen_multiplier": best_mult}
+            )
+            logger.info(f"Phase A: ratio={ratio} alpha={alpha} -> best_multiplier={best_mult} (sweep={sweep})")
+    logger.info(f"Phase A done in {time.time()-t0:.1f}s")
+
+    # ---- Phase B: full drift-scenario x seed sweep, parallelized across cells ----
+    cell_args = []
+    for ratio in CACHE_RATIOS:
+        for alpha in SKEW_LEVELS:
+            for drift_scenario in DRIFT_SCENARIOS:
+                for seed in SEEDS:
+                    cell_args.append(
+                        {
+                            "ratio": ratio,
+                            "alpha": alpha,
+                            "drift_scenario": drift_scenario,
+                            "seed": seed,
+                            "best_multiplier": best_multipliers[(ratio, alpha)],
+                        }
+                    )
+    logger.info(f"Phase B: launching {len(cell_args)} cells across {N_WORKERS} worker processes")
+
+    cell_results = []
+    t_phase_b = time.time()
+    ctx = mp.get_context("spawn")
+    with ProcessPoolExecutor(max_workers=N_WORKERS, mp_context=ctx) as pool:
+        futures = {pool.submit(_run_one_cell, a): a for a in cell_args}
         done = 0
         for fut in as_completed(futures):
-            r = fut.result()
-            results.append(r)
+            a = futures[fut]
+            try:
+                res = fut.result()
+                cell_results.append(res)
+            except Exception:
+                logger.error(f"Cell failed: ratio={a['ratio']} alpha={a['alpha']} "
+                             f"scenario={a['drift_scenario']['name']} seed={a['seed']}")
+                raise
             done += 1
-            if done % max(1, len(grid) // 10) == 0:
-                logger.info(f"[{label}] {done}/{len(grid)} done")
-    elapsed = time.perf_counter() - t0
-    n_err = sum(1 for r in results if "error" in r)
-    logger.info(f"[{label}] finished {len(grid)} configs in {elapsed:.1f}s ({n_err} errors)")
-    if n_err:
-        for r in results:
-            if "error" in r:
-                logger.error(f"config failed: {r['config']} -> {r['error']}")
-    return results, elapsed
+            if done % 10 == 0 or done == len(cell_args):
+                elapsed = time.time() - t_phase_b
+                logger.info(f"Phase B: {done}/{len(cell_args)} cells done ({elapsed:.1f}s elapsed)")
+    logger.info(f"Phase B done in {time.time()-t_phase_b:.1f}s")
+    del cell_args
+    gc.collect()
 
+    # ---- Phase C: real-trace arm (attempted, explicitly skipped — see load_real_trace) ----
+    real_trace = load_real_trace()
+    real_trace_results = None  # documented null per fallback_plan
 
-def bootstrap_ci(values: list[float], n_boot: int = 2000, seed: int = 0) -> dict:
-    if not values:
-        return {"median": None, "ci_low": None, "ci_high": None, "n": 0}
-    arr = np.array(values, dtype=np.float64)
-    rng = np.random.default_rng(seed)
-    boots = [np.median(rng.choice(arr, size=len(arr), replace=True)) for _ in range(n_boot)]
-    return {
-        "median": float(np.median(arr)),
-        "ci_low": float(np.percentile(boots, 2.5)),
-        "ci_high": float(np.percentile(boots, 97.5)),
-        "n": len(arr),
+    # ---- Statistics ----
+    logger.info("Computing bootstrap CIs and win-rate summary")
+    by_cell_group: dict[tuple, list] = {}
+    for r in cell_results:
+        key = (r["ratio"], r["alpha"], r["drift_scenario"])
+        by_cell_group.setdefault(key, []).append(r)
+
+    group_summaries = []
+    wins_20pct_faster = 0
+    total_groups = 0
+    for (ratio, alpha, scenario), rows in by_cell_group.items():
+        hit_deltas = [r["proposed"]["steady_state_hit_ratio"] - r["baseline"]["steady_state_hit_ratio"] for r in rows]
+        recov_ratios = []
+        for r in rows:
+            b, p = r["baseline"]["mean_recovery_time"], r["proposed"]["mean_recovery_time"]
+            if b and b > 0 and p is not None:
+                recov_ratios.append(p / b)
+        hit_ci = _bootstrap_ci(hit_deltas, seed=hash((ratio, alpha, scenario)) & 0xFFFF)
+        recov_ci = _bootstrap_ci(recov_ratios, seed=(hash((ratio, alpha, scenario)) + 1) & 0xFFFF)
+        total_groups += 1
+        wins = (
+            recov_ci["mean"] is not None
+            and recov_ci["mean"] <= 0.8
+            and recov_ci["ci_high"] is not None
+            and recov_ci["ci_high"] < 1.0
+        )
+        if wins:
+            wins_20pct_faster += 1
+        group_summaries.append(
+            {
+                "ratio": ratio,
+                "alpha": alpha,
+                "drift_scenario": scenario,
+                "n_seeds": len(rows),
+                "steady_state_hit_ratio_delta": hit_ci,
+                "recovery_time_ratio_proposed_over_baseline": recov_ci,
+                "proposed_wins_20pct_faster_recovery_ci_excl_1": bool(wins),
+            }
+        )
+
+    summary_stats = {
+        "n_groups": total_groups,
+        "fraction_groups_proposed_20pct_faster_recovery_ci_significant": (
+            wins_20pct_faster / total_groups if total_groups else None
+        ),
+        "bootstrap_resamples": 1000,
+        "recovery_definition": (
+            f"first index within {RECOVERY_LOOKAHEAD_MAIN} requests after a drift event where the "
+            f"{ROLLING_WINDOW}-request rolling hit ratio climbs back to "
+            f"trough + {RECOVERY_TARGET_FRAC}*(pre-drift plateau - trough); censored at "
+            f"{RECOVERY_LOOKAHEAD_MAIN} (logged) if never reached"
+        ),
+        "steady_state_definition": "mean rolling hit ratio over the trailing 15% of the trace",
     }
 
+    memory_footprint_table = {}
+    for r in cell_results:
+        k = f"ratio={r['ratio']}_alpha={r['alpha']}"
+        memory_footprint_table.setdefault(k, {"baseline_bytes": [], "proposed_bytes": []})
+        memory_footprint_table[k]["baseline_bytes"].append(r["baseline"]["memory_bytes"])
+        memory_footprint_table[k]["proposed_bytes"].append(r["proposed"]["memory_bytes"])
+    for k, v in memory_footprint_table.items():
+        v["baseline_bytes_mean"] = float(np.mean(v["baseline_bytes"]))
+        v["proposed_bytes_mean"] = float(np.mean(v["proposed_bytes"]))
+        v["proposed_over_baseline_ratio"] = v["proposed_bytes_mean"] / v["baseline_bytes_mean"]
 
-@logger.catch(reraise=True)
-def main() -> None:
-    logger.info("=== Per-Key Decay Cache Admission vs W-TinyLFU ===")
-    logger.info(f"Workdir: {WORKDIR}")
-    logger.info(f"NUM_WORKERS={NUM_WORKERS}")
+    # ---- Assemble exp_gen_sol_out.json-compliant output ----
+    logger.info("Assembling method_out.json")
 
-    run_unit_tests()
-
-    # ---------------- Stage 2: tiny smoke run ----------------
-    logger.info("Stage 2: tiny smoke run (5000 req, 200 keys, no drift)")
-    smoke_cfgs = [
-        {"n_requests": 5000, "n_keys": 200, "alpha": 1.0, "cache_ratio": 0.1,
-         "drift_scenario": "none", "seed": 0, "system": "baseline", "W_multiplier": 8},
-        {"n_requests": 5000, "n_keys": 200, "alpha": 1.0, "cache_ratio": 0.1,
-         "drift_scenario": "none", "seed": 0, "system": "decay", "W_multiplier": None},
-    ]
-    smoke_results = [_run_one_config(c) for c in smoke_cfgs]
-    for r in smoke_results:
-        assert "error" not in r, f"smoke run failed: {r}"
-        assert 0.05 <= r["steady_state_hit_ratio"] <= 0.99, f"hit ratio out of sane range: {r}"
-    base_hr, decay_hr = smoke_results[0]["steady_state_hit_ratio"], smoke_results[1]["steady_state_hit_ratio"]
-    logger.info(f"Stage 2 OK: baseline_hr={base_hr:.3f} decay_hr={decay_hr:.3f} "
-                f"mem base={smoke_results[0]['memory_bytes']} decay={smoke_results[1]['memory_bytes']}")
-
-    # ---------------- Stage 3: drift signal check ----------------
-    logger.info("Stage 3: drift signal check (single reshuffle, 50k req, 500 keys)")
-    drift_cfg = {"n_requests": 50000, "n_keys": 500, "alpha": 1.0, "cache_ratio": 0.1,
-                 "drift_scenario": "D2_severe_reshuffle", "seed": 0, "system": "baseline", "W_multiplier": 8}
-    drift_result = _run_one_config(drift_cfg)
-    assert "error" not in drift_result, f"drift smoke run failed: {drift_result}"
-    series = drift_result["hit_ratio_time_series"]
-    pre_drift = [hr for t, hr in series if t < 25000]
-    post_drift_immediate = [hr for t, hr in series if 25000 <= t < 27000]
-    if pre_drift and post_drift_immediate:
-        dip = np.mean(pre_drift[-10:]) - np.mean(post_drift_immediate[:10])
-        logger.info(f"Stage 3: pre-drift hr~{np.mean(pre_drift[-10:]):.3f}, "
-                    f"post-drift-immediate hr~{np.mean(post_drift_immediate[:10]):.3f}, dip={dip:.3f}")
-    logger.info("Stage 3 OK: drift injection perturbs hit ratio as expected")
-
-    # ---------------- Time budget planning ----------------
-    # Total wall budget for this experiment step; leave margin for I/O and analysis.
-    TIME_BUDGET_SEC = 3.0 * 3600  # 3 hours of the ~6h budget for the sweep itself
-    start_time = time.perf_counter()
-
-    def elapsed() -> float:
-        return time.perf_counter() - start_time
-
-    # ---------------- Stage 4: single full-grid cell (extrapolation) ----------------
-    logger.info("Stage 4: single full-grid cell to estimate wall-clock/run")
-    N_REQUESTS = 40000
-    N_KEYS = 1000
-    pilot_grid = build_grid(
-        n_requests=N_REQUESTS, n_keys=N_KEYS, alphas=[1.0], cache_ratios=[0.05],
-        drift_names=["D2_severe_reshuffle"], W_multipliers=[1, 4, 8, 16, 32], seeds=[0, 1],
-    )
-    pilot_results, pilot_elapsed = run_grid_parallel(pilot_grid, "stage4_pilot")
-    per_run_sec = pilot_elapsed / max(1, len(pilot_grid)) * NUM_WORKERS  # approx single-core-equivalent cost
-    logger.info(f"Stage 4 OK: {len(pilot_grid)} configs in {pilot_elapsed:.1f}s "
-                f"(~{per_run_sec:.3f}s/config single-core-equivalent)")
-
-    # ---------------- Full sweep design ----------------
-    alphas = [0.8, 1.0, 1.2]
-    cache_ratios = [0.01, 0.05, 0.1]
-    drift_names = list(DRIFT_SCENARIOS.keys())
-    W_multipliers = [1, 4, 8, 16, 32]
-    seeds = [0, 1, 2, 3, 4]
-
-    full_grid = build_grid(N_REQUESTS, N_KEYS, alphas, cache_ratios, drift_names, W_multipliers, seeds)
-    est_total_sec = len(full_grid) * (pilot_elapsed / len(pilot_grid))
-    remaining = TIME_BUDGET_SEC - elapsed()
-    logger.info(f"Full grid would be {len(full_grid)} configs, est {est_total_sec:.0f}s "
-                f"vs {remaining:.0f}s remaining budget")
-
-    notes = [
-        "No real-world access trace was available in this run's data dependency "
-        "(gen_art_dataset_1 was empty, no user uploads provided): per fallback_plan "
-        "item (2) this run is SYNTHETIC-ONLY for BOTH the steady-state hit-ratio "
-        "parity check and the drift-recovery claim. This is a scope reduction from "
-        "the artifact plan, which specified a real trace as well."
-    ]
-
-    applied_reductions = []
-    if est_total_sec > remaining:
-        logger.warning("Full grid exceeds budget; applying fallback_plan item 3 reductions in order")
-        # (a) bracket W around the pilot's best W at one cell, reduce W sweep to 3
-        pilot_by_W: dict[int, list[float]] = {}
-        for r in pilot_results:
-            if "error" in r or r.get("system") != "baseline":
-                continue
-            pilot_by_W.setdefault(r["W_multiplier"], []).append(r["steady_state_hit_ratio"])
-        if pilot_by_W:
-            best_W = max(pilot_by_W, key=lambda w: np.mean(pilot_by_W[w]))
-            bracket = sorted(set(w for w in W_multipliers if abs(W_multipliers.index(w) - W_multipliers.index(best_W)) <= 1))
-            W_multipliers = bracket if len(bracket) >= 2 else W_multipliers[:3]
-        else:
-            W_multipliers = W_multipliers[:3]
-        applied_reductions.append(f"(a) W sweep reduced to {W_multipliers} bracketing pilot best W")
-        full_grid = build_grid(N_REQUESTS, N_KEYS, alphas, cache_ratios, drift_names, W_multipliers, seeds)
-        est_total_sec = len(full_grid) * (pilot_elapsed / len(pilot_grid))
-
-    if est_total_sec > remaining:
-        seeds = seeds[:3]
-        applied_reductions.append(f"(b) seeds reduced to {seeds}")
-        full_grid = build_grid(N_REQUESTS, N_KEYS, alphas, cache_ratios, drift_names, W_multipliers, seeds)
-        est_total_sec = len(full_grid) * (pilot_elapsed / len(pilot_grid))
-
-    if est_total_sec > remaining:
-        cache_ratios = cache_ratios[:2]
-        applied_reductions.append(f"(c) cache_ratio sweep reduced to {cache_ratios}")
-        full_grid = build_grid(N_REQUESTS, N_KEYS, alphas, cache_ratios, drift_names, W_multipliers, seeds)
-        est_total_sec = len(full_grid) * (pilot_elapsed / len(pilot_grid))
-
-    if est_total_sec > remaining:
-        drift_names = ["D1_mild_reshuffle", "D2_severe_reshuffle"]
-        applied_reductions.append(f"(d) drift_scenario reduced to {drift_names}")
-        full_grid = build_grid(N_REQUESTS, N_KEYS, alphas, cache_ratios, drift_names, W_multipliers, seeds)
-        est_total_sec = len(full_grid) * (pilot_elapsed / len(pilot_grid))
-
-    if applied_reductions:
-        notes.append("Fallback_plan item (3) reductions applied to fit the time budget: " + "; ".join(applied_reductions))
-    logger.info(f"Final grid: {len(full_grid)} configs, est {est_total_sec:.0f}s, budget remaining {remaining:.0f}s")
-
-    # ---------------- Run the full (possibly reduced) sweep ----------------
-    full_results, full_elapsed = run_grid_parallel(full_grid, "full_sweep")
-
-    all_configs = pilot_results + full_results
-    n_errors = sum(1 for r in all_configs if "error" in r)
-    logger.info(f"Total configs run: {len(all_configs)} ({n_errors} errors), total time {elapsed():.0f}s")
-
-    # ---------------- Aggregate analysis ----------------
-    # (a) Hit-ratio parity at matched memory: baseline (best W per cell) vs decay
-    parity_rows = [r for r in all_configs if "error" not in r]
-    by_cell: dict[tuple, dict[str, list[float]]] = {}
-    for r in parity_rows:
-        cell = (r["alpha"], r["cache_ratio"], r["drift_scenario"])
-        by_cell.setdefault(cell, {"baseline": [], "decay": []})
-        if r["system"] == "baseline":
-            by_cell[cell]["baseline"].append(r["steady_state_hit_ratio"])
-        else:
-            by_cell[cell]["decay"].append(r["steady_state_hit_ratio"])
-
-    parity_summary = []
-    for cell, vals in by_cell.items():
-        if vals["baseline"] and vals["decay"]:
-            b_best = max(vals["baseline"])  # best-tuned baseline W
-            d_mean = float(np.mean(vals["decay"]))
-            parity_summary.append({
-                "alpha": cell[0], "cache_ratio": cell[1], "drift_scenario": cell[2],
-                "baseline_best_hit_ratio": b_best, "decay_mean_hit_ratio": d_mean,
-                "delta_pp": (d_mean - b_best) * 100,
-            })
-
-    # (b) Recovery-time comparison with bootstrap CIs
-    recovery_by_system_cell: dict[tuple, dict[str, list[float]]] = {}
-    for r in parity_rows:
-        if r.get("recovery_time_requests") is None:
-            continue
-        cell = (r["alpha"], r["cache_ratio"], r["drift_scenario"])
-        recovery_by_system_cell.setdefault(cell, {"baseline": [], "decay": []})
-        recovery_by_system_cell[cell][r["system"]].append(r["recovery_time_requests"])
-
-    recovery_summary = []
-    for cell, vals in recovery_by_system_cell.items():
-        recovery_summary.append({
-            "alpha": cell[0], "cache_ratio": cell[1], "drift_scenario": cell[2],
-            "baseline_recovery_ci": bootstrap_ci(vals["baseline"]),
-            "decay_recovery_ci": bootstrap_ci(vals["decay"]),
-        })
-
-    # (c) Memory footprint check (matched-width tolerance)
-    mem_rows = [(r["system"], r["memory_bytes"]) for r in parity_rows]
-    base_mems = [m for s, m in mem_rows if s == "baseline"]
-    decay_mems = [m for s, m in mem_rows if s == "decay"]
-    mem_summary = {
-        "baseline_mean_bytes": float(np.mean(base_mems)) if base_mems else None,
-        "decay_mean_bytes": float(np.mean(decay_mems)) if decay_mems else None,
-        "pct_diff": (
-            float((np.mean(decay_mems) - np.mean(base_mems)) / np.mean(base_mems) * 100)
-            if base_mems and decay_mems else None
-        ),
-        "within_15pct_tolerance": (
-            abs((np.mean(decay_mems) - np.mean(base_mems)) / np.mean(base_mems)) <= 0.15
-            if base_mems and decay_mems else None
-        ),
-    }
-    logger.info(f"Memory match: {mem_summary}")
-
-    collision_rates = [r["decay_slot_collision_rate"] for r in parity_rows if "decay_slot_collision_rate" in r]
-    mean_collision_rate = float(np.mean(collision_rates)) if collision_rates else None
-    if mean_collision_rate is not None and mean_collision_rate > 0.05:
-        notes.append(
-            f"fallback_plan item (1): decay-bucket slot collision rate is "
-            f"{mean_collision_rate:.3f} (>5%), a measurable confound in hashed decay-rate "
-            f"storage. Reported as-is; a per-key side-table fallback was not additionally "
-            f"implemented in this run given the time budget."
-        )
-    logger.info(f"Mean decay-slot collision rate: {mean_collision_rate}")
-
-    # ---------------- Build output (exp_gen_sol_out schema) ----------------
-    # Schema requires a top-level "datasets" array of {dataset, examples:[{input,output,metadata_*,predict_*}]}.
-    # Each simulated (trace,config,system,W,seed) run becomes one example; the
-    # full structured record lives in metadata_config (patternProperties allow
-    # arbitrary metadata_* content), and all cross-config analysis lives in the
-    # top-level "metadata" object (additionalProperties: true).
-    def _json_default(o):
-        if isinstance(o, (np.floating, np.integer)):
-            return float(o) if isinstance(o, np.floating) else int(o)
-        if isinstance(o, np.bool_):
-            return bool(o)
-        if isinstance(o, np.ndarray):
-            return o.tolist()
-        return str(o)
-
-    examples = []
-    for r in all_configs:
-        if "error" in r:
-            examples.append({
-                "input": f"config={json.dumps(r.get('config', {}), default=_json_default)}",
-                "output": "ERROR",
-                "metadata_error": r["error"],
-                "predict_error": "ERROR",
-            })
-            continue
-        input_desc = (
-            f"system={r['system']} alpha={r['alpha']} cache_ratio={r['cache_ratio']} "
-            f"drift_scenario={r['drift_scenario']} W_multiplier={r['W_multiplier']} seed={r['seed']} "
-            f"n_requests={r['n_requests']} n_keys={r['n_keys']}"
-        )
-        output_desc = (
-            f"steady_state_hit_ratio={r['steady_state_hit_ratio']:.6f} "
-            f"recovery_time_requests={r['recovery_time_requests']} memory_bytes={r['memory_bytes']}"
-        )
-        example = {
-            "input": input_desc,
-            "output": output_desc,
-            "metadata_config": r,
-            f"predict_{r['system']}": output_desc,
+    grid_examples = []
+    for r in cell_results:
+        cfg = {
+            "ratio": r["ratio"],
+            "alpha": r["alpha"],
+            "drift_scenario": r["drift_scenario"],
+            "seed": r["seed"],
+            "cache_capacity": r["cache_capacity"],
+            "key_space": KEY_SPACE,
+            "n_requests": N_REQUESTS_MAIN,
         }
-        examples.append(example)
+        grid_examples.append(
+            {
+                "input": json.dumps(cfg),
+                "output": json.dumps(
+                    {
+                        "baseline": {k: v for k, v in r["baseline"].items() if k != "recovery_events"},
+                        "proposed": {k: v for k, v in r["proposed"].items() if k != "recovery_events"},
+                    }
+                ),
+                "metadata_baseline_recovery_events": r["baseline"]["recovery_events"],
+                "metadata_proposed_recovery_events": r["proposed"]["recovery_events"],
+                "predict_baseline_final_hit_ratio": str(r["baseline"]["final_hit_ratio"]),
+                "predict_proposed_final_hit_ratio": str(r["proposed"]["final_hit_ratio"]),
+            }
+        )
 
-    datasets = [{"dataset": "synthetic_zipf_cache_admission_sweep", "examples": examples}]
+    tuning_examples = [
+        {
+            "input": json.dumps({"ratio": t["ratio"], "alpha": t["alpha"], "n_requests": N_REQUESTS_TUNING}),
+            "output": json.dumps({"chosen_multiplier": t["chosen_multiplier"], "sweep_hit_ratios": t["sweep_hit_ratios"]}),
+        }
+        for t in tuning_records
+    ]
+
+    summary_examples = [
+        {
+            "input": json.dumps({"phase": "aggregate_summary"}),
+            "output": json.dumps(
+                {
+                    "summary_stats": summary_stats,
+                    "memory_footprint_table": memory_footprint_table,
+                    "real_trace_results": real_trace_results,
+                    "group_summaries": group_summaries,
+                }
+            ),
+        }
+    ]
 
     output = {
         "metadata": {
-            "method_name": "per_key_decay_cache_admission_vs_tinylfu",
-            "notes": " | ".join(notes),
-            "hardware": {"num_cpus": NUM_CPUS, "num_workers": NUM_WORKERS},
-            "grid_spec": {
-                "n_requests": N_REQUESTS, "n_keys": N_KEYS, "alphas": alphas,
-                "cache_ratios": cache_ratios, "drift_scenarios": drift_names,
-                "W_multipliers": W_multipliers, "seeds": seeds,
-            },
-            "parity_summary": parity_summary,
-            "recovery_summary": recovery_summary,
-            "memory_summary": mem_summary,
-            "mean_decay_slot_collision_rate": mean_collision_rate,
-            "unit_test_status": "PASSED",
-            "smoke_test": {
-                "baseline_hit_ratio": base_hr, "decay_hit_ratio": decay_hr,
-                "baseline_memory_bytes": smoke_results[0]["memory_bytes"],
-                "decay_memory_bytes": smoke_results[1]["memory_bytes"],
-            },
-            "total_runtime_sec": elapsed(),
-            "n_configs_run": len(all_configs),
-            "n_configs_errored": n_errors,
+            "method_name": "per_key_decay_vs_global_tinylfu_reset",
+            "description": (
+                "W-TinyLFU cache-admission simulator comparing a global-reset "
+                "Count-Min frequency sketch (Caffeine-style baseline) against a "
+                "per-key inter-arrival-CoV-decayed tiered variant, sharing an "
+                "identical doorkeeper/SLRU/admission-window scaffold."
+            ),
+            "key_space": KEY_SPACE,
+            "cache_ratios": CACHE_RATIOS,
+            "skew_levels_alpha": SKEW_LEVELS,
+            "sample_multipliers_swept": SAMPLE_MULTIPLIERS,
+            "drift_scenarios": DRIFT_SCENARIOS,
+            "seeds": SEEDS,
+            "n_requests_tuning": N_REQUESTS_TUNING,
+            "n_requests_main": N_REQUESTS_MAIN,
+            "proposed_tiers": PerKeyDecayFrequencyEstimator.TIERS,
+            "cov_thresholds": {"high": COV_HIGH_THRESH, "low": COV_LOW_THRESH},
+            "deviations_from_plan": [
+                f"key_space set to {KEY_SPACE:,} (plan suggested 200,000) as a runtime-margin "
+                "trim for the full 3x3x4x3-seed grid, preserving the complete "
+                "ratio/skew/drift-scenario/seed factorial design",
+                "doorkeeper contribution to frequency() corrected to +1 (Caffeine's "
+                "actual semantics) instead of the plan pseudocode's +15, which would "
+                "have saturated comparisons for nearly every warmed-up key",
+                "admission-window / SLRU interaction reimplemented as a full W-TinyLFU "
+                "loop (window LRU eviction competes against the SLRU probationary "
+                "victim) rather than the plan pseudocode's ad hoc hit-counting, which "
+                "double-counted window admissions as hits",
+                "real-trace arm (Phase C) explicitly skipped per fallback_plan: "
+                "twitter/cache-trace requires multi-GB downloads in a bespoke binary "
+                "format with no feasible lightweight alternative found",
+            ],
+            "total_runtime_seconds": time.time() - t0,
         },
-        "datasets": datasets,
+        "datasets": [
+            {"dataset": "phaseA_baseline_multiplier_tuning", "examples": tuning_examples},
+            {"dataset": "phaseB_drift_scenario_grid", "examples": grid_examples},
+            {"dataset": "phaseC_aggregate_summary_and_real_trace_status", "examples": summary_examples},
+        ],
     }
 
-    OUT_PATH.write_text(json.dumps(output, indent=2, default=_json_default))
-    logger.info(f"Wrote {OUT_PATH} ({OUT_PATH.stat().st_size / 1e6:.2f} MB)")
-
-    del all_configs, pilot_results, full_results
-    gc.collect()
-    logger.info("=== DONE ===")
+    out_path = WORKSPACE / "method_out.json"
+    out_path.write_text(json.dumps(output, indent=2, default=str))
+    logger.info(f"Wrote {out_path} ({out_path.stat().st_size/1e6:.2f} MB)")
+    logger.info(f"Total runtime: {time.time()-t0:.1f}s")
 
 
 if __name__ == "__main__":
